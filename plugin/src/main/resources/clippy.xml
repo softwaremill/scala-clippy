@@ -1,0 +1,8 @@
+<clippy>
+    <typemismatch>
+        <found>akka.http.scaladsl.server.StandardRoute</found>
+        <required>akka.stream.scaladsl.Flow[akka.http.scaladsl.model.HttpRequest,akka.http.scaladsl.model.HttpResponse,Any]</required>
+        <advice>did you forget to define an implicit akka.stream.ActorMaterializer?
+ It allows routes to be converted into a flow.</advice>
+    </typemismatch>
+</clippy>
