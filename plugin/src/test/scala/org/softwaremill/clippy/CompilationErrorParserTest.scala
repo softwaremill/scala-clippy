@@ -7,11 +7,11 @@ class CompilationErrorParserTest extends FlatSpec with Matchers {
     val e =
       """type mismatch;
         | found   : akka.http.scaladsl.server.StandardRoute
-        | required: akka.stream.scaladsl.Flow[akka.http.scaladsl.model.HttpRequest,akka.http.scaladsl.model.HttpResponse,Any]
-      """.stripMargin
+        | required: akka.stream.scaladsl.Flow[akka.http.scaladsl.model.HttpRequest,akka.http.scaladsl.model.HttpResponse,Any]""".stripMargin
 
     CompilationErrorParser.parse(e) should be (Some(TypeMismatchError(
       "akka.http.scaladsl.server.StandardRoute",
-      "akka.stream.scaladsl.Flow[akka.http.scaladsl.model.HttpRequest,akka.http.scaladsl.model.HttpResponse,Any]")))
+      "akka.stream.scaladsl.Flow[akka.http.scaladsl.model.HttpRequest,akka.http.scaladsl.model.HttpResponse,Any]"
+    )))
   }
 }
