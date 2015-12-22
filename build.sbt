@@ -74,7 +74,7 @@ lazy val tests = (project in file("tests"))
     publishArtifact := false,
     libraryDependencies ++= Seq(
       scalatest,
-      "com.typesafe.akka" %% "akka-http-experimental" % "2.0-M2"
+      "com.typesafe.akka" %% "akka-http-experimental" % "2.0"
     ),
     scalacOptions += s"-Xplugin:${pluginJar.value.getAbsolutePath}"
   ) dependsOn (plugin)
