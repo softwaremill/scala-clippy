@@ -13,6 +13,8 @@ class ClippyPlugin(val global: Global) extends Plugin {
 
   override val description: String = "gives good advice"
 
+  val advices = Advices.loadFromClasspath()
+
   override def init(options: List[String], error: (String) => Unit) = {
     val r = global.reporter
 
@@ -52,16 +54,10 @@ class ClippyPlugin(val global: Global) extends Plugin {
     }
 
     def handleError(pos: Position, msg: String): String = {
-      if (msg.contains("akka.http.scaladsl.server.StandardRoute") &&
-        msg.contains("akka.stream.scaladsl.Flow[akka.http.scaladsl.model.HttpRequest,akka.http.scaladsl.model.HttpResponse,Any]")) {
-        msg + "\n" +
-          """
-            |Clippy advice:
-            | did you forget to define an implicit akka.stream.ActorMaterializer?
-            | It allows routes to be converted into a flow.
-          """.stripMargin
-      }
-      else msg
+      val adviceText = CompilationErrorParser.parse(msg).flatMap { identifiedError =>
+        advices.find(_.matches(identifiedError)).map("\n " + _.adviceText)
+      }.getOrElse("")
+      msg + adviceText
     }
 
     true

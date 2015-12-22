@@ -5,8 +5,20 @@ import java.net.URL
 import scala.xml._
 import scala.collection.JavaConversions._
 
-sealed trait Advice
-case class TypeMismatchAdvice(found: String, required: String, advice: String) extends Advice
+sealed trait Advice {
+  def matches(err: CompilationError): Boolean
+  def adviceText: String
+}
+
+case class TypeMismatchAdvice(found: String, required: String, adviceText: String) extends Advice {
+
+  override def matches(err: CompilationError): Boolean = {
+    err match {
+      case TypeMismatchError(errFound, errRequired) => errFound == found && errRequired == required
+      case _ => false
+    }
+  }
+}
 
 object Advices {
   def loadFromClasspath(): List[Advice] = {
@@ -25,4 +37,5 @@ object Advices {
       )
     }.toList
   }
+
 }
