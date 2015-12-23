@@ -5,7 +5,7 @@ case class TypeMismatchError(found: String, required: String) extends Compilatio
 
 object CompilationErrorParser {
   private val FoundRegexp = """found\s*:\s*([^\n]+)\n""".r
-  private val RequiredRegexp = """required:\s*(.+)""".r
+  private val RequiredRegexp = """required\s*:\s*(.+)""".r
 
   def parse(error: String): Option[CompilationError] = {
     if (error.startsWith("type mismatch")) {
