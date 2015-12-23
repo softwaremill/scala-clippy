@@ -6,18 +6,15 @@ import scala.xml._
 import scala.collection.JavaConversions._
 
 sealed trait Advice {
-  def matches(err: CompilationError): Boolean
-  def adviceText: String
+  def errMatching: PartialFunction[CompilationError, String]
 }
 
 case class TypeMismatchAdvice(found: String, required: String, adviceText: String) extends Advice {
 
-  override def matches(err: CompilationError): Boolean = {
+  override def errMatching = (err: CompilationError) =>
     err match {
-      case TypeMismatchError(errFound, errRequired) => errFound == found && errRequired == required
-      case _ => false
+      case TypeMismatchError(errFound, errRequired) if errFound == found && errRequired == required => adviceText
     }
-  }
 }
 
 object Advices {

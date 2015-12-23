@@ -55,7 +55,7 @@ class ClippyPlugin(val global: Global) extends Plugin {
 
     def handleError(pos: Position, msg: String): String = {
       val adviceText = CompilationErrorParser.parse(msg).flatMap { identifiedError =>
-        advices.find(_.matches(identifiedError)).map("\n " + _.adviceText)
+        advices.find(_.errMatching.isDefinedAt(identifiedError)).map("\n " + _.errMatching(identifiedError))
       }.getOrElse("")
       msg + adviceText
     }
