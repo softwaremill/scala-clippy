@@ -54,12 +54,13 @@ class ClippyPlugin(val global: Global) extends Plugin {
     }
 
     def handleError(pos: Position, msg: String): String = {
-      val adviceText = CompilationErrorParser.parse(msg).flatMap { identifiedError =>
-        advices.find(_.errMatching.isDefinedAt(identifiedError)).map("\n " + _.errMatching(identifiedError))
-      }.getOrElse("")
-      msg + adviceText
+      if (advices.nonEmpty) {
+        val totalMatchingFunction = advices.map(_.errMatching).reduce((sumPf, pf) => sumPf.orElse(pf)).lift
+        val adviceText = CompilationErrorParser.parse(msg).flatMap(totalMatchingFunction).map("\n " + _).getOrElse("")
+        msg + adviceText
+      }
+      else msg
     }
-
     true
   }
 }
