@@ -55,7 +55,7 @@ class ClippyPlugin(val global: Global) extends Plugin {
 
     def handleError(pos: Position, msg: String): String = {
       val totalMatchingFunction = advices.map(_.errMatching)
-        .foldLeft(PartialFunction.empty[CompilationError, String])((sumPf, pf) => sumPf.orElse(pf)).lift
+        .foldLeft(PartialFunction.empty[CompilationError, String])(_.orElse(_)).lift
       val adviceText = CompilationErrorParser.parse(msg).flatMap(totalMatchingFunction).map("\n " + _).getOrElse("")
       msg + adviceText
     }
