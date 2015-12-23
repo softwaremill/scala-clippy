@@ -13,7 +13,7 @@ class ClippyPlugin(val global: Global) extends Plugin {
 
   override val description: String = "gives good advice"
 
-  val advices = Advices.loadFromClasspath(global)
+  val advices = Advices.loadFromProjectClasspath(global)
 
   override def init(options: List[String], error: (String) => Unit) = {
     val r = global.reporter

@@ -19,7 +19,7 @@ case class TypeMismatchAdvice(found: String, required: String, adviceText: Strin
 
 object Advices {
 
-  def loadFromClasspath(global: Global): List[Advice] = {
+  def loadFromProjectClasspath(global: Global): List[Advice] = {
     val allUrls = global.classPath.asURLs
     allUrls.filter(_.getPath.endsWith(".jar")).map(addClippyXml).toList.flatMap(loadFromURL(global))
   }
