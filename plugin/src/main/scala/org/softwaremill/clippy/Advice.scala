@@ -11,10 +11,9 @@ sealed trait Advice {
 
 case class TypeMismatchAdvice(found: String, required: String, adviceText: String) extends Advice {
 
-  override def errMatching = (err: CompilationError) =>
-    err match {
-      case TypeMismatchError(errFound, errRequired) if errFound == found && errRequired == required => adviceText
-    }
+  override def errMatching = {
+    case TypeMismatchError(errFound, errRequired) if errFound == found && errRequired == required => adviceText
+  }
 }
 
 object Advices {
