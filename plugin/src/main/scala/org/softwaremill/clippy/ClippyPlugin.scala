@@ -13,7 +13,7 @@ class ClippyPlugin(val global: Global) extends Plugin {
 
   override val description: String = "gives good advice"
 
-  val advices = Advices.loadFromProjectClasspath(global)
+  val advices = Advices.loadFromProjectClasspath(global) ++ Advices.loadFromClasspath(global)
 
   override def init(options: List[String], error: (String) => Unit) = {
     val r = global.reporter
@@ -56,9 +56,10 @@ class ClippyPlugin(val global: Global) extends Plugin {
     def handleError(pos: Position, msg: String): String = {
       val totalMatchingFunction = advices.map(_.errMatching)
         .foldLeft(PartialFunction.empty[CompilationError, String])(_.orElse(_)).lift
-      val adviceText = CompilationErrorParser.parse(msg).flatMap(totalMatchingFunction).map("\n " + _).getOrElse("")
+      val adviceText = CompilationErrorParser.parse(msg).flatMap(totalMatchingFunction).map("\n Clippy advises: " + _).getOrElse("")
       msg + adviceText
     }
+
     true
   }
 }

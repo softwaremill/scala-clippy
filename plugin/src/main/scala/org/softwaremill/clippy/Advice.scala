@@ -19,6 +19,12 @@ case class TypeMismatchAdvice(found: String, required: String, adviceText: Strin
 
 object Advices {
 
+  def loadFromClasspath(global: Global): List[Advice] = {
+    import scala.collection.JavaConversions._
+    val i = enumerationAsScalaIterator(this.getClass.getClassLoader.getResources("clippy.xml"))
+    i.toList.flatMap(loadFromURL(global))
+  }
+
   def loadFromProjectClasspath(global: Global): List[Advice] = {
     val allUrls = global.classPath.asURLs
     allUrls.filter(_.getPath.endsWith(".jar")).map(addClippyXml).toList.flatMap(loadFromURL(global))
