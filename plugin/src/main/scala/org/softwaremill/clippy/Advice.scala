@@ -12,13 +12,13 @@ sealed trait Advice {
 
 case class TypeMismatchAdvice(found: String, required: String, adviceText: String) extends Advice {
   override def errMatching = {
-    case TypeMismatchError(errFound, errRequired) if errFound == found && errRequired == required => adviceText
+    case TypeMismatchError(errFound, errRequired) if (errFound == found || errFound.matches(found)) && (errRequired == required || errRequired.matches(required)) => adviceText
   }
 }
 
 case class NotFoundAdvice(what: String, adviceText: String) extends Advice {
   override def errMatching = {
-    case NotFoundError(errWhat) if what == errWhat => adviceText
+    case NotFoundError(errWhat) if what == errWhat || errWhat.matches(what) => adviceText
   }
 }
 
