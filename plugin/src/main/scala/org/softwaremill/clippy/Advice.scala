@@ -11,9 +11,14 @@ sealed trait Advice {
 }
 
 case class TypeMismatchAdvice(found: String, required: String, adviceText: String) extends Advice {
-
   override def errMatching = {
     case TypeMismatchError(errFound, errRequired) if errFound == found && errRequired == required => adviceText
+  }
+}
+
+case class NotFoundAdvice(what: String, adviceText: String) extends Advice {
+  override def errMatching = {
+    case NotFoundError(errWhat) if what == errWhat => adviceText
   }
 }
 
@@ -53,6 +58,11 @@ object Advices {
       TypeMismatchAdvice(
         (n \ "found").text,
         (n \ "required").text,
+        (n \ "advice").text
+      )
+    }.toList ++ (xml \\ "notfound").map { n =>
+      NotFoundAdvice(
+        (n \ "what").text,
         (n \ "advice").text
       )
     }.toList

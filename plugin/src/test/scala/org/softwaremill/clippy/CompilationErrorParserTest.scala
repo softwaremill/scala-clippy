@@ -14,4 +14,10 @@ class CompilationErrorParserTest extends FlatSpec with Matchers {
       "akka.stream.scaladsl.Flow[akka.http.scaladsl.model.HttpRequest,akka.http.scaladsl.model.HttpResponse,Any]"
     )))
   }
+
+  it should "parse macwire's wire not found error message" in {
+    val e = "not found: value wire"
+
+    CompilationErrorParser.parse(e) should be (Some(NotFoundError("value wire")))
+  }
 }

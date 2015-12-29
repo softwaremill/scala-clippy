@@ -32,7 +32,7 @@ addCompilerPlugin("com.softwaremill.clippy" % "plugin" % "0.1" cross CrossVersio
 # Library authors
 
 If you'd like to provide custom advices for your library, just include a `clippy.xml` file in your library's jar,
-it will be automatically picked by the compiler. Currently only type mismatch errors are supported:
+it will be automatically picked by the compiler. Currently type mismatch and not found errors are supported:
 
 ````xml
 <clippy>
@@ -41,5 +41,9 @@ it will be automatically picked by the compiler. Currently only type mismatch er
         <required>[[ name of the required type ]]</required>
         <advice>[[ custom error message ]]</advice>
     </typemismatch>
+    <notfound>
+        <what>[[ what is not found, e.g. value wire ]]</what>
+        <advice>[[ custom error message ]]</advice>
+    </notfound>
 </clippy>
 ````
