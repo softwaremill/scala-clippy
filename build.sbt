@@ -74,7 +74,8 @@ lazy val tests = (project in file("tests"))
     publishArtifact := false,
     libraryDependencies ++= Seq(
       scalatest,
-      "com.typesafe.akka" %% "akka-http-experimental" % "2.0"
+      "com.typesafe.akka" %% "akka-http-experimental" % "2.0",
+      "com.softwaremill.macwire" %% "macros" % "2.2.2" % "provided"
     ),
     scalacOptions += s"-Xplugin:${pluginJar.value.getAbsolutePath}",
     envVars in Test := (envVars in Test).value + ("CLIPPY_PLUGIN_PATH" -> pluginJar.value.getAbsolutePath),
