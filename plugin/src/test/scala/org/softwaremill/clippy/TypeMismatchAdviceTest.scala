@@ -25,15 +25,15 @@ class TypeMismatchAdviceTest extends FlatSpec with Matchers {
 
   it should "match regexes" in {
     // given
-    val advice = new TypeMismatchAdvice(".*g", "com\\.softwaremill.*\\.SomeType", "adviceText")
+    val advice = new TypeMismatchAdvice("slick.dbio.DBIOAction\\[.*\\]", "slick.lifted.Rep\\[Option\\[.*\\]\\]", "adviceText")
     val matchingErrs = List(
-      TypeMismatchError("String", "com.softwaremill.domain.SomeType"),
-      TypeMismatchError("com.softwaremill.wrong.Dog", "com.softwaremill.dto.SomeType"),
-      TypeMismatchError("String", "com.softwaremill.SomeType")
+      TypeMismatchError("slick.dbio.DBIOAction[Unit,slick.dbio.NoStream,slick.dbio.Effect.Write]", "slick.lifted.Rep[Option[?]]"),
+      TypeMismatchError("slick.dbio.DBIOAction[String,slick.dbio.NoStream,slick.dbio.Effect.Read]", "slick.lifted.Rep[Option[Int]]"),
+      TypeMismatchError("slick.dbio.DBIOAction[Unit,slick.dbio.NoStream,slick.dbio.Effect.Read]", "slick.lifted.Rep[Option[Option[Int]]")
     )
     val nonMatchingErrs = List(
-      TypeMismatchError("Int", "com.softwaremill.domain.SomeType"),
-      TypeMismatchError("String", "prefix.com.softwaremill.domain.SomeType"),
+      TypeMismatchError("slick.dbio.DBIOAction[Unit,slick.dbio.NoStream,slick.dbio.Effect.Read]", "String"),
+      TypeMismatchError("String", "slick.lifted.Rep[Option[?]]"),
       TypeMismatchError("String", "com.softwaremill.AweSomeType")
     )
 
