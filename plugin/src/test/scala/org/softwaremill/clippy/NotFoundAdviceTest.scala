@@ -1,6 +1,8 @@
 package org.softwaremill.clippy
 
+import org.scalacheck.Properties
 import org.scalatest.{Matchers, FlatSpec}
+import org.scalacheck.Prop.forAll
 
 class NotFoundAdviceTest extends FlatSpec with Matchers {
 
@@ -8,8 +10,8 @@ class NotFoundAdviceTest extends FlatSpec with Matchers {
 
   it should "match exact expression" in {
     // given
-    val advice = NotFoundAdvice("value wire", "Perhaps you should switch to PHP?")
-    val matchingErr = NotFoundError("value wire")
+    val advice = NotFoundAdvice("value wire[]", "Perhaps you should switch to PHP?")
+    val matchingErr = NotFoundError("value wire[]")
     val nonMatchingErrs = List(
       NotFoundError("value wirex"),
       NotFoundError("value wir"),
@@ -41,4 +43,10 @@ class NotFoundAdviceTest extends FlatSpec with Matchers {
     nonMatchingErrs.foreach(advice.errMatching should not be definedAt(_))
   }
 
+}
+
+class NotFoundAdviceProperties extends Properties("NotFound advice") {
+  property("matches identical string") = forAll { (what: String) =>
+    NotFoundAdvice(what, "Add some more RAM").errMatching.isDefinedAt(NotFoundError(what))
+  }
 }

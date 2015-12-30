@@ -1,5 +1,7 @@
 package org.softwaremill.clippy
 
+import org.scalacheck.Prop._
+import org.scalacheck.Properties
 import org.scalatest.{FlatSpec, Matchers}
 
 class TypeMismatchAdviceTest extends FlatSpec with Matchers {
@@ -8,12 +10,12 @@ class TypeMismatchAdviceTest extends FlatSpec with Matchers {
 
   it should "match exact expression" in {
     // given
-    val advice = new TypeMismatchAdvice("found", "required", "adviceText")
-    val matchingErr = TypeMismatchError("found", "required")
+    val advice = new TypeMismatchAdvice("com.softwaremill.String", "com.softwaremill.RequiredType[String]", "adviceText")
+    val matchingErr = TypeMismatchError("com.softwaremill.String", "com.softwaremill.RequiredType[String]")
     val nonMatchingErrs = List(
-      new TypeMismatchError("found", "not matching required"),
-      new TypeMismatchError("not matching found", "not matching required"),
-      new TypeMismatchError("not matching found", "required")
+      new TypeMismatchError("com.softwaremill.String", "com.softwaremill.OtherType"),
+      new TypeMismatchError("com.softwaremill.Int", "com.softwaremill.OtherType"),
+      new TypeMismatchError("com.softwaremill.Int", "com.softwaremill.RequiredType[String]")
     )
 
     // then
@@ -39,5 +41,10 @@ class TypeMismatchAdviceTest extends FlatSpec with Matchers {
     matchingErrs.foreach(advice.errMatching should be definedAt (_))
     nonMatchingErrs.foreach(advice.errMatching should not be definedAt(_))
   }
+}
 
+class TypeMismatchAdviceProperties extends Properties("TypeMismatch advice") {
+  property("matches identical strings") = forAll { (found: String, required: String) =>
+    TypeMismatchAdvice(found, required, "Try again later.").errMatching.isDefinedAt(TypeMismatchError(found, required))
+  }
 }

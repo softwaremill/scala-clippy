@@ -8,17 +8,21 @@ import scala.xml._
 
 sealed trait Advice {
   def errMatching: PartialFunction[CompilationError, String]
+
+  protected def equalsOrMatches(actual: String, expected: String): Boolean =
+    actual == expected || Try(actual.matches(expected)).getOrElse(false)
+
 }
 
 case class TypeMismatchAdvice(found: String, required: String, adviceText: String) extends Advice {
   override def errMatching = {
-    case TypeMismatchError(errFound, errRequired) if (errFound == found || errFound.matches(found)) && (errRequired == required || errRequired.matches(required)) => adviceText
+    case TypeMismatchError(errFound, errRequired) if equalsOrMatches(errFound, found) && equalsOrMatches(errRequired, required) => adviceText
   }
 }
 
 case class NotFoundAdvice(what: String, adviceText: String) extends Advice {
   override def errMatching = {
-    case NotFoundError(errWhat) if what == errWhat || errWhat.matches(what) => adviceText
+    case NotFoundError(errWhat) if equalsOrMatches(errWhat, what) => adviceText
   }
 }
 

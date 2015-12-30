@@ -5,6 +5,7 @@ import scalariform.formatter.preferences._
 
 // testing
 val scalatest = "org.scalatest" %% "scalatest" % "2.2.5" % "test"
+val scalacheck = "org.scalacheck" %% "scalacheck" % "1.12.5" % "test"
 
 name := "clippy"
 
@@ -63,7 +64,7 @@ lazy val plugin = (project in file("plugin"))
   .settings(
     libraryDependencies ++= Seq(
       "org.scala-lang" % "scala-compiler" % scalaVersion.value,
-      scalatest)
+      scalatest, scalacheck)
   )
 
 lazy val pluginJar = Keys.`package` in (plugin, Compile)
