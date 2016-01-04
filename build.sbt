@@ -57,7 +57,7 @@ lazy val commonSettings = scalariformSettings ++ Seq(
 lazy val clippy = (project in file("."))
   .settings(commonSettings)
   .settings(publishArtifact := false)
-  .aggregate(plugin, tests)
+  .aggregate(plugin, tests, ui)
 
 lazy val plugin = (project in file("plugin"))
   .settings(commonSettings)
@@ -82,3 +82,16 @@ lazy val tests = (project in file("tests"))
     envVars in Test := (envVars in Test).value + ("CLIPPY_PLUGIN_PATH" -> pluginJar.value.getAbsolutePath),
     fork in Test := true
   ) dependsOn (plugin)
+
+lazy val ui: Project = (project in file("ui"))
+  .settings(commonSettings)
+  .settings(
+    libraryDependencies ++= Seq(
+      "com.typesafe.play" %% "play-slick" % "1.1.0",
+      "com.typesafe.play" %% "play-slick-evolutions" % "1.1.0",
+      "com.h2database" % "h2" % "1.4.190", // % "test",
+      scalatest
+    ),
+    routesGenerator := InjectedRoutesGenerator
+  )
+  .enablePlugins(PlayScala)
