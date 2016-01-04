@@ -90,7 +90,10 @@ lazy val ui: Project = (project in file("ui"))
       "com.typesafe.play" %% "play-slick" % "1.1.0",
       "com.typesafe.play" %% "play-slick-evolutions" % "1.1.0",
       "com.h2database" % "h2" % "1.4.190", // % "test",
-      scalatest
+      scalatest,
+      "org.webjars" %% "webjars-play" % "2.4.0-1",
+      "org.webjars" % "bootstrap" % "3.3.6",
+      "org.webjars" % "jquery" % "1.11.3"
     ),
     routesGenerator := InjectedRoutesGenerator
   )
