@@ -1,21 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
 <configuration>
 
-    <conversionRule conversionWord="coloredLevel" converterClass="play.api.libs.logback.ColoredLevel" />
-
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <!-- encoders are assigned the type
+             ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
         <encoder>
-            <pattern>%coloredLevel - %logger - %message%n%xException</pattern>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{5} - %msg%n</pattern>
         </encoder>
     </appender>
 
-    <!--
-      The logger name is typically the Java/Scala package name.
-      This configures the log level to log at for a package and its children packages.
-    -->
-    <logger name="play" level="INFO" />
-    <logger name="application" level="DEBUG" />
+    <logger name="application" level="DEBUG" additivity="false">
+        <appender-ref ref="STDOUT" />
+    </logger>
 
-    <root level="ERROR">
+    <root level="INFO">
         <appender-ref ref="STDOUT" />
     </root>
 
