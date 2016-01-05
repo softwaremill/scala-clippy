@@ -1,4 +1,4 @@
-package org.softwaremill.clippy
+package com.softwaremill.clippy
 
 import org.scalatest.{FlatSpec, Matchers}
 

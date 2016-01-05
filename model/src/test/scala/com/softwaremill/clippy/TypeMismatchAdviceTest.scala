@@ -1,4 +1,4 @@
-package org.softwaremill.clippy
+package com.softwaremill.clippy
 
 import org.scalacheck.Prop._
 import org.scalacheck.Properties

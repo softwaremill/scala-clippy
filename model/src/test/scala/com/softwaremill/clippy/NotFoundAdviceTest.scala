@@ -1,8 +1,8 @@
-package org.softwaremill.clippy
+package com.softwaremill.clippy
 
-import org.scalacheck.Properties
-import org.scalatest.{Matchers, FlatSpec}
 import org.scalacheck.Prop.forAll
+import org.scalacheck.Properties
+import org.scalatest.{FlatSpec, Matchers}
 
 class NotFoundAdviceTest extends FlatSpec with Matchers {
 

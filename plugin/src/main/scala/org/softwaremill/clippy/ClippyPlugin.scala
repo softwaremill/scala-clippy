@@ -1,5 +1,7 @@
 package org.softwaremill.clippy
 
+import com.softwaremill.clippy.{CompilationErrorParser, CompilationError}
+
 import scala.reflect.internal.util.Position
 import scala.tools.nsc.Global
 import scala.tools.nsc.plugins.{PluginComponent, Plugin}

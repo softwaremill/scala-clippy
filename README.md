@@ -57,3 +57,16 @@ also use regular expressions to match advices. Examples:
     </notfound>
 </clippy>
 ````
+
+# Contributing to the project
+
+You can submit the compilation errors you encounter & advice proposals here:
+
+Or you can help developing the plugin and/or the UI for submitting new advices! The module structure is:
+
+* `model` - code shared between the UI and the plugin. Contains basic model case classes, such as `CompilationError` + parser
+* `plugin` - the compiler plugin which actually displays the advices and matches errors agains the database of known errors
+* `tests` - tests for the compiler plugin. Must be a separate project, as it requires the plugin jar to be ready
+* `ui` - the ui server project in Play
+* `ui-client` - the Scala.JS client-side code
+* `ui-shared` - code shared between the UI server and UI client (but not needed for the plugin)

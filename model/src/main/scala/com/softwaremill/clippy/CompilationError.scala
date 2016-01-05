@@ -1,4 +1,4 @@
-package org.softwaremill.clippy
+package com.softwaremill.clippy
 
 sealed trait CompilationError
 case class TypeMismatchError(found: String, required: String) extends CompilationError

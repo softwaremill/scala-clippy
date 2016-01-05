@@ -1,3 +1,4 @@
+import api.ContributeApiImpl
 import controllers._
 import dal.PersonRepository
 import play.api.ApplicationLoader.Context
@@ -37,7 +38,7 @@ class ClippyComponents(context: Context)
   lazy val dbConfig = api.dbConfig[JdbcProfile](DbName("default"))
   lazy val personRepository = new PersonRepository(dbConfig)
 
-  lazy val autowireController = new AutowireController(new PersonApiImpl(personRepository))
+  lazy val autowireController = new AutowireController(new ContributeApiImpl)
 
   lazy val dynamicEvolutions = new DynamicEvolutions
 }

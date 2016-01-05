@@ -57,7 +57,16 @@ lazy val commonSettings = scalariformSettings ++ Seq(
 lazy val clippy = (project in file("."))
   .settings(commonSettings)
   .settings(publishArtifact := false)
-  .aggregate(plugin, tests, ui)
+  .aggregate(modelJvm, plugin, tests, ui)
+
+lazy val model = (crossProject.crossType(CrossType.Pure) in file("model"))
+  .settings(commonSettings: _*)
+  .settings(
+    libraryDependencies ++= Seq(scalatest, scalacheck)
+  )
+
+lazy val modelJvm = model.jvm.settings(name := "modelJvm")
+lazy val modelJs = model.js.settings(name := "modelJs")
 
 lazy val plugin = (project in file("plugin"))
   .settings(commonSettings)
@@ -66,6 +75,7 @@ lazy val plugin = (project in file("plugin"))
       "org.scala-lang" % "scala-compiler" % scalaVersion.value,
       scalatest, scalacheck)
   )
+  .dependsOn(modelJvm)
 
 lazy val pluginJar = Keys.`package` in (plugin, Compile)
 
@@ -81,7 +91,7 @@ lazy val tests = (project in file("tests"))
     scalacOptions += s"-Xplugin:${pluginJar.value.getAbsolutePath}",
     envVars in Test := (envVars in Test).value + ("CLIPPY_PLUGIN_PATH" -> pluginJar.value.getAbsolutePath),
     fork in Test := true
-  ) dependsOn (plugin)
+  ).dependsOn(plugin)
 
 lazy val ui: Project = (project in file("ui"))
   .settings(commonSettings)
@@ -129,6 +139,7 @@ lazy val uiShared = (crossProject.crossType(CrossType.Pure) in file("ui-shared")
     )
   )
   .jsConfigure(_ enablePlugins ScalaJSPlay)
+  .dependsOn(model)
 
 lazy val uiSharedJvm = uiShared.jvm.settings(name := "uiSharedJvm")
 lazy val uiSharedJs = uiShared.js.settings(name := "uiSharedJs")
