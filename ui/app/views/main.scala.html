@@ -44,9 +44,12 @@
     </div>
 </nav>
 
+<div style="margin-top: 60px;">
 @content
+</div>
 
 <script type='text/javascript' src='@routes.WebJarAssets.at(WebJarAssets.locate("jquery.min.js"))'></script>
 <script type='text/javascript' src='@routes.WebJarAssets.at(WebJarAssets.locate("bootstrap.min.js"))'></script>
+@playscalajs.html.scripts("uiclient")
 </body>
 </html>

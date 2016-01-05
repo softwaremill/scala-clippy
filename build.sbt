@@ -93,8 +93,35 @@ lazy val ui: Project = (project in file("ui"))
       scalatest,
       "org.webjars" %% "webjars-play" % "2.4.0-1",
       "org.webjars" % "bootstrap" % "3.3.6",
-      "org.webjars" % "jquery" % "1.11.3"
+      "org.webjars" % "jquery" % "1.11.3",
+      "com.vmunier" %% "play-scalajs-scripts" % "0.3.0"
     ),
+    scalaJSProjects := Seq(uiClient),
+    pipelineStages := Seq(scalaJSProd),
     routesGenerator := InjectedRoutesGenerator
   )
   .enablePlugins(PlayScala)
+  .aggregate(uiClient)
+  .dependsOn(uiSharedJvm)
+
+lazy val uiClient: Project = (project in file("ui-client"))
+  .settings(commonSettings)
+  .settings(name := "uiClient")
+  .settings(
+    persistLauncher := true,
+    persistLauncher in Test := false,
+    libraryDependencies ++= Seq(
+      "org.scala-js" %%% "scalajs-dom" % "0.8.0",
+      "be.doeraene" %%% "scalajs-jquery" % "0.8.1"
+    )
+  )
+  .enablePlugins(ScalaJSPlugin, ScalaJSPlay)
+  .dependsOn(uiSharedJs)
+
+lazy val uiShared = (crossProject.crossType(CrossType.Pure) in file("ui-shared"))
+  .settings(commonSettings: _*)
+  .settings(name := "uiShared")
+  .jsConfigure(_ enablePlugins ScalaJSPlay)
+
+lazy val uiSharedJvm = uiShared.jvm
+lazy val uiSharedJs = uiShared.js
