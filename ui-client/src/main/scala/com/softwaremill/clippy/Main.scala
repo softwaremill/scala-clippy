@@ -26,6 +26,7 @@ object Main extends js.JSApp {
   }
 }
 
+@js.native
 trait Person extends js.Object {
   val name: String = js.native
   val age: Int = js.native
