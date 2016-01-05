@@ -5,7 +5,6 @@ import play.api.i18n._
 import play.api.data.Form
 import play.api.data.Forms._
 import play.api.data.validation.Constraints._
-import play.api.libs.json.Json
 import dal._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -51,15 +50,6 @@ class PersonController(repo: PersonRepository, val messagesApi: MessagesApi)(imp
         }
       }
     )
-  }
-
-  /**
-   * A REST endpoint that gets all the people as JSON.
-   */
-  def getPersons = Action.async {
-    repo.list().map { people =>
-      Ok(Json.toJson(people))
-    }
   }
 }
 

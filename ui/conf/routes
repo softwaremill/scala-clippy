@@ -5,10 +5,12 @@
 # Home page
 GET     /                           controllers.PersonController.index
 POST    /person                     controllers.PersonController.addPerson
-GET     /persons                    controllers.PersonController.getPersons
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
 
 # Webjars
 GET     /webjars/*file              controllers.WebJarAssets.at(file)
+
+# Autowire calls
+POST    /api/*path                  controllers.AutowireController.autowireApi(path: String)

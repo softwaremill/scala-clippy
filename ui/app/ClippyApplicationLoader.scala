@@ -1,4 +1,4 @@
-import controllers.{WebJarAssets, PersonController}
+import controllers.{PersonApiImpl, AutowireController, WebJarAssets, PersonController}
 import dal.PersonRepository
 import play.api.ApplicationLoader.Context
 import play.api._
@@ -26,14 +26,16 @@ class ClippyComponents(context: Context)
     with EvolutionsComponents
     with SlickEvolutionsComponents {
 
-  lazy val router = new Routes(httpErrorHandler, personController, assets, webJarAssets)
+  lazy val router = new Routes(httpErrorHandler, personController, assets, webJarAssets, autowireController)
 
   lazy val webJarAssets = new WebJarAssets(httpErrorHandler, configuration, environment)
   lazy val assets = new controllers.Assets(httpErrorHandler)
 
   lazy val dbConfig = api.dbConfig[JdbcProfile](DbName("default"))
-  lazy val personReposiotry = new PersonRepository(dbConfig)
-  lazy val personController = new PersonController(personReposiotry, messagesApi)
+  lazy val personRepository = new PersonRepository(dbConfig)
+  lazy val personController = new PersonController(personRepository, messagesApi)
+
+  lazy val autowireController = new AutowireController(new PersonApiImpl(personRepository))
 
   lazy val dynamicEvolutions = new DynamicEvolutions
 }

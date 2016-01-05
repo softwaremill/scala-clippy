@@ -121,8 +121,14 @@ lazy val uiClient: Project = (project in file("ui-client"))
 
 lazy val uiShared = (crossProject.crossType(CrossType.Pure) in file("ui-shared"))
   .settings(commonSettings: _*)
-  .settings(name := "uiShared")
+  .settings(
+    name := "uiShared",
+    libraryDependencies ++= Seq(
+      "com.lihaoyi" %%% "autowire" % "0.2.5",
+      "com.lihaoyi" %%% "upickle" % "0.3.6"
+    )
+  )
   .jsConfigure(_ enablePlugins ScalaJSPlay)
 
-lazy val uiSharedJvm = uiShared.jvm
-lazy val uiSharedJs = uiShared.js
+lazy val uiSharedJvm = uiShared.jvm.settings(name := "uiSharedJvm")
+lazy val uiSharedJs = uiShared.js.settings(name := "uiSharedJs")

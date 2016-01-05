@@ -1,9 +1,8 @@
 package dal
 
+import com.softwaremill.clippy.Person
 import slick.backend.DatabaseConfig
 import slick.driver.JdbcProfile
-
-import models.Person
 
 import scala.concurrent.{Future, ExecutionContext}
 
