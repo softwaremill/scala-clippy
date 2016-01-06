@@ -73,9 +73,10 @@ lazy val plugin = (project in file("plugin"))
   .settings(
     libraryDependencies ++= Seq(
       "org.scala-lang" % "scala-compiler" % scalaVersion.value,
-      scalatest, scalacheck)
+      scalatest, scalacheck),
+    // including the model classes for re-compilation, so that the plugin jar has no deps
+    unmanagedSourceDirectories in Compile ++= (sourceDirectories in (modelJvm, Compile)).value
   )
-  .dependsOn(modelJvm)
 
 lazy val pluginJar = Keys.`package` in (plugin, Compile)
 
