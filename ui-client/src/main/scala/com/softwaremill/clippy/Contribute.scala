@@ -12,6 +12,7 @@ object Contribute {
   }
 
   private lazy val step2cannotparseTemplate = readTemplate("step2cannotparse_template")
+  private lazy val step2parsedTemplate = readTemplate("step2parsed_template")
 
   def setup(): Unit = {
     jQuery("#step1Next").click { (ev: JQueryEventObject) =>
@@ -20,11 +21,8 @@ object Contribute {
       val errorText = jQuery("#errortext").value().asInstanceOf[String]
       jQuery("#step1").hide()
       CompilationErrorParser.parse(errorText) match {
-        case None =>
-          showStep2CannotParse(errorText)
-
-        case Some(ce) =>
-          jQuery("#step2parsed").show()
+        case None => showStep2CannotParse(errorText)
+        case Some(ce) => showStep2Parsed(ce)
       }
 
       false
@@ -49,14 +47,51 @@ object Contribute {
     }
   }
 
-  private def requiredValueOrShowError(id: String, name: String): Option[String] = {
-    val v = jQuery(s"#$id").value().asInstanceOf[String]
-    if (v == null || v.isEmpty) {
-      showErrorMessage(s"$name is required")
-      jQuery(s"#$id").parent(".form-group").addClass("has-error")
-      None
+  private def showStep2Parsed(ce: CompilationError): Unit = {
+    jQuery("#step2parsed").html(step2parsedTemplate).show()
+    jQuery("#step2parsedInfo").html(ce.toString)
+    jQuery("#step2parsedReset").click { (ev: JQueryEventObject) => reset() }
+    jQuery("#step2parsedSend").click { (ev: JQueryEventObject) =>
+      resetErrors()
+
+      for {
+        advice <- requiredValueOrShowError("step2advice", "Advice text")
+        libraryGroupId <- requiredValueOrShowError("step2GroupId", "Library group id")
+        libraryArtifactId <- requiredValueOrShowError("step2ArtifactId", "Library artifact id")
+        libraryVersion <- requiredValueOrShowError("step2Version", "Library version")
+        email = optionalValue("step2parsedEmail")
+        twitter = optionalValue("step2parsedTwitter")
+        github = optionalValue("step2parsedGithub")
+        comment = optionalValue("step2comment")
+      } {
+        AutowireClient[ContributeApi].sendAdviceProposal(ce, advice,
+          Library(libraryGroupId, libraryArtifactId, libraryVersion),
+          Contributor(email, twitter, github), comment)
+          .call().onSuccess {
+            case _ =>
+              reset()
+              showSuccessMessage("Advice submitted successfully! We'll get in touch soon, and let you know when your proposal is accepted.")
+          }
+      }
+
+      false
     }
-    else Some(v)
+  }
+
+  private def optionalValue(id: String): Option[String] = {
+    val v = jQuery(s"#$id").value().asInstanceOf[String]
+    if (v == null || v.trim().isEmpty) None else Some(v.trim())
+  }
+
+  private def requiredValueOrShowError(id: String, name: String): Option[String] = {
+    optionalValue(id) match {
+      case None =>
+        showErrorMessage(s"$name is required")
+        jQuery(s"#$id").parent(".form-group").addClass("has-error")
+        None
+
+      case x => x
+    }
   }
 
   private def resetErrors(): Unit = {

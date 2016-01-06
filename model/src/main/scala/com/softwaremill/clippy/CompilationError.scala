@@ -1,8 +1,12 @@
 package com.softwaremill.clippy
 
 sealed trait CompilationError
-case class TypeMismatchError(found: String, required: String) extends CompilationError
-case class NotFoundError(what: String) extends CompilationError
+case class TypeMismatchError(found: String, required: String) extends CompilationError {
+  override def toString = s"Type mismatch error.\nFound: $found,\nrequired: $required"
+}
+case class NotFoundError(what: String) extends CompilationError {
+  override def toString = s"Not found error: $what"
+}
 
 object CompilationErrorParser {
   private val FoundRegexp = """found\s*:\s*([^\n]+)\n""".r

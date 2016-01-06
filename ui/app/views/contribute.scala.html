@@ -21,7 +21,7 @@ required: akka.stream.scaladsl.Flow[akka.http.scaladsl.model.HttpRequest,akka.ht
             <label for="errortext"><strong>Error text</strong></label>
             <textarea id="errortext" class="form-control" rows="3"></textarea>
         </div>
-        <button type="submit" class="btn btn-default" id="step1Next">Next</button>
+        <button type="submit" class="btn btn-primary" id="step1Next">Next</button>
     </form>
 </div>
 
@@ -42,7 +42,7 @@ required: akka.stream.scaladsl.Flow[akka.http.scaladsl.model.HttpRequest,akka.ht
         </div>
 
         <button type="reset" class="btn btn-default" id="step2cannotparseReset">Reset</button>
-        <button type="submit" class="btn btn-default" id="step2cannotparseSend">Send</button>
+        <button type="submit" class="btn btn-primary" id="step2cannotparseSend">Send</button>
     </form>
 </div>
 
@@ -51,7 +51,9 @@ required: akka.stream.scaladsl.Flow[akka.http.scaladsl.model.HttpRequest,akka.ht
 <div id="step2parsed_template" style="display: none">
     <div class="panel panel-default">
         <div class="panel-body">
-            <span id="parsedType"></span>
+            <p>Parsing successfull! Here's what we've found:</p>
+
+            <pre id="step2parsedInfo"></pre>
 
             <p>You can optionally leave an e-mail so that we can let you know when your proposal is accepted,
             and a twitter/github handle so that we can add proper attribution, visible in the advice browser.</p>
@@ -59,6 +61,13 @@ required: akka.stream.scaladsl.Flow[akka.http.scaladsl.model.HttpRequest,akka.ht
     </div>
 
     <form>
+        <div class="form-group">
+            <label for="step2advice">Advice text</label>
+            <textarea id="step2advice" class="form-control" rows="3"></textarea>
+        </div>
+
+        <hr />
+
         <div class="form-group">
             <label for="step2GroupId"><strong>Library group id</strong></label>
             <input type="text" class="form-control" id="step2GroupId" placeholder="org.scala" required="required">
@@ -96,11 +105,11 @@ required: akka.stream.scaladsl.Flow[akka.http.scaladsl.model.HttpRequest,akka.ht
         <hr />
 
         <div class="form-group">
-            <label for="step2comments">Comments (e.g.: are there any parts in the error that are generic?)</label>
-            <textarea id="step2comments" class="form-control" rows="3"></textarea>
+            <label for="step2comment">Comments (e.g.: are there any parts in the error that are generic?)</label>
+            <textarea id="step2comment" class="form-control" rows="3"></textarea>
         </div>
 
-        <button type="reset" class="btn btn-default contribute_reset">Reset</button>
-        <button type="submit" class="btn btn-default contribute_send">Send</button>
+        <button type="reset" class="btn btn-default" id="step2parsedReset">Reset</button>
+        <button type="submit" class="btn btn-primary" id="step2parsedSend">Send</button>
     </form>
 </div>
