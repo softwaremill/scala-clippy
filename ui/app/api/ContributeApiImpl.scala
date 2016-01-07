@@ -1,10 +1,11 @@
 package api
 
 import com.softwaremill.clippy.{Contributor, Library, CompilationError, ContributeApi}
+import dal.AdvicesRepository
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
-class ContributeApiImpl extends ContributeApi {
+class ContributeApiImpl(advicesRepository: AdvicesRepository)(implicit ec: ExecutionContext) extends ContributeApi {
   override def sendCannotParse(errorText: String, contributorEmail: String) = {
     // TODO send us an email
 
@@ -15,23 +16,9 @@ class ContributeApiImpl extends ContributeApi {
     Future.successful(())
   }
 
-  override def sendAdviceProposal(
-    compilationError: CompilationError,
-    advice: String,
-    library: Library,
-    contributor: Contributor,
-    comment: Option[String]
-  ) = {
+  override def sendAdviceProposal(compilationError: CompilationError, advice: String, library: Library,
+    contributor: Contributor, comment: Option[String]): Future[Unit] = {
 
-    // TODO save advice proposal, send email
-
-    println("ADVICE PROPOSAL")
-    println(compilationError)
-    println(advice)
-    println(library)
-    println(contributor)
-    println(comment)
-    println("---")
-    Future.successful(())
+    advicesRepository.store(compilationError, advice, accepted = false, library, contributor, comment).map(_ => ())
   }
 }

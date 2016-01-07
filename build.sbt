@@ -62,7 +62,7 @@ lazy val clippy = (project in file("."))
 lazy val model = (crossProject.crossType(CrossType.Pure) in file("model"))
   .settings(commonSettings: _*)
   .settings(
-    libraryDependencies ++= Seq(scalatest, scalacheck)
+    libraryDependencies ++= Seq(scalatest, scalacheck, "org.scala-lang.modules" %% "scala-xml" % "1.0.5")
   )
 
 lazy val modelJvm = model.jvm.settings(name := "modelJvm")
@@ -105,7 +105,8 @@ lazy val ui: Project = (project in file("ui"))
       "org.webjars" %% "webjars-play" % "2.4.0-1",
       "org.webjars" % "bootstrap" % "3.3.6",
       "org.webjars" % "jquery" % "1.11.3",
-      "com.vmunier" %% "play-scalajs-scripts" % "0.3.0"
+      "com.vmunier" %% "play-scalajs-scripts" % "0.3.0",
+      "com.softwaremill.common" %% "id-generator" % "1.1.0"
     ),
     scalaJSProjects := Seq(uiClient),
     pipelineStages := Seq(scalaJSProd),

@@ -1,6 +1,7 @@
 import api.ContributeApiImpl
+import com.softwaremill.id.DefaultIdGenerator
 import controllers._
-import dal.PersonRepository
+import dal.AdvicesRepository
 import play.api.ApplicationLoader.Context
 import play.api._
 import play.api.db.evolutions.{DynamicEvolutions, EvolutionsComponents}
@@ -9,6 +10,7 @@ import play.api.db.slick.{DbName, SlickComponents}
 import play.api.i18n.I18nComponents
 import slick.driver.JdbcProfile
 import router.Routes
+import util.SqlDatabase
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class ClippyApplicationLoader extends ApplicationLoader {
@@ -33,12 +35,15 @@ class ClippyComponents(context: Context)
   lazy val webJarAssets = new WebJarAssets(httpErrorHandler, configuration, environment)
   lazy val assets = new controllers.Assets(httpErrorHandler)
 
+  lazy val idGenerator = new DefaultIdGenerator()
+
   lazy val applicationController = new ApplicationController()
 
-  lazy val dbConfig = api.dbConfig[JdbcProfile](DbName("default"))
-  lazy val personRepository = new PersonRepository(dbConfig)
+  lazy val database = SqlDatabase.fromConfig(api.dbConfig[JdbcProfile](DbName("default")))
+  lazy val advicesRepository = new AdvicesRepository(database, idGenerator)
 
-  lazy val autowireController = new AutowireController(new ContributeApiImpl)
+  lazy val contributeApiImpl = new ContributeApiImpl(advicesRepository)
+  lazy val autowireController = new AutowireController(contributeApiImpl)
 
   lazy val dynamicEvolutions = new DynamicEvolutions
 }

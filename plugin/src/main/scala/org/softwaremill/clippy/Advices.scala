@@ -40,7 +40,7 @@ object Advices {
     loadResult
   }
 
-  def loadFromXml(xml: NodeSeq): List[Advice] = {
+  def loadFromXml(xml: NodeSeq): List[Advice] = { // TODO: use CompilationError from/to xml methods
     (xml \\ "typemismatch").map { n =>
       TypeMismatchAdvice(
         (n \ "found").text,
