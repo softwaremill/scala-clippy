@@ -6,9 +6,9 @@ import play.api.mvc.{Action, Controller}
 import upickle.default._
 import upickle.Js
 
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.ExecutionContext
 
-class AutowireController(contributeApi: ContributeApi) extends Controller {
+class AutowireController(contributeApi: ContributeApi)(implicit ec: ExecutionContext) extends Controller {
 
   def autowireApi(path: String) = Action.async {
     implicit request =>

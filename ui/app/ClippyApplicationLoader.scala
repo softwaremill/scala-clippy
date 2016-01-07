@@ -11,7 +11,6 @@ import play.api.i18n.I18nComponents
 import slick.driver.JdbcProfile
 import router.Routes
 import util.SqlDatabase
-import scala.concurrent.ExecutionContext.Implicits.global
 
 class ClippyApplicationLoader extends ApplicationLoader {
   def load(context: Context) = {
@@ -28,6 +27,8 @@ class ClippyComponents(context: Context)
     with I18nComponents
     with EvolutionsComponents
     with SlickEvolutionsComponents {
+
+  implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
   lazy val router = new Routes(httpErrorHandler, applicationController, assets, webJarAssets,
     autowireController)
