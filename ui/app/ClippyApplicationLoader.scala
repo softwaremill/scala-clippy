@@ -45,7 +45,8 @@ class ClippyComponents(context: Context)
 
   lazy val applicationController = new ApplicationController()
 
-  lazy val database = SqlDatabase.fromConfig(api.dbConfig[JdbcProfile](DbName("default")))
+  lazy val databaseName = configuration.getString("database.name").getOrElse("h2")
+  lazy val database = SqlDatabase.fromConfig(api.dbConfig[JdbcProfile](DbName(databaseName)))
   lazy val advicesRepository = new AdvicesRepository(database, idGenerator)
 
   lazy val contributeApiImpl = new ContributeApiImpl(advicesRepository, emailService, contactEmail)

@@ -107,7 +107,8 @@ lazy val ui: Project = (project in file("ui"))
       "org.webjars" % "jquery" % "1.11.3",
       "com.vmunier" %% "play-scalajs-scripts" % "0.3.0",
       "com.softwaremill.common" %% "id-generator" % "1.1.0",
-      "com.sendgrid" % "sendgrid-java" % "2.2.2"
+      "com.sendgrid" % "sendgrid-java" % "2.2.2",
+      "org.postgresql" % "postgresql" % "9.4-1205-jdbc42"
     ),
     scalaJSProjects := Seq(uiClient),
     pipelineStages := Seq(scalaJSProd),
