@@ -11,6 +11,7 @@ import play.api.i18n.I18nComponents
 import slick.driver.JdbcProfile
 import router.Routes
 import util.SqlDatabase
+import util.email.{DummyEmailService, SendgridEmailService}
 
 class ClippyApplicationLoader extends ApplicationLoader {
   def load(context: Context) = {
@@ -33,6 +34,10 @@ class ClippyComponents(context: Context)
   lazy val router = new Routes(httpErrorHandler, applicationController, assets, webJarAssets,
     autowireController)
 
+  lazy val contactEmail = configuration.getString("email.contact").getOrElse("?")
+  lazy val emailService = SendgridEmailService.createFromEnv(contactEmail)
+    .getOrElse(new DummyEmailService)
+
   lazy val webJarAssets = new WebJarAssets(httpErrorHandler, configuration, environment)
   lazy val assets = new controllers.Assets(httpErrorHandler)
 
@@ -43,7 +48,7 @@ class ClippyComponents(context: Context)
   lazy val database = SqlDatabase.fromConfig(api.dbConfig[JdbcProfile](DbName("default")))
   lazy val advicesRepository = new AdvicesRepository(database, idGenerator)
 
-  lazy val contributeApiImpl = new ContributeApiImpl(advicesRepository)
+  lazy val contributeApiImpl = new ContributeApiImpl(advicesRepository, emailService, contactEmail)
   lazy val autowireController = new AutowireController(contributeApiImpl)
 
   lazy val dynamicEvolutions = new DynamicEvolutions
