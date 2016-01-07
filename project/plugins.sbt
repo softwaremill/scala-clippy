@@ -4,6 +4,9 @@ addSbtPlugin("com.jsuereth" % "sbt-pgp" % "1.0.0")
 
 addSbtPlugin("com.updateimpact" % "updateimpact-sbt-plugin" % "2.1.0")
 
+addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.14.1")
+addSbtPlugin("com.heroku" % "sbt-heroku" % "0.5.4")
+
 // The Play plugin
 addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.4.6")
 

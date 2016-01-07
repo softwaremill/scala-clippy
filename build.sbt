@@ -56,7 +56,12 @@ lazy val commonSettings = scalariformSettings ++ Seq(
 
 lazy val clippy = (project in file("."))
   .settings(commonSettings)
-  .settings(publishArtifact := false)
+  .settings(
+    publishArtifact := false,
+    // heroku
+    herokuFatJar in Compile := Some((assemblyOutputPath in ui in assembly).value),
+    deployHeroku in Compile <<= (deployHeroku in Compile) dependsOn (assembly in ui)
+  )
   .aggregate(modelJvm, plugin, tests, ui)
 
 lazy val model = (crossProject.crossType(CrossType.Pure) in file("model"))
@@ -107,12 +112,24 @@ lazy val ui: Project = (project in file("ui"))
       "org.webjars" % "jquery" % "1.11.3",
       "com.vmunier" %% "play-scalajs-scripts" % "0.3.0",
       "com.softwaremill.common" %% "id-generator" % "1.1.0",
-      "com.sendgrid" % "sendgrid-java" % "2.2.2",
+      "com.sendgrid" % "sendgrid-java" % "2.2.2" exclude("commons-logging", "commons-logging"),
       "org.postgresql" % "postgresql" % "9.4-1205-jdbc42"
     ),
     scalaJSProjects := Seq(uiClient),
     pipelineStages := Seq(scalaJSProd),
-    routesGenerator := InjectedRoutesGenerator
+    routesGenerator := InjectedRoutesGenerator,
+    // heroku & fat-jar
+    assemblyJarName in assembly := "app.jar",
+    mainClass in assembly := Some("play.core.server.ProdServerStart"),
+    fullClasspath in assembly += Attributed.blank(PlayKeys.playPackageAssets.value),
+    assemblyMergeStrategy in assembly := {
+      // anything in public/lib is copied from webjars and causes duplicate resources exceptions
+      case PathList("public", "lib", xs @ _*) => MergeStrategy.discard
+      case "JS_DEPENDENCIES" => MergeStrategy.discard
+      case x =>
+        val oldStrategy = (assemblyMergeStrategy in assembly).value
+        oldStrategy(x)
+    }
   )
   .enablePlugins(PlayScala)
   .aggregate(uiClient)

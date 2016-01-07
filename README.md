@@ -70,3 +70,16 @@ Or you can help developing the plugin and/or the UI for submitting new advices! 
 * `ui` - the ui server project in Play
 * `ui-client` - the Scala.JS client-side code
 * `ui-shared` - code shared between the UI server and UI client (but not needed for the plugin)
+
+# Heroku deployment
+
+Locally:
+
+* Install the Heroku Toolbelt
+* link the local git repository with the Heroku application: `heroku git:remote -a scala-clippy`
+* run `sbt deployHeroku` to deploy the current code as a fat-jar
+
+Currently deployed on `https://scala-clippy.herokuapp.com`
+
+In the Heroku app, `JAVA_OPTS` must contain `-Dhttp.port=$PORT` and the `DATABASE_NAME` environmental variable should
+be set to `pg` if you want to use postgres.
