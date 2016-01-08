@@ -4,7 +4,7 @@ import Keys._
 import scalariform.formatter.preferences._
 
 // testing
-val scalatest = "org.scalatest" %% "scalatest" % "2.2.5" % "test"
+val scalatest = "org.scalatest" %% "scalatest" % "2.2.6" % "test"
 val scalacheck = "org.scalacheck" %% "scalacheck" % "1.12.5" % "test"
 
 name := "clippy"
@@ -91,7 +91,7 @@ lazy val tests = (project in file("tests"))
     publishArtifact := false,
     libraryDependencies ++= Seq(
       scalatest,
-      "com.typesafe.akka" %% "akka-http-experimental" % "2.0",
+      "com.typesafe.akka" %% "akka-http-experimental" % "2.0.1",
       "com.softwaremill.macwire" %% "macros" % "2.2.2" % "provided"
     ),
     scalacOptions += s"-Xplugin:${pluginJar.value.getAbsolutePath}",
@@ -99,12 +99,12 @@ lazy val tests = (project in file("tests"))
     fork in Test := true
   ).dependsOn(plugin)
 
+val slickVersion = "3.1.1"
+
 lazy val ui: Project = (project in file("ui"))
   .settings(commonSettings)
   .settings(
     libraryDependencies ++= Seq(
-      "com.typesafe.play" %% "play-slick" % "1.1.0",
-      "com.typesafe.play" %% "play-slick-evolutions" % "1.1.0",
       "com.h2database" % "h2" % "1.4.190", // % "test",
       scalatest,
       "org.webjars" %% "webjars-play" % "2.4.0-1",
@@ -113,7 +113,10 @@ lazy val ui: Project = (project in file("ui"))
       "com.vmunier" %% "play-scalajs-scripts" % "0.3.0",
       "com.softwaremill.common" %% "id-generator" % "1.1.0",
       "com.sendgrid" % "sendgrid-java" % "2.2.2" exclude("commons-logging", "commons-logging"),
-      "org.postgresql" % "postgresql" % "9.4-1205-jdbc42"
+      "org.postgresql" % "postgresql" % "9.4.1207",
+      "com.typesafe.slick" %% "slick" % slickVersion,
+      "com.typesafe.slick" %% "slick-hikaricp" % slickVersion,
+      "org.flywaydb" % "flyway-core" % "3.2.1"
     ),
     scalaJSProjects := Seq(uiClient),
     pipelineStages := Seq(scalaJSProd),
@@ -142,7 +145,7 @@ lazy val uiClient: Project = (project in file("ui-client"))
     persistLauncher := true,
     persistLauncher in Test := false,
     libraryDependencies ++= Seq(
-      "org.scala-js" %%% "scalajs-dom" % "0.8.0",
+      "org.scala-js" %%% "scalajs-dom" % "0.8.2",
       "be.doeraene" %%% "scalajs-jquery" % "0.8.1"
     ),
     jsDependencies += RuntimeDOM % "test"

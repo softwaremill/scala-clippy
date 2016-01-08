@@ -1,5 +1,3 @@
-# --- !Ups
-
 create table "advices" (
   "id" bigint not null primary key,
   "compilation_error" varchar not null,
@@ -13,7 +11,3 @@ create table "advices" (
   "contributor_github" varchar,
   "comment" varchar
 );
-
-# --- !Downs
-
-drop table "advices" if exists;
