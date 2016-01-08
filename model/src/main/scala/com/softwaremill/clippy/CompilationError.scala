@@ -10,14 +10,14 @@ case class TypeMismatchError(found: String, required: String) extends Compilatio
   override def toString = s"Type mismatch error.\nFound: $found,\nrequired: $required"
   override def toXml =
     <typemismatch>
-      <found>${found}</found>
-      <required>${required}</required>
+      <found>{found}</found>
+      <required>{required}</required>
     </typemismatch>
 }
 case class NotFoundError(what: String) extends CompilationError {
   override def toString = s"Not found error: $what"
   override def toXml =
-    <notfound>${what}</notfound>
+    <notfound>{what}</notfound>
 }
 
 object CompilationError {
@@ -25,7 +25,7 @@ object CompilationError {
 
   def fromXml(xml: NodeSeq): Option[CompilationError] = {
     def extractTypeMismatch =
-      (xml \ "typemismatch").headOption.map { n =>
+      (xml \\ "typemismatch").headOption.map { n =>
         TypeMismatchError(
           (n \ "found").text,
           (n \ "required").text
@@ -33,7 +33,7 @@ object CompilationError {
       }
 
     def extractNotFound =
-      (xml \ "notfound").headOption.map { n =>
+      (xml \\ "notfound").headOption.map { n =>
       NotFoundError(n.text)
     }
 
