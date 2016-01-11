@@ -3,7 +3,7 @@ package com.softwaremill.clippy
 import japgolly.scalajs.react._
 import japgolly.scalajs.react.vdom.prefix_<^._
 
-object BsUtil {
+object BsUtils {
   def bsPanel(body: TagMod*) = <.div(^.cls := "panel panel-default") {
     <.div(^.cls := "panel-body")(body)
   }

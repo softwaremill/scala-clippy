@@ -2,7 +2,7 @@ package com.softwaremill.clippy
 
 import japgolly.scalajs.react._
 import japgolly.scalajs.react.vdom.prefix_<^._
-import BsUtil._
+import BsUtils._
 
 object Contribute {
   object Step1 {
