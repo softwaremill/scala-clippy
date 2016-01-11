@@ -146,9 +146,14 @@ lazy val uiClient: Project = (project in file("ui-client"))
     persistLauncher in Test := false,
     libraryDependencies ++= Seq(
       "org.scala-js" %%% "scalajs-dom" % "0.8.2",
-      "be.doeraene" %%% "scalajs-jquery" % "0.8.1"
+      "be.doeraene" %%% "scalajs-jquery" % "0.8.1",
+      "com.github.japgolly.scalajs-react" %%% "core" % "0.10.3"
     ),
-    jsDependencies += RuntimeDOM % "test"
+    jsDependencies ++= Seq(
+      RuntimeDOM % "test",
+      "org.webjars.bower" % "react" % "0.14.3" / "react-with-addons.js" minified "react-with-addons.min.js" commonJSName "React",
+      "org.webjars.bower" % "react" % "0.14.3" / "react-dom.js" minified  "react-dom.min.js" dependsOn "react-with-addons.js" commonJSName "ReactDOM"
+    )
   )
   .enablePlugins(ScalaJSPlugin, ScalaJSPlay)
   .dependsOn(uiSharedJs)

@@ -19,7 +19,7 @@ class DummyEmailService extends EmailService with StrictLogging {
       sentEmails.+=((to, subject, body))
     }
 
-    logger.debug(s"Would send email to $to, with subject: $subject, body: $body")
+    logger.info(s"Would send email to $to, with subject: $subject, body: $body")
     Future.successful(())
   }
 
