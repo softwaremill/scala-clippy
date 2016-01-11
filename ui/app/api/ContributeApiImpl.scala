@@ -1,6 +1,6 @@
 package api
 
-import com.softwaremill.clippy.{Contributor, Library, CompilationError, ContributeApi}
+import com.softwaremill.clippy._
 import dal.AdvicesRepository
 import util.email.EmailService
 
@@ -21,11 +21,9 @@ class ContributeApiImpl(
        """.stripMargin)
   }
 
-  override def sendAdviceProposal(compilationError: CompilationError, advice: String, library: Library,
-    contributor: Contributor, comment: Option[String]): Future[Unit] = {
-
+  override def sendAdviceProposal(ap: AdviceProposal): Future[Unit] = {
     advicesRepository
-      .store(compilationError, advice, accepted = false, library, contributor, comment)
+      .store(ap.compilationError, ap.advice, accepted = false, ap.library, ap.contributor, ap.comment)
       .flatMap { a =>
         emailService.send(contactEmail, "New advice proposal", s"Advice proposal: $a")
       }

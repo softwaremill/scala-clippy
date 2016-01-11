@@ -3,6 +3,7 @@ package com.softwaremill.clippy
 import japgolly.scalajs.react._
 import org.scalajs.jquery._
 import scala.scalajs.js
+import japgolly.scalajs.react.vdom.prefix_<^._
 
 object Main extends js.JSApp {
   type HtmlId = String
@@ -14,8 +15,6 @@ object Main extends js.JSApp {
   def setupUI(): Unit = {
     setupTabSwitching()
     showFirstTab()
-
-    ContributeOld.setup()
 
     setupReact()
   }

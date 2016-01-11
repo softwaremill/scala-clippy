@@ -35,8 +35,20 @@ object App {
       )
     }
 
+    private def handleSendAdviceProposal(ap: AdviceProposal): Callback = {
+      CallbackTo(AutowireClient[ContributeApi].sendAdviceProposal(ap).call()).map(
+        _.onSuccess {
+          case _ =>
+            (clearMsgs >> $.modState(s => s.copy(
+              page = ContributeStep1,
+              infoMsgs = "Advice submitted successfully! We'll get in touch soon, and let you know when your proposal is accepted." :: s.infoMsgs
+            ))).runNow()
+        }
+      )
+    }
+
     private def handleShowError(error: String): Callback = {
-      $.modState(s => s.copy(errorMsgs = error :: s.errorMsgs))
+      clearMsgs >> $.modState(s => s.copy(errorMsgs = error :: s.errorMsgs))
     }
 
     private def clearMsgs = $.modState(_.copy(errorMsgs = Nil, infoMsgs = Nil))
@@ -53,8 +65,8 @@ object App {
       case ContributeParseError(et) =>
         Contribute.ParseError.component(Contribute.ParseError.Props(handleReset, handleSendParseError(et), handleShowError))
 
-      case ContributeStep2(_) =>
-        Contribute.Step2.component()
+      case ContributeStep2(ce) =>
+        Contribute.Step2.component(Contribute.Step2.Props(ce, handleReset, handleSendAdviceProposal, handleShowError))
     }
 
     def render(s: State) = <.span(
