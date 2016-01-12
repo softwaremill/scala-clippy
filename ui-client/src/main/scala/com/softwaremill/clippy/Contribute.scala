@@ -1,11 +1,9 @@
 package com.softwaremill.clippy
 
 import japgolly.scalajs.react._
-import japgolly.scalajs.react.extra.ExternalVar
 import japgolly.scalajs.react.vdom.prefix_<^._
 import BsUtils._
 import Utils._
-import monocle.Lens
 import monocle.macros.Lenses
 
 object Contribute {
