@@ -7,6 +7,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 object App {
   sealed trait Page
+  case object UsePage extends Page
   case object ContributeStep1 extends Page
   case class ContributeParseError(errorText: String) extends Page
   case class ContributeStep2(ce: CompilationError) extends Page
@@ -53,12 +54,22 @@ object App {
 
     private def clearMsgs = $.modState(_.copy(errorMsgs = Nil, infoMsgs = Nil))
 
+    private def handleSwitchPage(newPage: Page): Callback = {
+      clearMsgs >> $.modState { s =>
+        def isContribute(p: Page) = p != UsePage
+        if (s.page == newPage || (isContribute(s.page) && isContribute(newPage))) s else s.copy(page = newPage)
+      }
+    }
+
     private def showMsgs(s: State) = <.span(
       s.infoMsgs.map(m => <.div(^.cls := "alert alert-success", ^.role := "alert")(m)) ++
         s.errorMsgs.map(m => <.div(^.cls := "alert alert-danger", ^.role := "alert")(m)): _*
     )
 
     private def showPage(s: State) = s.page match {
+      case UsePage =>
+        Use.component()
+
       case ContributeStep1 =>
         Contribute.Step1.component(Contribute.Step1.Props(handleErrorTextSubmitted, handleShowError))
 
@@ -70,8 +81,11 @@ object App {
     }
 
     def render(s: State) = <.span(
-      showMsgs(s),
-      showPage(s)
+      Menu.component((s.page, handleSwitchPage)),
+      <.div(^.cls := "container")(
+        showMsgs(s),
+        showPage(s)
+      )
     )
   }
 }

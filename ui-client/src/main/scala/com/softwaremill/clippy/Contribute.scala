@@ -88,9 +88,16 @@ object Contribute {
             <.input(^.`type` := "text", ^.cls := "form-control", ^.placeholder := "2.11-M3")
           ),
           <.hr,
+          /* TODO
+        <div class="input-group">
+                <div class="input-group-addon">&commat;</div>
+                <input type="email" class="form-control" id="step2parsedTwitter" placeholder="twitter">
+            </div>
+         */
           bsFormEl(s.email, e => $.modState(s => s.copy(email = e)))(
             <.input(^.`type` := "email", ^.cls := "form-control", ^.placeholder := "scalacoder@company.com")
           ),
+          // TODO as above
           bsFormEl(s.twitter, tw => $.modState(s => s.copy(twitter = tw)))(
             <.input(^.`type` := "text", ^.cls := "form-control", ^.placeholder := "twitter")
           ),
