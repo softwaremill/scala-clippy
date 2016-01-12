@@ -1,13 +1,18 @@
 package com.softwaremill.clippy
 
 import japgolly.scalajs.react._
+import japgolly.scalajs.react.extra.ExternalVar
 import japgolly.scalajs.react.vdom.prefix_<^._
 import BsUtils._
+import Utils._
+import monocle.Lens
+import monocle.macros.Lenses
 
 object Contribute {
   object Step1 {
     case class Props(submit: String => Callback, showError: String => Callback)
 
+    @Lenses
     case class State(errorText: FormField)
     implicit val stateVal = new Validatable[State] {
       override def validated(s: State) = s.copy(errorText = s.errorText.validated)
@@ -27,7 +32,7 @@ object Contribute {
         ),
         <.form(
           ^.onSubmit ==> FormField.submitValidated($, p.showError)(s => p.submit(s.errorText.v)),
-          bsFormEl(s.errorText, net => $.modState(s => s.copy(errorText = net)))(
+          bsFormEl(externalVar($, s, State.errorText))(
             <.textarea(^.cls := "form-control", ^.rows := 3)
           ),
           <.button(^.`type` := "submit", ^.cls := "btn btn-primary")("Next")
@@ -45,8 +50,10 @@ object Contribute {
     case class Props(ce: CompilationError, reset: Callback, send: AdviceProposal => Callback,
       showError: String => Callback)
 
+    @Lenses
     case class State(advice: FormField, libraryGroupId: FormField, libraryArtifactId: FormField,
       libraryVersion: FormField, email: FormField, twitter: FormField, github: FormField, comment: FormField)
+
     implicit val stateVal = new Validatable[State] {
       override def validated(s: State) = s.copy(
         advice = s.advice.validated,
@@ -74,17 +81,17 @@ object Contribute {
             p.ce, s.advice.v, Library(s.libraryGroupId.v, s.libraryArtifactId.v, s.libraryVersion.v),
             Contributor(s.email.vOpt, s.twitter.vOpt, s.github.vOpt), s.comment.vOpt
           ))),
-          bsFormEl(s.advice, net => $.modState(s => s.copy(advice = net)))(
+          bsFormEl(externalVar($, s, State.advice))(
             <.textarea(^.cls := "form-control", ^.rows := 3)
           ),
           <.hr,
-          bsFormEl(s.libraryGroupId, lg => $.modState(s => s.copy(libraryGroupId = lg)))(
+          bsFormEl(externalVar($, s, State.libraryGroupId))(
             <.input(^.`type` := "text", ^.cls := "form-control", ^.placeholder := "org.scala")
           ),
-          bsFormEl(s.libraryArtifactId, la => $.modState(s => s.copy(libraryArtifactId = la)))(
+          bsFormEl(externalVar($, s, State.libraryArtifactId))(
             <.input(^.`type` := "text", ^.cls := "form-control", ^.placeholder := "scala-lang")
           ),
-          bsFormEl(s.libraryVersion, lv => $.modState(s => s.copy(libraryVersion = lv)))(
+          bsFormEl(externalVar($, s, State.libraryVersion))(
             <.input(^.`type` := "text", ^.cls := "form-control", ^.placeholder := "2.11-M3")
           ),
           <.hr,
@@ -94,18 +101,18 @@ object Contribute {
                 <input type="email" class="form-control" id="step2parsedTwitter" placeholder="twitter">
             </div>
          */
-          bsFormEl(s.email, e => $.modState(s => s.copy(email = e)))(
+          bsFormEl(externalVar($, s, State.email))(
             <.input(^.`type` := "email", ^.cls := "form-control", ^.placeholder := "scalacoder@company.com")
           ),
           // TODO as above
-          bsFormEl(s.twitter, tw => $.modState(s => s.copy(twitter = tw)))(
+          bsFormEl(externalVar($, s, State.twitter))(
             <.input(^.`type` := "text", ^.cls := "form-control", ^.placeholder := "twitter")
           ),
-          bsFormEl(s.github, gh => $.modState(s => s.copy(github = gh)))(
+          bsFormEl(externalVar($, s, State.github))(
             <.input(^.`type` := "text", ^.cls := "form-control", ^.placeholder := "github")
           ),
           <.hr,
-          bsFormEl(s.comment, c => $.modState(s => s.copy(comment = c)))(
+          bsFormEl(externalVar($, s, State.comment))(
             <.textarea(^.cls := "form-control", ^.rows := 3)
           ),
           <.button(^.`type` := "reset", ^.cls := "btn btn-default", ^.onClick --> p.reset)("Reset"),
@@ -132,6 +139,7 @@ object Contribute {
   object ParseError {
     case class Props(reset: Callback, send: String => Callback, showError: String => Callback)
 
+    @Lenses
     case class State(email: FormField)
     implicit val stateVal = new Validatable[State] {
       override def validated(s: State) = s.copy(email = s.email.validated)
@@ -145,7 +153,7 @@ object Contribute {
         ),
         <.form(
           ^.onSubmit ==> FormField.submitValidated($, p.showError)(s => p.send(s.email.v)),
-          bsFormEl(s.email, ne => $.modState(s => s.copy(email = ne)))(
+          bsFormEl(externalVar($, s, State.email))(
             <.input(^.`type` := "email", ^.cls := "form-control", ^.placeholder := "scalacoder@company.com")
           ),
           <.button(^.`type` := "reset", ^.cls := "btn btn-default", ^.onClick --> p.reset)("Reset"),

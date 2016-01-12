@@ -138,16 +138,21 @@ lazy val ui: Project = (project in file("ui"))
   .aggregate(uiClient)
   .dependsOn(uiSharedJvm)
 
+val scalaJsReactVersion = "0.10.3"
+
 lazy val uiClient: Project = (project in file("ui-client"))
   .settings(commonSettings)
   .settings(name := "uiClient")
   .settings(
     persistLauncher := true,
     persistLauncher in Test := false,
+    addCompilerPlugin(compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)), // for @Lenses
     libraryDependencies ++= Seq(
       "org.scala-js" %%% "scalajs-dom" % "0.8.2",
       "be.doeraene" %%% "scalajs-jquery" % "0.8.1",
-      "com.github.japgolly.scalajs-react" %%% "core" % "0.10.3"
+      "com.github.japgolly.scalajs-react" %%% "core" % scalaJsReactVersion,
+      "com.github.japgolly.scalajs-react" %%% "ext-monocle" % scalaJsReactVersion,
+      "com.github.japgolly.fork.monocle" %%% "monocle-macro" % "1.2.0"
     ),
     jsDependencies ++= Seq(
       RuntimeDOM % "test",
