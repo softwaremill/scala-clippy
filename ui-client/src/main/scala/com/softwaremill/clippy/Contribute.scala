@@ -30,9 +30,8 @@ object Contribute {
         ),
         <.form(
           ^.onSubmit ==> FormField.submitValidated($, p.showError)(s => p.submit(s.errorText.v)),
-          bsFormEl(externalVar($, s, State.errorText))(
-            <.textarea(^.cls := "form-control", ^.rows := 3)
-          ),
+          bsFormEl(externalVar($, s, State.errorText))(mods =>
+            <.textarea(^.cls := "form-control", ^.rows := 3)(mods)),
           <.button(^.`type` := "submit", ^.cls := "btn btn-primary")("Next")
         )
       )
@@ -79,40 +78,31 @@ object Contribute {
             p.ce, s.advice.v, Library(s.libraryGroupId.v, s.libraryArtifactId.v, s.libraryVersion.v),
             Contributor(s.email.vOpt, s.twitter.vOpt, s.github.vOpt), s.comment.vOpt
           ))),
-          bsFormEl(externalVar($, s, State.advice))(
-            <.textarea(^.cls := "form-control", ^.rows := 3)
-          ),
+          bsFormEl(externalVar($, s, State.advice))(mods =>
+            <.textarea(^.cls := "form-control", ^.rows := 3)(mods)),
           <.hr,
-          bsFormEl(externalVar($, s, State.libraryGroupId))(
-            <.input(^.`type` := "text", ^.cls := "form-control", ^.placeholder := "org.scala")
-          ),
-          bsFormEl(externalVar($, s, State.libraryArtifactId))(
-            <.input(^.`type` := "text", ^.cls := "form-control", ^.placeholder := "scala-lang")
-          ),
-          bsFormEl(externalVar($, s, State.libraryVersion))(
-            <.input(^.`type` := "text", ^.cls := "form-control", ^.placeholder := "2.11-M3")
-          ),
+          bsFormEl(externalVar($, s, State.libraryGroupId))(mods =>
+            <.input(^.`type` := "text", ^.cls := "form-control", ^.placeholder := "org.scala")(mods)),
+          bsFormEl(externalVar($, s, State.libraryArtifactId))(mods =>
+            <.input(^.`type` := "text", ^.cls := "form-control", ^.placeholder := "scala-lang")(mods)),
+          bsFormEl(externalVar($, s, State.libraryVersion))(mods =>
+            <.input(^.`type` := "text", ^.cls := "form-control", ^.placeholder := "2.11-M3")(mods)),
           <.hr,
-          /* TODO
-        <div class="input-group">
-                <div class="input-group-addon">&commat;</div>
-                <input type="email" class="form-control" id="step2parsedTwitter" placeholder="twitter">
-            </div>
-         */
-          bsFormEl(externalVar($, s, State.email))(
-            <.input(^.`type` := "email", ^.cls := "form-control", ^.placeholder := "scalacoder@company.com")
-          ),
-          // TODO as above
-          bsFormEl(externalVar($, s, State.twitter))(
-            <.input(^.`type` := "text", ^.cls := "form-control", ^.placeholder := "twitter")
-          ),
-          bsFormEl(externalVar($, s, State.github))(
-            <.input(^.`type` := "text", ^.cls := "form-control", ^.placeholder := "github")
-          ),
+          bsFormEl(externalVar($, s, State.email))(mods =>
+            <.div(^.cls := "input-group")(
+              <.div(^.cls := "input-group-addon")("@"),
+              <.input(^.`type` := "email", ^.cls := "form-control", ^.placeholder := "scalacoder@company.com")(mods)
+            )),
+          bsFormEl(externalVar($, s, State.twitter))(mods =>
+            <.div(^.cls := "input-group")(
+              <.div(^.cls := "input-group-addon")("@"),
+              <.input(^.`type` := "text", ^.cls := "form-control", ^.placeholder := "twitter")(mods)
+            )),
+          bsFormEl(externalVar($, s, State.github))(mods =>
+            <.input(^.`type` := "text", ^.cls := "form-control", ^.placeholder := "github")(mods)),
           <.hr,
-          bsFormEl(externalVar($, s, State.comment))(
-            <.textarea(^.cls := "form-control", ^.rows := 3)
-          ),
+          bsFormEl(externalVar($, s, State.comment))(mods =>
+            <.textarea(^.cls := "form-control", ^.rows := 3)(mods)),
           <.button(^.`type` := "reset", ^.cls := "btn btn-default", ^.onClick --> p.reset)("Reset"),
           <.button(^.`type` := "submit", ^.cls := "btn btn-primary")("Send")
         )
@@ -151,9 +141,8 @@ object Contribute {
         ),
         <.form(
           ^.onSubmit ==> FormField.submitValidated($, p.showError)(s => p.send(s.email.v)),
-          bsFormEl(externalVar($, s, State.email))(
-            <.input(^.`type` := "email", ^.cls := "form-control", ^.placeholder := "scalacoder@company.com")
-          ),
+          bsFormEl(externalVar($, s, State.email))(mods =>
+            <.input(^.`type` := "email", ^.cls := "form-control", ^.placeholder := "scalacoder@company.com")(mods)),
           <.button(^.`type` := "reset", ^.cls := "btn btn-default", ^.onClick --> p.reset)("Reset"),
           <.button(^.`type` := "submit", ^.cls := "btn btn-primary")("Send")
         )
