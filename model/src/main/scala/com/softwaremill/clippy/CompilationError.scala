@@ -48,13 +48,13 @@ object CompilationErrorParser {
   private val NotFoundRegexp = """not found\s*:\s*(.+)""".r
 
   def parse(error: String): Option[CompilationError] = {
-    if (error.startsWith("type mismatch")) {
+    if (error.contains("type mismatch")) {
       for {
         found <- FoundRegexp.findFirstMatchIn(error)
         required <- RequiredRegexp.findFirstMatchIn(error)
       } yield TypeMismatchError(found.group(1), required.group(1))
     }
-    else if (error.startsWith("not found")) {
+    else if (error.contains("not found")) {
       for {
         what <- NotFoundRegexp.findFirstMatchIn(error)
       } yield NotFoundError(what.group(1))
