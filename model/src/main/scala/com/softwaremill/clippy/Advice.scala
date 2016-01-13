@@ -20,7 +20,7 @@ case class TypeMismatchAdvice(found: String, required: String, adviceText: Strin
   val requiredRegex = compileRegex(required)
 
   override def errMatching = {
-    case TypeMismatchError(errFound, errRequired) if equalsOrMatches(errFound, found, foundRegex) &&
+    case TypeMismatchError(errFound, _, errRequired, _) if equalsOrMatches(errFound, found, foundRegex) &&
       equalsOrMatches(errRequired, required, requiredRegex) => adviceText
   }
 }

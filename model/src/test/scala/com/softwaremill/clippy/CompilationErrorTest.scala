@@ -5,9 +5,9 @@ import org.scalacheck.Properties
 
 class CompilationErrorTest extends Properties("CompilationError") {
   property("obj -> xml -> obj works for type mismatch error") =
-    forAll { (found: String) =>
+    forAll { (found: String, foundExpandsTo: Option[String], required: String, requiredExpandsTo: Option[String]) =>
       forAll { (required: String) =>
-        val e = TypeMismatchError(found, required)
+        val e = TypeMismatchError(found, foundExpandsTo, required, requiredExpandsTo)
         CompilationError.fromXml(e.toXml).contains(e)
       }
     }

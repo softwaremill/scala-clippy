@@ -11,7 +11,9 @@ class CompilationErrorParserTest extends FlatSpec with Matchers {
 
     CompilationErrorParser.parse(e) should be (Some(TypeMismatchError(
       "akka.http.scaladsl.server.StandardRoute",
-      "akka.stream.scaladsl.Flow[akka.http.scaladsl.model.HttpRequest,akka.http.scaladsl.model.HttpResponse,Any]"
+      None,
+      "akka.stream.scaladsl.Flow[akka.http.scaladsl.model.HttpRequest,akka.http.scaladsl.model.HttpResponse,Any]",
+      None
     )))
   }
 
@@ -23,11 +25,28 @@ class CompilationErrorParserTest extends FlatSpec with Matchers {
 
     CompilationErrorParser.parse(e) should be (Some(TypeMismatchError(
       "akka.http.scaladsl.server.StandardRoute",
-      "akka.stream.scaladsl.Flow[akka.http.scaladsl.model.HttpRequest,akka.http.scaladsl.model.HttpResponse,Any]"
+      None,
+      "akka.stream.scaladsl.Flow[akka.http.scaladsl.model.HttpRequest,akka.http.scaladsl.model.HttpResponse,Any]",
+      None
     )))
   }
 
-  it should "parse a type mismatch error with expands to section" in {
+  it should "parse a type mismatch error with a single expands to section" in {
+    val e =
+      """type mismatch;
+        |found   : japgolly.scalajs.react.CompState.ReadCallbackWriteCallbackOps[com.softwaremill.clippy.Contribute.Step2.State]#This[com.softwaremill.clippy.FormField]
+        |required: japgolly.scalajs.react.CompState.AccessRD[?]
+        |   (which expands to)  japgolly.scalajs.react.CompState.ReadDirectWriteCallbackOps[?]""".stripMargin
+
+    CompilationErrorParser.parse(e) should be (Some(TypeMismatchError(
+      "japgolly.scalajs.react.CompState.ReadCallbackWriteCallbackOps[com.softwaremill.clippy.Contribute.Step2.State]#This[com.softwaremill.clippy.FormField]",
+      None,
+      "japgolly.scalajs.react.CompState.AccessRD[?]",
+      Some("japgolly.scalajs.react.CompState.ReadDirectWriteCallbackOps[?]")
+    )))
+  }
+
+  it should "parse a type mismatch error with two expands to sections" in {
     val e =
       """type mismatch;
         |found   : japgolly.scalajs.react.CompState.ReadCallbackWriteCallbackOps[com.softwaremill.clippy.Contribute.Step2.State]#This[com.softwaremill.clippy.FormField]
@@ -37,7 +56,9 @@ class CompilationErrorParserTest extends FlatSpec with Matchers {
 
     CompilationErrorParser.parse(e) should be (Some(TypeMismatchError(
       "japgolly.scalajs.react.CompState.ReadCallbackWriteCallbackOps[com.softwaremill.clippy.Contribute.Step2.State]#This[com.softwaremill.clippy.FormField]",
-      "japgolly.scalajs.react.CompState.AccessRD[?]"
+      Some("japgolly.scalajs.react.CompState.ReadCallbackWriteCallbackOps[com.softwaremill.clippy.FormField]"),
+      "japgolly.scalajs.react.CompState.AccessRD[?]",
+      Some("japgolly.scalajs.react.CompState.ReadDirectWriteCallbackOps[?]")
     )))
   }
 

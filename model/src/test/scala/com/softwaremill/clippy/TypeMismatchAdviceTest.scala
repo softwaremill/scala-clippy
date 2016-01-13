@@ -11,11 +11,11 @@ class TypeMismatchAdviceTest extends FlatSpec with Matchers {
   it should "match exact expression" in {
     // given
     val advice = new TypeMismatchAdvice("com.softwaremill.String", "com.softwaremill.RequiredType[String]", "adviceText")
-    val matchingErr = TypeMismatchError("com.softwaremill.String", "com.softwaremill.RequiredType[String]")
+    val matchingErr = TypeMismatchError("com.softwaremill.String", None, "com.softwaremill.RequiredType[String]", None)
     val nonMatchingErrs = List(
-      new TypeMismatchError("com.softwaremill.String", "com.softwaremill.OtherType"),
-      new TypeMismatchError("com.softwaremill.Int", "com.softwaremill.OtherType"),
-      new TypeMismatchError("com.softwaremill.Int", "com.softwaremill.RequiredType[String]")
+      new TypeMismatchError("com.softwaremill.String", None, "com.softwaremill.OtherType", None),
+      new TypeMismatchError("com.softwaremill.Int", None, "com.softwaremill.OtherType", None),
+      new TypeMismatchError("com.softwaremill.Int", None, "com.softwaremill.RequiredType[String]", None)
     )
 
     // then
@@ -27,14 +27,14 @@ class TypeMismatchAdviceTest extends FlatSpec with Matchers {
     // given
     val advice = new TypeMismatchAdvice("slick.dbio.DBIOAction\\[.*\\]", "slick.lifted.Rep\\[Option\\[.*\\]\\]", "adviceText")
     val matchingErrs = List(
-      TypeMismatchError("slick.dbio.DBIOAction[Unit,slick.dbio.NoStream,slick.dbio.Effect.Write]", "slick.lifted.Rep[Option[?]]"),
-      TypeMismatchError("slick.dbio.DBIOAction[String,slick.dbio.NoStream,slick.dbio.Effect.Read]", "slick.lifted.Rep[Option[Int]]"),
-      TypeMismatchError("slick.dbio.DBIOAction[Unit,slick.dbio.NoStream,slick.dbio.Effect.Read]", "slick.lifted.Rep[Option[Option[Int]]")
+      TypeMismatchError("slick.dbio.DBIOAction[Unit,slick.dbio.NoStream,slick.dbio.Effect.Write]", None, "slick.lifted.Rep[Option[?]]", None),
+      TypeMismatchError("slick.dbio.DBIOAction[String,slick.dbio.NoStream,slick.dbio.Effect.Read]", None, "slick.lifted.Rep[Option[Int]]", None),
+      TypeMismatchError("slick.dbio.DBIOAction[Unit,slick.dbio.NoStream,slick.dbio.Effect.Read]", None, "slick.lifted.Rep[Option[Option[Int]]", None)
     )
     val nonMatchingErrs = List(
-      TypeMismatchError("slick.dbio.DBIOAction[Unit,slick.dbio.NoStream,slick.dbio.Effect.Read]", "String"),
-      TypeMismatchError("String", "slick.lifted.Rep[Option[?]]"),
-      TypeMismatchError("String", "com.softwaremill.AweSomeType")
+      TypeMismatchError("slick.dbio.DBIOAction[Unit,slick.dbio.NoStream,slick.dbio.Effect.Read]", None, "String", None),
+      TypeMismatchError("String", None, "slick.lifted.Rep[Option[?]]", None),
+      TypeMismatchError("String", None, "com.softwaremill.AweSomeType", None)
     )
 
     // then
@@ -45,6 +45,6 @@ class TypeMismatchAdviceTest extends FlatSpec with Matchers {
 
 class TypeMismatchAdviceProperties extends Properties("TypeMismatch advice") {
   property("matches identical strings") = forAll { (found: String, required: String) =>
-    TypeMismatchAdvice(found, required, "Try again later.").errMatching.isDefinedAt(TypeMismatchError(found, required))
+    TypeMismatchAdvice(found, required, "Try again later.").errMatching.isDefinedAt(TypeMismatchError(found, None, required, None))
   }
 }
