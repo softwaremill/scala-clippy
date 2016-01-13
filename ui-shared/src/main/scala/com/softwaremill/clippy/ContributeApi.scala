@@ -7,5 +7,5 @@ trait ContributeApi {
   def sendAdviceProposal(adviceProposal: AdviceProposal): Future[Unit]
 }
 
-case class AdviceProposal(compilationError: CompilationError, advice: String, library: Library,
+case class AdviceProposal(compilationError: CompilationError[ExactOrRegex], advice: String, library: Library,
   contributor: Contributor, comment: Option[String])

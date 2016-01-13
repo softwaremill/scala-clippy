@@ -44,7 +44,7 @@ object Contribute {
   }
 
   object Step2 {
-    case class Props(ce: CompilationError, reset: Callback, send: AdviceProposal => Callback,
+    case class Props(ce: CompilationError[ExactOrRegex], reset: Callback, send: AdviceProposal => Callback,
       showError: String => Callback)
 
     @Lenses

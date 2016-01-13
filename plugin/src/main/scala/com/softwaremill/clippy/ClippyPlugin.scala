@@ -1,10 +1,8 @@
-package org.softwaremill.clippy
-
-import com.softwaremill.clippy.{CompilationErrorParser, CompilationError}
+package com.softwaremill.clippy
 
 import scala.reflect.internal.util.Position
 import scala.tools.nsc.Global
-import scala.tools.nsc.plugins.{PluginComponent, Plugin}
+import scala.tools.nsc.plugins.{Plugin, PluginComponent}
 import scala.tools.nsc.reporters.Reporter
 
 class ClippyPlugin(val global: Global) extends Plugin {
@@ -57,7 +55,7 @@ class ClippyPlugin(val global: Global) extends Plugin {
 
     def handleError(pos: Position, msg: String): String = {
       val totalMatchingFunction = advices.map(_.errMatching)
-        .foldLeft(PartialFunction.empty[CompilationError, String])(_.orElse(_)).lift
+        .foldLeft(PartialFunction.empty[CompilationError[Exact], String])(_.orElse(_)).lift
       val adviceText = CompilationErrorParser.parse(msg).flatMap(totalMatchingFunction).map("\n Clippy advises: " + _).getOrElse("")
       msg + adviceText
     }

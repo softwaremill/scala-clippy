@@ -1,6 +1,6 @@
 package dal
 
-import com.softwaremill.clippy.{CompilationError, Contributor, Library, StoredAdvice}
+import com.softwaremill.clippy._
 import com.softwaremill.id.IdGenerator
 import util.SqlDatabase
 
@@ -27,15 +27,15 @@ class AdvicesRepository(database: SqlDatabase, idGenerator: IdGenerator)(implici
       (libraryGroupId, libraryArtifactId, libraryVersion),
       (contributorEmail, contributorGithub, contributorTwitter),
       comment).shaped <> (
-        { t => StoredAdvice(t._1, CompilationError.fromXmlString(t._2).get, t._3, t._4, Library.tupled(t._5), Contributor.tupled(t._6), t._7) },
+        { t => StoredAdvice(t._1, CompilationError.fromXmlString(t._2).get, t._3, t._4, (Library.apply _).tupled(t._5), Contributor.tupled(t._6), t._7) },
         { (a: StoredAdvice) => Some((a.id, a.compilationError.toXmlString, a.advice, a.accepted, Library.unapply(a.library).get, Contributor.unapply(a.contributor).get, a.comment)) }
       )
   }
 
   private val advices = TableQuery[AdvicesTable]
 
-  def store(compilationError: CompilationError, advice: String, accepted: Boolean, library: Library, contributor: Contributor,
-    comment: Option[String]): Future[StoredAdvice] = {
+  def store(compilationError: CompilationError[ExactOrRegex], advice: String, accepted: Boolean, library: Library,
+    contributor: Contributor, comment: Option[String]): Future[StoredAdvice] = {
 
     val a = StoredAdvice(idGenerator.nextId(), compilationError, advice, accepted, library, contributor, comment)
 

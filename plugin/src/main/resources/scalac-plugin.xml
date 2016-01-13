@@ -1,4 +1,4 @@
 <plugin>
     <name>clippy</name>
-    <classname>org.softwaremill.clippy.ClippyPlugin</classname>
+    <classname>com.softwaremill.clippy.ClippyPlugin</classname>
 </plugin>

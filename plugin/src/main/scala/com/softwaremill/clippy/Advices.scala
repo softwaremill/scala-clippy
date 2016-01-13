@@ -1,13 +1,11 @@
-package org.softwaremill.clippy
+package com.softwaremill.clippy
 
 import java.io.{IOException, PrintWriter, StringWriter}
 import java.net.{URI, URL}
 
-import com.softwaremill.clippy.{Advice, NotFoundAdvice, TypeMismatchAdvice}
-
 import scala.tools.nsc.Global
 import scala.util.Try
-import scala.xml.{XML, NodeSeq}
+import scala.xml.{NodeSeq, XML}
 
 object Advices {
 
@@ -40,18 +38,14 @@ object Advices {
     loadResult
   }
 
-  def loadFromXml(xml: NodeSeq): List[Advice] = { // TODO: use CompilationError from/to xml methods
-    (xml \\ "typemismatch").map { n =>
-      TypeMismatchAdvice(
-        (n \ "found").text,
-        (n \ "required").text,
-        (n \ "advice").text
-      )
-    }.toList ++ (xml \\ "notfound").map { n =>
-      NotFoundAdvice(
-        (n \ "what").text,
-        (n \ "advice").text
-      )
+  def loadFromXml(xml: NodeSeq): List[Advice] = {
+    (xml \\ "advice").flatMap { n =>
+      for {
+        ce <- CompilationError.fromXml(n)
+        l <- Library.fromXml(n)
+        text = (n \ "text").text
+        id = (n \ "id").text.toLong
+      } yield Advice(id, ce, text, l)
     }.toList
   }
 

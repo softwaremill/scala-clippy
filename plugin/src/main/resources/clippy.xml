@@ -1,15 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <clippy>
-    <typemismatch>
-        <found>slick.dbio.DBIOAction\[.*\]</found>
-        <required>slick.lifted.Rep\[Option\[.*\]\]</required>
-        <advice>Perhaps you forgot to call .result on your Rep[]? This will give you a DBIOAction that you can
-compose with other DBIOActions.</advice>
-    </typemismatch>
-    <typemismatch>
-        <found>akka.http.scaladsl.server.StandardRoute</found>
-        <required>akka.stream.scaladsl.Flow[akka.http.scaladsl.model.HttpRequest,akka.http.scaladsl.model.HttpResponse,Any]</required>
-        <advice>did you forget to define an implicit akka.stream.ActorMaterializer?
- It allows routes to be converted into a flow.</advice>
-    </typemismatch>
+    <advice>
+        <id>1</id>
+        <typeMismatch>
+            <found>slick.dbio.DBIOAction\[.*\]</found>
+            <required>slick.lifted.Rep\[Option\[.*\]\]</required>
+        </typeMismatch>
+        <text>Perhaps you forgot to call .result on your Rep[]? This will give you a DBIOAction that you can
+            compose with other DBIOActions.</text>
+        <library>
+            <groupId>com.typesafe.slick</groupId>
+            <artifactId>slick</artifactId>
+            <version>3.1.0</version>
+        </library>
+    </advice>
+    <advice>
+        <id>2</id>
+        <typeMismatch>
+            <found>akka.http.scaladsl.server.StandardRoute</found>
+            <required>akka.stream.scaladsl.Flow[akka.http.scaladsl.model.HttpRequest,akka.http.scaladsl.model.HttpResponse,Any]</required>
+        </typeMismatch>
+        <text>did you forget to define an implicit akka.stream.ActorMaterializer?
+            It allows routes to be converted into a flow.</text>
+        <library>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-http-experimental</artifactId>
+            <version>2.0.0</version>
+        </library>
+    </advice>
 </clippy>

@@ -10,9 +10,9 @@ class CompilationErrorParserTest extends FlatSpec with Matchers {
         | required: akka.stream.scaladsl.Flow[akka.http.scaladsl.model.HttpRequest,akka.http.scaladsl.model.HttpResponse,Any]""".stripMargin
 
     CompilationErrorParser.parse(e) should be (Some(TypeMismatchError(
-      "akka.http.scaladsl.server.StandardRoute",
+      Exact("akka.http.scaladsl.server.StandardRoute"),
       None,
-      "akka.stream.scaladsl.Flow[akka.http.scaladsl.model.HttpRequest,akka.http.scaladsl.model.HttpResponse,Any]",
+      Exact("akka.stream.scaladsl.Flow[akka.http.scaladsl.model.HttpRequest,akka.http.scaladsl.model.HttpResponse,Any]"),
       None
     )))
   }
@@ -24,9 +24,9 @@ class CompilationErrorParserTest extends FlatSpec with Matchers {
         |[error]  required: akka.stream.scaladsl.Flow[akka.http.scaladsl.model.HttpRequest,akka.http.scaladsl.model.HttpResponse,Any]""".stripMargin
 
     CompilationErrorParser.parse(e) should be (Some(TypeMismatchError(
-      "akka.http.scaladsl.server.StandardRoute",
+      Exact("akka.http.scaladsl.server.StandardRoute"),
       None,
-      "akka.stream.scaladsl.Flow[akka.http.scaladsl.model.HttpRequest,akka.http.scaladsl.model.HttpResponse,Any]",
+      Exact("akka.stream.scaladsl.Flow[akka.http.scaladsl.model.HttpRequest,akka.http.scaladsl.model.HttpResponse,Any]"),
       None
     )))
   }
@@ -39,10 +39,10 @@ class CompilationErrorParserTest extends FlatSpec with Matchers {
         |   (which expands to)  japgolly.scalajs.react.CompState.ReadDirectWriteCallbackOps[?]""".stripMargin
 
     CompilationErrorParser.parse(e) should be (Some(TypeMismatchError(
-      "japgolly.scalajs.react.CompState.ReadCallbackWriteCallbackOps[com.softwaremill.clippy.Contribute.Step2.State]#This[com.softwaremill.clippy.FormField]",
+      Exact("japgolly.scalajs.react.CompState.ReadCallbackWriteCallbackOps[com.softwaremill.clippy.Contribute.Step2.State]#This[com.softwaremill.clippy.FormField]"),
       None,
-      "japgolly.scalajs.react.CompState.AccessRD[?]",
-      Some("japgolly.scalajs.react.CompState.ReadDirectWriteCallbackOps[?]")
+      Exact("japgolly.scalajs.react.CompState.AccessRD[?]"),
+      Some(Exact("japgolly.scalajs.react.CompState.ReadDirectWriteCallbackOps[?]"))
     )))
   }
 
@@ -55,16 +55,16 @@ class CompilationErrorParserTest extends FlatSpec with Matchers {
         |   (which expands to)  japgolly.scalajs.react.CompState.ReadDirectWriteCallbackOps[?]""".stripMargin
 
     CompilationErrorParser.parse(e) should be (Some(TypeMismatchError(
-      "japgolly.scalajs.react.CompState.ReadCallbackWriteCallbackOps[com.softwaremill.clippy.Contribute.Step2.State]#This[com.softwaremill.clippy.FormField]",
-      Some("japgolly.scalajs.react.CompState.ReadCallbackWriteCallbackOps[com.softwaremill.clippy.FormField]"),
-      "japgolly.scalajs.react.CompState.AccessRD[?]",
-      Some("japgolly.scalajs.react.CompState.ReadDirectWriteCallbackOps[?]")
+      Exact("japgolly.scalajs.react.CompState.ReadCallbackWriteCallbackOps[com.softwaremill.clippy.Contribute.Step2.State]#This[com.softwaremill.clippy.FormField]"),
+      Some(Exact("japgolly.scalajs.react.CompState.ReadCallbackWriteCallbackOps[com.softwaremill.clippy.FormField]")),
+      Exact("japgolly.scalajs.react.CompState.AccessRD[?]"),
+      Some(Exact("japgolly.scalajs.react.CompState.ReadDirectWriteCallbackOps[?]"))
     )))
   }
 
   it should "parse macwire's wire not found error message" in {
     val e = "not found: value wire"
 
-    CompilationErrorParser.parse(e) should be (Some(NotFoundError("value wire")))
+    CompilationErrorParser.parse(e) should be (Some(NotFoundError(Exact("value wire"))))
   }
 }
