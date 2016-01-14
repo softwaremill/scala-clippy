@@ -72,7 +72,7 @@ class AdviceLoader(global: Global, url: String, localStoreDir: File)(implicit ec
   }
 
   private def storeLocally(bytes: Array[Byte]): Unit = {
-    if (!localStoreDir.mkdir()) {
+    if (!localStoreDir.isDirectory && !localStoreDir.mkdir()) {
       throw new IOException(s"Cannot create directory $localStoreDir")
     }
     val os = new FileOutputStream(localStore)
