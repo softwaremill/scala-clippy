@@ -74,11 +74,14 @@ lazy val modelJvm = model.jvm.settings(name := "modelJvm")
 lazy val modelJs = model.js.settings(name := "modelJs")
 
 lazy val plugin = (project in file("plugin"))
+  .enablePlugins(BuildInfoPlugin)
   .settings(commonSettings)
   .settings(
     libraryDependencies ++= Seq(
       "org.scala-lang" % "scala-compiler" % scalaVersion.value,
       scalatest, scalacheck),
+    buildInfoPackage := "com.softwaremill.clippy",
+    buildInfoObject := "ClippyBuildInfo",
     // including the model classes for re-compilation, so that the plugin jar has no deps
     unmanagedSourceDirectories in Compile ++= (sourceDirectories in (modelJvm, Compile)).value
   )
@@ -102,6 +105,7 @@ lazy val tests = (project in file("tests"))
 val slickVersion = "3.1.1"
 
 lazy val ui: Project = (project in file("ui"))
+  .enablePlugins(BuildInfoPlugin)
   .settings(commonSettings)
   .settings(
     libraryDependencies ++= Seq(
@@ -125,6 +129,8 @@ lazy val ui: Project = (project in file("ui"))
     assemblyJarName in assembly := "app.jar",
     mainClass in assembly := Some("play.core.server.ProdServerStart"),
     fullClasspath in assembly += Attributed.blank(PlayKeys.playPackageAssets.value),
+    buildInfoPackage := "util",
+    buildInfoObject := "ClippyBuildInfo",
     assemblyMergeStrategy in assembly := {
       // anything in public/lib is copied from webjars and causes duplicate resources exceptions
       case PathList("public", "lib", xs @ _*) => MergeStrategy.discard

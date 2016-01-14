@@ -25,7 +25,7 @@ class ClippyComponents(context: Context)
   implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
   lazy val router = new Routes(httpErrorHandler, applicationController, assets, webJarAssets,
-    autowireController)
+    advicesController, autowireController)
 
   lazy val contactEmail = configuration.getString("email.contact").getOrElse("?")
   lazy val emailService = SendgridEmailService.createFromEnv(contactEmail)
@@ -43,4 +43,6 @@ class ClippyComponents(context: Context)
 
   lazy val contributeApiImpl = new ContributeApiImpl(advicesRepository, emailService, contactEmail)
   lazy val autowireController = new AutowireController(contributeApiImpl)
+
+  lazy val advicesController = new AdvicesController(advicesRepository)
 }

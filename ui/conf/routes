@@ -11,5 +11,7 @@ GET     /assets/*file               controllers.Assets.versioned(path="/public",
 # Webjars
 GET     /webjars/*file              controllers.WebJarAssets.at(file)
 
+GET     /api/advices                controllers.AdvicesController.get
+
 # Autowire calls
 POST    /api/*path                  controllers.AutowireController.autowireApi(path: String)
