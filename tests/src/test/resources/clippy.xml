@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<clippy>
+<clippy version="0.1">
     <advice>
         <id>1</id>
         <typeMismatch>
@@ -25,6 +25,16 @@
         <library>
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-http-experimental</artifactId>
+            <version>2.0.0</version>
+        </library>
+    </advice>
+    <advice>
+        <id>3</id>
+        <notFound>value wire</notFound>
+        <text>you need to import com.softwaremill.macwire._</text>
+        <library>
+            <groupId>com.softwaremill.macwire</groupId>
+            <artifactId>macros</artifactId>
             <version>2.0.0</version>
         </library>
     </advice>
