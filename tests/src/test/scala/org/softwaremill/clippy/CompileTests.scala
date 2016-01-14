@@ -30,8 +30,8 @@ class CompileTests extends FlatSpec with Matchers with BeforeAndAfterAll {
   }
 
   override protected def afterAll() = {
+    localStore.delete()
     if (localStore2.exists()) {
-      localStore.delete()
       localStore2.renameTo(localStore)
     }
 
