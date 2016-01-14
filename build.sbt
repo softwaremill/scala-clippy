@@ -97,7 +97,7 @@ lazy val tests = (project in file("tests"))
       "com.typesafe.akka" %% "akka-http-experimental" % "2.0.1",
       "com.softwaremill.macwire" %% "macros" % "2.2.2" % "provided"
     ),
-    scalacOptions += s"-Xplugin:${pluginJar.value.getAbsolutePath}",
+    scalacOptions ++= List(s"-Xplugin:${pluginJar.value.getAbsolutePath}", "-P:clippy:url=http://localhost:9000"),
     envVars in Test := (envVars in Test).value + ("CLIPPY_PLUGIN_PATH" -> pluginJar.value.getAbsolutePath),
     fork in Test := true
   ).dependsOn(plugin)

@@ -19,10 +19,10 @@ class CompileTests extends FlatSpec with Matchers {
                      |
                      |Http().bindAndHandle(r, "localhost", 8080)
                    """.stripMargin
-//    "macwire" -> """
-//                   |class A()
-//                   |val a = wire[A]
-//                 """.stripMargin // TODO: old clippy.xml format
+  //    "macwire" -> """
+  //                   |class A()
+  //                   |val a = wire[A]
+  //                 """.stripMargin // TODO: old clippy.xml format
   )
 
   for ((name, s) <- snippets) {

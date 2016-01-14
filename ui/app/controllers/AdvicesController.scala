@@ -1,9 +1,9 @@
 package controllers
 
-import com.softwaremill.clippy.{Advice, Zip}
+import com.softwaremill.clippy.Advice
 import dal.AdvicesRepository
 import play.api.mvc.{Action, Controller}
-import util.ClippyBuildInfo
+import util.{Zip, ClippyBuildInfo}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.xml.Utility

@@ -1,5 +1,10 @@
 package com.softwaremill.clippy
 
+import java.io.File
+import java.util.concurrent.TimeoutException
+
+import scala.concurrent.Await
+import scala.concurrent.duration._
 import scala.reflect.internal.util.Position
 import scala.tools.nsc.Global
 import scala.tools.nsc.plugins.{Plugin, PluginComponent}
@@ -13,10 +18,12 @@ class ClippyPlugin(val global: Global) extends Plugin {
 
   override val description: String = "gives good advice"
 
-  val advices = Advices.loadFromProjectClasspath(global) ++ Advices.loadFromClasspath(global)
-
   override def init(options: List[String], error: (String) => Unit) = {
     val r = global.reporter
+
+    val url = urlFromOptions(options)
+    val localStoreDir = localStoreDirFromOptions(options)
+    val advices = loadAdvices(url, localStoreDir)
 
     global.reporter = new Reporter {
       override protected def info0(pos: Position, msg: String, severity: Severity, force: Boolean) = ???
@@ -61,5 +68,34 @@ class ClippyPlugin(val global: Global) extends Plugin {
     }
 
     true
+  }
+
+  private def urlFromOptions(options: List[String]): String =
+    options.find(_.startsWith("url=")).map(_.substring(4)).getOrElse("https://scala-clippy.org") + "/api/advices"
+
+  private def localStoreDirFromOptions(options: List[String]): File =
+    options.find(_.startsWith("store=")).map(_.substring(6)).map(new File(_)).getOrElse {
+      new File(System.getProperty("user.home"), ".clippy")
+    }
+
+  private def loadAdvices(url: String, localStoreDir: File): List[Advice] = {
+    implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
+
+    try {
+      Await
+        .result(
+          new AdviceLoader(global, url, localStoreDir).load(),
+          10.seconds
+        )
+        .advices
+    }
+    catch {
+      case e: TimeoutException =>
+        global.warning(s"Unable to read advices from $url and store to $localStoreDir within 10 seconds.")
+        Nil
+      case e: Exception =>
+        global.warning(s"Exception when reading advices from $url and storing to $localStoreDir: $e")
+        Nil
+    }
   }
 }

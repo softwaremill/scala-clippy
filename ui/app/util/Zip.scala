@@ -1,4 +1,4 @@
-package com.softwaremill.clippy
+package util
 
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 import java.util.zip.{GZIPInputStream, GZIPOutputStream}
