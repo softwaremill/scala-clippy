@@ -71,7 +71,7 @@ class ClippyPlugin(val global: Global) extends Plugin {
   }
 
   private def urlFromOptions(options: List[String]): String =
-    options.find(_.startsWith("url=")).map(_.substring(4)).getOrElse("https://scala-clippy.org") + "/api/advices"
+    options.find(_.startsWith("url=")).map(_.substring(4)).getOrElse("https://www.scala-clippy.org") + "/api/advices"
 
   private def localStoreDirFromOptions(options: List[String]): File =
     options.find(_.startsWith("store=")).map(_.substring(6)).map(new File(_)).getOrElse {
