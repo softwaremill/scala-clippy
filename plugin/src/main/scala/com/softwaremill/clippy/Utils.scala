@@ -25,8 +25,8 @@ object Utils {
     }
 
     Runtime.getRuntime.addShutdownHook(shutdownHook)
-    shutdownHook.run()
-    Runtime.getRuntime.removeShutdownHook(shutdownHook)
+    try shutdownHook.run()
+    finally Runtime.getRuntime.removeShutdownHook(shutdownHook)
   }
 
   def inputStreamToBytes(is: InputStream): Array[Byte] = {
