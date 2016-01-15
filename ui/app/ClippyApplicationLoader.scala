@@ -5,6 +5,7 @@ import dal.AdvicesRepository
 import play.api.ApplicationLoader.Context
 import play.api._
 import play.api.i18n.I18nComponents
+import play.api.mvc.EssentialFilter
 import router.Routes
 import util.{DatabaseConfig, SqlDatabase}
 import util.email.{DummyEmailService, SendgridEmailService}
@@ -45,4 +46,6 @@ class ClippyComponents(context: Context)
   lazy val autowireController = new AutowireController(contributeApiImpl)
 
   lazy val advicesController = new AdvicesController(advicesRepository)
+
+  override lazy val httpFilters: Seq[EssentialFilter] = List(new HttpsFilter())
 }
