@@ -30,40 +30,21 @@ In your SBT build file, add:
 addCompilerPlugin("com.softwaremill.clippy" % "plugin" % "0.1" cross CrossVersion.full)
 ````
 
-# Library authors
+Upon first use, the plugin will download the advice dataset from `https://scala-clippy.org` and store it in the 
+`$HOME/.clippy` directory. The dataset is updated at most once a day, in the background. You can customize the
+dataset URL and local store by using the `-P:clippy:url=` and `-P:clippy:store=` compiler options. 
 
-If you'd like to provide custom advices for your library, just include a `clippy.xml` file in your library's jar,
-it will be automatically picked by the compiler. Currently type mismatch and not found errors are supported. You can
-also use regular expressions to match advices. Examples:
+# Contributing advice
 
-````xml
-<clippy>
-    <typemismatch>
-        <found>[[ name of the found type, e.g. akka.http.scaladsl.server.StandardRoute ]]</found>
-        <required>[[ name of the required type ]]</required>
-        <advice>[[ custom error message ]]</advice>
-    </typemismatch>
-    <typemismatch>
-        <found>[[ regular expression, e.g. akka\..*Route ]]</found>
-        <required>[[ regular expression for the required type, e.g. .*]]</required>
-        <advice>[[ custom error message ]]</advice>
-    </typemismatch>
-    <notfound>
-        <what>[[ what is not found, e.g. value wire ]]</what>
-        <advice>[[ custom error message ]]</advice>
-    </notfound>
-    <notfound>
-        <what>[[ regular expression for what is not found, e.g. value wir.* ]]</what>
-        <advice>[[ custom error message ]]</advice>
-    </notfound>
-</clippy>
-````
+Scala Clippy is only as good as its advice database. Help other users by submitting a fix for a compilation error that 
+you have encountered!
+
+It will only take you a couple of minutes, no registration required. Just head over to 
+[https://scala-clippy.org](https://scala-clippy.org)! Thanks!
 
 # Contributing to the project
 
-You can submit the compilation errors you encounter & advice proposals here:
-
-Or you can help developing the plugin and/or the UI for submitting new advices! The module structure is:
+You can also help developing the plugin and/or the UI for submitting new advices! The module structure is:
 
 * `model` - code shared between the UI and the plugin. Contains basic model case classes, such as `CompilationError` + parser
 * `plugin` - the compiler plugin which actually displays the advices and matches errors agains the database of known errors
@@ -80,7 +61,4 @@ Locally:
 * link the local git repository with the Heroku application: `heroku git:remote -a scala-clippy`
 * run `sbt deployHeroku` to deploy the current code as a fat-jar
 
-Currently deployed on `https://scala-clippy.herokuapp.com`
-
-In the Heroku app, `JAVA_OPTS` must contain `-Dhttp.port=$PORT` and the `DATABASE_NAME` environmental variable should
-be set to `pg` if you want to use postgres.
+Currently deployed on `https://www.scala-clippy.org`
