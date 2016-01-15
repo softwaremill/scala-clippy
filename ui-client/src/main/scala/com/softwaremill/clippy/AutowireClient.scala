@@ -9,7 +9,7 @@ import upickle.Js
 object AutowireClient extends autowire.Client[Js.Value, Reader, Writer] {
   override def doCall(req: Request): Future[Js.Value] = {
     dom.ext.Ajax.post(
-      url = "/api/" + req.path.mkString("/"),
+      url = "/ui-api/" + req.path.mkString("/"),
       data = upickle.json.write(Js.Obj(req.args.toSeq: _*))
     )
       .map(_.responseText)

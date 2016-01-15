@@ -14,4 +14,4 @@ GET     /webjars/*file              controllers.WebJarAssets.at(file)
 GET     /api/advices                controllers.AdvicesController.get
 
 # Autowire calls
-POST    /api/*path                  controllers.AutowireController.autowireApi(path: String)
+POST    /ui-api/*path               controllers.AutowireController.autowireApi(path: String)
