@@ -1,0 +1,53 @@
+<h2>Scala Clippy</h2>
+
+<p>
+    Did you ever see a Scala compiler error such as:
+</p>
+
+<pre>
+[error] TheNextFacebook.scala:16: type mismatch;
+[error]  found   : akka.http.scaladsl.server.StandardRoute
+[error]  required: akka.stream.scaladsl.Flow[akka.http.scaladsl.model.HttpRequest,akka.http.scaladsl.model.HttpResponse,Any]
+[error]   Http().bindAndHandle(r, "localhost", 8080)
+</pre>
+
+<p>
+    and had no idea what to do next? Well in this case, you need to provide an implicit instance of an <code>ActorMaterializer</code>,
+    but the compiler isn't smart enough to be able to tell you that. Luckily, <strong>Scala Clippy is here to help</strong>!
+</p>
+
+<p>
+    Just add the Scala Clippy compiler plugin, and you'll see this additional helpful message:
+</p>
+
+<pre>
+[error]  Clippy advises: did you forget to define an implicit akka.stream.ActorMaterializer?
+[error]  It allows routes to be converted into a flow.
+</pre>
+
+<h2>Adding the plugin</h2>
+
+<p>
+    In your SBT build file, add:
+</p>
+
+<pre>
+addCompilerPlugin("com.softwaremill.clippy" % "plugin" % "0.1" cross CrossVersion.full)
+</pre>
+
+<p>
+    Upon first use, the plugin will download the advice dataset from <code>https://scala-clippy.org</code> and store it
+    in the <code>$HOME/.clippy</code> directory. The dataset will be updated at most once a day, in the background.
+</p>
+
+<h2>Contributing</h2>
+
+<p>
+    Help others users by submitting an advice for a compilation error that you have encountered!
+    Just click "contribute" above and paste in your error!
+</p>
+
+<p>
+    Or, you can check out the plugin & website source on
+    <a href="https://github.com/softwaremill/scala-clippy">GitHub</a>.
+</p>

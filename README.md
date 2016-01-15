@@ -31,7 +31,7 @@ addCompilerPlugin("com.softwaremill.clippy" % "plugin" % "0.1" cross CrossVersio
 ````
 
 Upon first use, the plugin will download the advice dataset from `https://scala-clippy.org` and store it in the 
-`$HOME/.clippy` directory. The dataset is updated at most once a day, in the background. You can customize the
+`$HOME/.clippy` directory. The dataset will be updated at most once a day, in the background. You can customize the
 dataset URL and local store by using the `-P:clippy:url=` and `-P:clippy:store=` compiler options. 
 
 # Contributing advice
