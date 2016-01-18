@@ -1,5 +1,7 @@
 # Scala clippy
 
+[![Join the chat at https://gitter.im/softwaremill/scala-clippy](https://badges.gitter.im/softwaremill/scala-clippy.svg)](https://gitter.im/softwaremill/scala-clippy?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 [![Build Status](https://travis-ci.org/softwaremill/scala-clippy.svg?branch=master)](https://travis-ci.org/softwaremill/scala-clippy)
 [![Dependencies](https://app.updateimpact.com/badge/634276070333485056/clippy.svg?config=compile)](https://app.updateimpact.com/latest/634276070333485056/clippy)
 
