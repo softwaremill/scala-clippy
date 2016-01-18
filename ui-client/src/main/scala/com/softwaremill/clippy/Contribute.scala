@@ -104,6 +104,7 @@ object Contribute {
           bsFormEl(externalVar($, s, State.comment))(mods =>
             <.textarea(^.cls := "form-control", ^.rows := 3)(mods)),
           <.button(^.`type` := "reset", ^.cls := "btn btn-default", ^.onClick --> p.reset)("Reset"),
+          <.span(" "),
           <.button(^.`type` := "submit", ^.cls := "btn btn-primary")("Send")
         )
       )
@@ -144,6 +145,7 @@ object Contribute {
           bsFormEl(externalVar($, s, State.email))(mods =>
             <.input(^.`type` := "email", ^.cls := "form-control", ^.placeholder := "scalacoder@company.com")(mods)),
           <.button(^.`type` := "reset", ^.cls := "btn btn-default", ^.onClick --> p.reset)("Reset"),
+          <.span(" "),
           <.button(^.`type` := "submit", ^.cls := "btn btn-primary")("Send")
         )
       )
