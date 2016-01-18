@@ -6,11 +6,11 @@ import util.email.EmailService
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class ContributeApiImpl(
+class UiApiImpl(
     advicesRepository: AdvicesRepository,
     emailService: EmailService,
     contactEmail: String
-)(implicit ec: ExecutionContext) extends ContributeApi {
+)(implicit ec: ExecutionContext) extends UiApi {
 
   override def sendCannotParse(errorText: String, contributorEmail: String) = {
     emailService.send(contactEmail, "Unparseable message",
@@ -27,5 +27,9 @@ class ContributeApiImpl(
       .flatMap { a =>
         emailService.send(contactEmail, "New advice proposal", s"Advice proposal: $a")
       }
+  }
+
+  override def listAccepted() = {
+    advicesRepository.findAll().map(_.map(_.toAdviceListing))
   }
 }

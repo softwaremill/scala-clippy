@@ -46,3 +46,11 @@ class AdvicesRepository(database: SqlDatabase, idGenerator: IdGenerator)(implici
     db.run(advices.result)
   }
 }
+
+case class StoredAdvice(id: Long, compilationError: CompilationError[ExactOrRegex], advice: String, accepted: Boolean,
+    library: Library, contributor: Contributor, comment: Option[String]) {
+
+  def toAdvice = Advice(id, compilationError, advice, library)
+  def toAdviceListing = AdviceListing(id, compilationError, advice, library,
+    ContributorListing(contributor.github, contributor.twitter))
+}

@@ -1,4 +1,4 @@
-import api.ContributeApiImpl
+import api.UiApiImpl
 import com.softwaremill.id.DefaultIdGenerator
 import controllers._
 import dal.AdvicesRepository
@@ -42,8 +42,8 @@ class ClippyComponents(context: Context)
   lazy val database = SqlDatabase.create(new DatabaseConfig { override val rootConfig = configuration.underlying })
   lazy val advicesRepository = new AdvicesRepository(database, idGenerator)
 
-  lazy val contributeApiImpl = new ContributeApiImpl(advicesRepository, emailService, contactEmail)
-  lazy val autowireController = new AutowireController(contributeApiImpl)
+  lazy val uiApiImpl = new UiApiImpl(advicesRepository, emailService, contactEmail)
+  lazy val autowireController = new AutowireController(uiApiImpl)
 
   lazy val advicesController = new AdvicesController(advicesRepository)
 

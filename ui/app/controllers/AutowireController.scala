@@ -1,6 +1,6 @@
 package controllers
 
-import com.softwaremill.clippy.ContributeApi
+import com.softwaremill.clippy.UiApi
 import play.api.mvc.{Action, Controller}
 
 import upickle.default._
@@ -8,13 +8,13 @@ import upickle.Js
 
 import scala.concurrent.ExecutionContext
 
-class AutowireController(contributeApi: ContributeApi)(implicit ec: ExecutionContext) extends Controller {
+class AutowireController(uiApi: UiApi)(implicit ec: ExecutionContext) extends Controller {
 
   def autowireApi(path: String) = Action.async {
     implicit request =>
       val b = request.body.asText.getOrElse("")
 
-      AutowireServer.route[ContributeApi](contributeApi)(
+      AutowireServer.route[UiApi](uiApi)(
         autowire.Core.Request(
           path.split("/"),
           upickle.json.read(b).asInstanceOf[Js.Obj].value.toMap

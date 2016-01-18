@@ -1,0 +1,22 @@
+package com.softwaremill.clippy
+
+import scala.concurrent.Future
+
+trait UiApi extends ContributeApi with ListingApi
+
+trait ContributeApi {
+  def sendCannotParse(errorText: String, contributorEmail: String): Future[Unit]
+  def sendAdviceProposal(adviceProposal: AdviceProposal): Future[Unit]
+}
+
+trait ListingApi {
+  def listAccepted(): Future[Seq[AdviceListing]]
+}
+
+case class AdviceProposal(compilationError: CompilationError[ExactOrRegex], advice: String, library: Library,
+  contributor: Contributor, comment: Option[String])
+
+case class ContributorListing(twitter: Option[String], github: Option[String])
+
+case class AdviceListing(id: Long, compilationError: CompilationError[ExactOrRegex], advice: String,
+  library: Library, contributor: ContributorListing)

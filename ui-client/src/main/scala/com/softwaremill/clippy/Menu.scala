@@ -1,6 +1,6 @@
 package com.softwaremill.clippy
 
-import com.softwaremill.clippy.App.{ContributeStep1, UsePage, Page}
+import com.softwaremill.clippy.App.{ListingPage, ContributeStep1, UsePage, Page}
 import japgolly.scalajs.react._
 import japgolly.scalajs.react.vdom.prefix_<^._
 
@@ -8,6 +8,8 @@ object Menu {
   val component = ReactComponentB[(Page, Page => Callback)]("Menu")
     .render { $ =>
       val isUsePage = $.props._1 == UsePage
+      val isListingPage = $.props._1 == ListingPage
+      val isContributePage = !isUsePage && !isListingPage
       def switchTo(p: Page)(e: ReactEventI) = e.preventDefaultCB >> $.props._2(p)
 
       <.nav(^.cls := "navbar navbar-inverse navbar-fixed-top")(
@@ -28,8 +30,11 @@ object Menu {
               <.li(isUsePage ?= (^.cls := "active"))(
                 <.a("Use", ^.onClick ==> switchTo(UsePage), ^.href := "#")
               ),
-              <.li((!isUsePage) ?= (^.cls := "active"))(
+              <.li(isContributePage ?= (^.cls := "active"))(
                 <.a("Contribute", ^.onClick ==> switchTo(ContributeStep1), ^.href := "#")
+              ),
+              <.li(isListingPage ?= (^.cls := "active"))(
+                <.a("Listing", ^.onClick ==> switchTo(ListingPage), ^.href := "#")
               )
             )
           )

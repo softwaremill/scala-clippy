@@ -11,6 +11,7 @@ object App {
   case object ContributeStep1 extends Page
   case class ContributeParseError(errorText: String) extends Page
   case class ContributeStep2(ce: CompilationError[ExactOrRegex]) extends Page
+  case object ListingPage extends Page
 
   case class State(page: Page, errorMsgs: List[String], infoMsgs: List[String])
 
@@ -25,7 +26,7 @@ object App {
     }
 
     private def handleSendParseError(errorText: String)(email: String): Callback = {
-      CallbackTo(AutowireClient[ContributeApi].sendCannotParse(errorText, email).call()).map(
+      CallbackTo(AutowireClient[UiApi].sendCannotParse(errorText, email).call()).map(
         _.onSuccess {
           case _ =>
             (clearMsgs >> $.modState(s => s.copy(
@@ -37,7 +38,7 @@ object App {
     }
 
     private def handleSendAdviceProposal(ap: AdviceProposal): Callback = {
-      CallbackTo(AutowireClient[ContributeApi].sendAdviceProposal(ap).call()).map(
+      CallbackTo(AutowireClient[UiApi].sendAdviceProposal(ap).call()).map(
         _.onSuccess {
           case _ =>
             (clearMsgs >> $.modState(s => s.copy(
@@ -78,6 +79,9 @@ object App {
 
       case ContributeStep2(ce) =>
         Contribute.Step2.component(Contribute.Step2.Props(ce, handleReset, handleSendAdviceProposal, handleShowError))
+
+      case ListingPage =>
+        Listing.component()
     }
 
     def render(s: State) = <.span(
