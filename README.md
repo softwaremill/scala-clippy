@@ -21,6 +21,7 @@ Just add the compiler plugin, and you'll see this additional helpful message:
 ````scala
 [error]  Clippy advises: did you forget to define an implicit akka.stream.ActorMaterializer?
 [error]  It allows routes to be converted into a flow.
+[error]  You can read more at http://doc.akka.io/docs/akka-stream-and-http-experimental/2.0/scala/http/routing-dsl/index.html
 ````
 
 # Adding the plugin

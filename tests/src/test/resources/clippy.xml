@@ -21,7 +21,8 @@
             <required>akka.stream.scaladsl.Flow[akka.http.scaladsl.model.HttpRequest,akka.http.scaladsl.model.HttpResponse,Any]</required>
         </typeMismatch>
         <text>did you forget to define an implicit akka.stream.ActorMaterializer?
-            It allows routes to be converted into a flow.</text>
+            It allows routes to be converted into a flow.
+            You can read more at http://doc.akka.io/docs/akka-stream-and-http-experimental/2.0/scala/http/routing-dsl/index.html</text>
         <library>
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-http-experimental</artifactId>
