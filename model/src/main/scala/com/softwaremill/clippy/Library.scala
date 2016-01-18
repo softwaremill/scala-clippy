@@ -8,6 +8,8 @@ case class Library(groupId: String, artifactId: String, version: String) {
     <artifactId>{artifactId}</artifactId>
     <version>{version}</version>
   </library>
+
+  override def toString = s"$groupId:$artifactId:$version"
 }
 
 object Library {

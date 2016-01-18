@@ -57,7 +57,7 @@ object App {
 
     private def handleSwitchPage(newPage: Page): Callback = {
       clearMsgs >> $.modState { s =>
-        def isContribute(p: Page) = p != UsePage
+        def isContribute(p: Page) = p != UsePage && p != ListingPage
         if (s.page == newPage || (isContribute(s.page) && isContribute(newPage))) s else s.copy(page = newPage)
       }
     }

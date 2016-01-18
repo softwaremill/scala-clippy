@@ -9,8 +9,24 @@ object Listing {
   case class State(advices: Seq[AdviceListing])
 
   class Backend($: BackendScope[Unit, State]) {
-    def render(s: State) = <.div(
-      s"Listing ${s.advices.size}"
+    def render(s: State) = <.table(^.cls := "table table-striped")(
+      <.thead(
+        <.tr(
+          <.th("Compilation error"),
+          <.th("Advice"),
+          <.th("Library"),
+          <.th("Suggest edit")
+        )
+      ),
+      <.tbody(
+        s.advices.map(a =>
+          <.tr(
+            <.td(a.compilationError.toString),
+            <.td(a.advice),
+            <.td(a.library.toString),
+            <.td(<.span(^.cls := "glyphicon glyphicon-edit"))
+          )): _*
+      )
     )
 
     def fetch(): Callback = {
