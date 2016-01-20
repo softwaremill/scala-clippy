@@ -62,7 +62,7 @@ object Listing {
           <.tr(
             <.th("Compilation error"),
             <.th(^.width := "25%")("Advice"),
-            <.th(^.width := "15%")("Library"),
+            <.th(^.width := "20%")("Library"),
             <.th(^.width := "8%")("Suggest edit")
           )
         ),
