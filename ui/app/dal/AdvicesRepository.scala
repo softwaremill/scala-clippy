@@ -1,5 +1,6 @@
 package dal
 
+import com.softwaremill.clippy.AdviceState.AdviceState
 import com.softwaremill.clippy._
 import com.softwaremill.id.IdGenerator
 import util.SqlDatabase
@@ -12,10 +13,10 @@ class AdvicesRepository(database: SqlDatabase, idGenerator: IdGenerator)(implici
 
   private class AdvicesTable(tag: Tag) extends Table[StoredAdvice](tag, "advices") {
     def id = column[Long]("id", O.PrimaryKey)
-    def errorTextRaw = column[String]("email")
+    def errorTextRaw = column[String]("error_text_raw")
     def compilationError = column[String]("compilation_error")
     def advice = column[String]("advice")
-    def accepted = column[Boolean]("accepted")
+    def state = column[Int]("state")
     def libraryGroupId = column[String]("library_group_id")
     def libraryArtifactId = column[String]("library_artifact_id")
     def libraryVersion = column[String]("library_version")
@@ -24,21 +25,21 @@ class AdvicesRepository(database: SqlDatabase, idGenerator: IdGenerator)(implici
     def contributorGithub = column[Option[String]]("contributor_github")
     def comment = column[Option[String]]("comment")
 
-    def * = (id, errorTextRaw, compilationError, advice, accepted,
+    def * = (id, errorTextRaw, compilationError, advice, state,
       (libraryGroupId, libraryArtifactId, libraryVersion),
       (contributorEmail, contributorGithub, contributorTwitter),
       comment).shaped <> (
-        { t => StoredAdvice(t._1, t._2, CompilationError.fromXmlString(t._3).get, t._4, t._5, (Library.apply _).tupled(t._6), Contributor.tupled(t._7), t._8) },
-        { (a: StoredAdvice) => Some((a.id, a.errorTextRaw, a.compilationError.toXmlString, a.advice, a.accepted, Library.unapply(a.library).get, Contributor.unapply(a.contributor).get, a.comment)) }
+        { t => StoredAdvice(t._1, t._2, CompilationError.fromXmlString(t._3).get, t._4, AdviceState(t._5), (Library.apply _).tupled(t._6), Contributor.tupled(t._7), t._8) },
+        { (a: StoredAdvice) => Some((a.id, a.errorTextRaw, a.compilationError.toXmlString, a.advice, a.state.id, Library.unapply(a.library).get, Contributor.unapply(a.contributor).get, a.comment)) }
       )
   }
 
   private val advices = TableQuery[AdvicesTable]
 
   def store(errorTextRaw: String, compilationError: CompilationError[ExactOrRegex], advice: String,
-    accepted: Boolean, library: Library, contributor: Contributor, comment: Option[String]): Future[StoredAdvice] = {
+    state: AdviceState, library: Library, contributor: Contributor, comment: Option[String]): Future[StoredAdvice] = {
 
-    val a = StoredAdvice(idGenerator.nextId(), errorTextRaw, compilationError, advice, accepted, library,
+    val a = StoredAdvice(idGenerator.nextId(), errorTextRaw, compilationError, advice, state, library,
       contributor, comment)
 
     db.run(advices += a).map(_ => a)
@@ -50,7 +51,7 @@ class AdvicesRepository(database: SqlDatabase, idGenerator: IdGenerator)(implici
 }
 
 case class StoredAdvice(id: Long, errorTextRaw: String, compilationError: CompilationError[ExactOrRegex],
-    advice: String, accepted: Boolean, library: Library, contributor: Contributor, comment: Option[String]) {
+    advice: String, state: AdviceState, library: Library, contributor: Contributor, comment: Option[String]) {
 
   def toAdvice = Advice(id, compilationError, advice, library)
   def toAdviceListing = AdviceListing(id, compilationError, advice, library,

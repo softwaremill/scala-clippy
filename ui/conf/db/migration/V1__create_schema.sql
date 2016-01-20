@@ -3,7 +3,7 @@ create table "advices" (
   "error_text_raw" varchar not null,
   "compilation_error" varchar not null,
   "advice" varchar not null,
-  "accepted" boolean not null,
+  "state" smallint not null,
   "library_group_id" varchar not null,
   "library_artifact_id" varchar not null,
   "library_version" varchar not null,
