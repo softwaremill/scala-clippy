@@ -23,9 +23,9 @@ object Contribute {
           <.p("Scala Clippy is only as good as its advice database. Help other users by submitting an advice for a compilation error that you have encountered!"),
           <.p("First, paste in the error and we'll see if we can parse it. Only the error message is needed, without the file name and code snippet, e.g.:"),
           <.pre(
-            """type mismatch;
-              |found   : akka.http.scaladsl.server.StandardRoute
-              |required: akka.stream.scaladsl.Flow[akka.http.scaladsl.model.HttpRequest,akka.http.scaladsl.model.HttpResponse,Any]""".stripMargin
+            """[error] type mismatch;
+              |[error] found   : akka.http.scaladsl.server.StandardRoute
+              |[error] required: akka.stream.scaladsl.Flow[akka.http.scaladsl.model.HttpRequest,akka.http.scaladsl.model.HttpResponse,Any]""".stripMargin
           )
         ),
         <.form(
