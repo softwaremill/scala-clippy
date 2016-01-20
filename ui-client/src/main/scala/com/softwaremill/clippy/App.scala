@@ -4,6 +4,8 @@ import japgolly.scalajs.react._
 import autowire._
 import japgolly.scalajs.react.vdom.prefix_<^._
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+import scala.util.{Failure, Success}
 
 object App {
   sealed trait Page
@@ -49,6 +51,19 @@ object App {
       )
     }
 
+    private def handleFuture = new HandleFuture {
+      override def apply[T](f: Future[T], successMsg: Option[String], successCallback: Option[(T) => Callback]) =
+        CallbackTo(f onComplete {
+          case Success(v) =>
+            val msgCallback = successMsg map handleShowInfo
+            val vCallback = successCallback map (_(v))
+
+            (msgCallback.getOrElse(Callback.empty) >> vCallback.getOrElse(Callback.empty)).runNow()
+
+          case Failure(e) => handleShowError("Error communicating with the server").runNow()
+        })
+    }
+
     private def handleShowError(error: String): Callback = {
       clearMsgs >> $.modState(s => s.copy(errorMsgs = error :: s.errorMsgs))
     }
@@ -85,7 +100,7 @@ object App {
         Contribute.Step2.component(Contribute.Step2.Props(ce, handleReset, handleSendAdviceProposal, handleShowError))
 
       case ListingPage =>
-        Listing.component(Listing.Props(handleShowError, handleShowInfo, clearMsgs))
+        Listing.component(Listing.Props(handleShowError, clearMsgs, handleFuture))
     }
 
     def render(s: State) = <.span(
@@ -96,4 +111,8 @@ object App {
       )
     )
   }
+}
+
+trait HandleFuture {
+  def apply[T](f: Future[T], successMsg: Option[String], successCallback: Option[T => Callback]): Callback
 }

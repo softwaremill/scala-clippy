@@ -9,7 +9,8 @@ import monocle.macros.Lenses
 import scala.concurrent.ExecutionContext.Implicits.global
 
 object Listing {
-  case class Props(showError: String => Callback, showInfo: String => Callback, clearMsgs: Callback)
+  case class Props(showError: String => Callback, clearMsgs: Callback,
+    handleFuture: HandleFuture)
 
   @Lenses
   case class State(advices: Seq[AdviceListing], suggestEditId: Option[Long],
@@ -28,8 +29,11 @@ object Listing {
         s.copy(suggestEditId = Some(a.id), suggestText = s.suggestText.copy(v = "")))
       def cancelSuggestEditCallback(a: AdviceListing) = $.modState(_.copy(suggestEditId = None))
       def sendSuggestEditCallback(a: AdviceListing) =
-        CallbackTo(AutowireClient[UiApi].sendSuggestEdit(s.suggestText.v, s.suggestContact.v, a).call()).flatMap(_ =>
-          p.showInfo("Suggestion sent, thank you!") >> cancelSuggestEditCallback(a))
+        cancelSuggestEditCallback(a) >> p.handleFuture(
+          AutowireClient[UiApi].sendSuggestEdit(s.suggestText.v, s.suggestContact.v, a).call(),
+          Some("Suggestion sent, thank you!"),
+          None
+        )
 
       def rowForAdvice(a: AdviceListing) = <.tr(
         <.td(a.compilationError.toString),
@@ -69,17 +73,18 @@ object Listing {
       )
     }
 
-    def initAdvices(): Callback = {
-      CallbackTo(AutowireClient[UiApi].listAccepted().call()).map(
-        _.map(s => $.modState(_.copy(advices = s)).runNow())
+    def initAdvices(p: Props): Callback =
+      p.handleFuture(
+        AutowireClient[UiApi].listAccepted().call(),
+        None,
+        Some((s: Seq[AdviceListing]) => $.modState(_.copy(advices = s)))
       )
-    }
   }
 
   val component = ReactComponentB[Props]("Use")
     .initialState(State(Nil, None, FormField("Contact email (optional)", required = false),
       FormField("Suggestion", required = true)))
     .renderBackend[Backend]
-    .componentDidMount(_.backend.initAdvices())
+    .componentDidMount(ctx => ctx.backend.initAdvices(ctx.props))
     .build
 }
