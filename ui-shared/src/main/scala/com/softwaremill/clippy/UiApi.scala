@@ -11,6 +11,7 @@ trait ContributeApi {
 
 trait ListingApi {
   def listAccepted(): Future[Seq[AdviceListing]]
+  def sendSuggestEdit(text: String, contactEmail: String, adviceListing: AdviceListing): Future[Unit]
 }
 
 case class AdviceProposal(compilationError: CompilationError[ExactOrRegex], advice: String, library: Library,

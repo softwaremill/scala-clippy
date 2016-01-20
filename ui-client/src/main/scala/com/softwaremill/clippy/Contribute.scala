@@ -90,7 +90,7 @@ object Contribute {
           <.hr,
           bsFormEl(externalVar($, s, State.email))(mods =>
             <.div(^.cls := "input-group")(
-              <.div(^.cls := "input-group-addon")("@"),
+              <.div(^.cls := "input-group-addon")("@"), // TODO
               <.input(^.`type` := "email", ^.cls := "form-control", ^.placeholder := "scalacoder@company.com")(mods)
             )),
           bsFormEl(externalVar($, s, State.twitter))(mods =>

@@ -53,6 +53,10 @@ object App {
       clearMsgs >> $.modState(s => s.copy(errorMsgs = error :: s.errorMsgs))
     }
 
+    private def handleShowInfo(info: String): Callback = {
+      clearMsgs >> $.modState(s => s.copy(infoMsgs = info :: s.infoMsgs))
+    }
+
     private def clearMsgs = $.modState(_.copy(errorMsgs = Nil, infoMsgs = Nil))
 
     private def handleSwitchPage(newPage: Page): Callback = {
@@ -81,7 +85,7 @@ object App {
         Contribute.Step2.component(Contribute.Step2.Props(ce, handleReset, handleSendAdviceProposal, handleShowError))
 
       case ListingPage =>
-        Listing.component()
+        Listing.component(Listing.Props(handleShowError, handleShowInfo, clearMsgs))
     }
 
     def render(s: State) = <.span(

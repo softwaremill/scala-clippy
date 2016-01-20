@@ -16,6 +16,7 @@ class UiApiImpl(
     emailService.send(contactEmail, "Unparseable message",
       s"""
          |Contributor email: $contributorEmail
+         |
          |Error text:
          |$errorText
        """.stripMargin)
@@ -25,11 +26,26 @@ class UiApiImpl(
     advicesRepository
       .store(ap.compilationError, ap.advice, accepted = false, ap.library, ap.contributor, ap.comment)
       .flatMap { a =>
-        emailService.send(contactEmail, "New advice proposal", s"Advice proposal: $a")
+        emailService.send(contactEmail, "New advice proposal",
+          s"""
+             |Advice proposal:
+             |$a
+             |""".stripMargin)
       }
   }
 
   override def listAccepted() = {
     advicesRepository.findAll().map(_.map(_.toAdviceListing))
+  }
+
+  override def sendSuggestEdit(text: String, contactEmail: String, adviceListing: AdviceListing) = {
+    emailService.send(contactEmail, "Edit suggestion",
+      s"""
+         |Edit suggestion for: $adviceListing
+         |Contact email: $contactEmail
+         |
+         |Suggestion:
+         |$text
+       """.stripMargin)
   }
 }
