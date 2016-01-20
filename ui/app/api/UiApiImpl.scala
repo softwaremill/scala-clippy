@@ -13,7 +13,7 @@ class UiApiImpl(
 )(implicit ec: ExecutionContext) extends UiApi {
 
   override def sendCannotParse(errorText: String, contributorEmail: String) = {
-    emailService.send(contactEmail, "Unparseable message",
+    emailService.send(contactEmail, "Clippy: unparseable message",
       s"""
          |Contributor email: $contributorEmail
          |
@@ -26,7 +26,7 @@ class UiApiImpl(
     advicesRepository
       .store(ap.errorTextRaw, ap.compilationError, ap.advice, AdviceState.Pending, ap.library, ap.contributor, ap.comment)
       .flatMap { a =>
-        emailService.send(contactEmail, "New advice proposal",
+        emailService.send(contactEmail, "Clippy: new advice proposal",
           s"""
              |Advice proposal:
              |$a
@@ -39,12 +39,22 @@ class UiApiImpl(
   }
 
   override def sendSuggestEdit(text: String, contactEmail: String, adviceListing: AdviceListing) = {
-    emailService.send(contactEmail, "Edit suggestion",
+    emailService.send(contactEmail, "Clippy: edit suggestion",
       s"""
          |Edit suggestion for: $adviceListing
          |Contact email: $contactEmail
          |
          |Suggestion:
+         |$text
+       """.stripMargin)
+  }
+
+  override def feedback(text: String, contactEmail: String) = {
+    emailService.send(contactEmail, "Clippy: feedback",
+      s"""
+         |Contact email: $contactEmail
+         |
+         |Feedback:
          |$text
        """.stripMargin)
   }

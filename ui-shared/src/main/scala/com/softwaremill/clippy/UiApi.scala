@@ -2,7 +2,11 @@ package com.softwaremill.clippy
 
 import scala.concurrent.Future
 
-trait UiApi extends ContributeApi with ListingApi
+trait UiApi extends ContributeApi with ListingApi with FeedbackApi
+
+trait FeedbackApi {
+  def feedback(text: String, contactEmail: String): Future[Unit]
+}
 
 trait ContributeApi {
   def sendCannotParse(errorText: String, contributorEmail: String): Future[Unit]

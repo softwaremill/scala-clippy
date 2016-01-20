@@ -14,6 +14,7 @@ object App {
   case class ContributeParseError(errorText: String) extends Page
   case class ContributeStep2(errorTextRaw: String, ce: CompilationError[ExactOrRegex]) extends Page
   case object ListingPage extends Page
+  case object FeedbackPage extends Page
 
   case class State(page: Page, errorMsgs: List[String], infoMsgs: List[String])
 
@@ -68,7 +69,7 @@ object App {
 
     private def handleSwitchPage(newPage: Page): Callback = {
       clearMsgs >> $.modState { s =>
-        def isContribute(p: Page) = p != UsePage && p != ListingPage
+        def isContribute(p: Page) = p != UsePage && p != ListingPage && p != FeedbackPage
         if (s.page == newPage || (isContribute(s.page) && isContribute(newPage))) s else s.copy(page = newPage)
       }
     }
@@ -93,6 +94,9 @@ object App {
 
       case ListingPage =>
         Listing.component(Listing.Props(handleShowError, clearMsgs, handleFuture))
+
+      case FeedbackPage =>
+        Feedback.component(Feedback.Props(handleShowError, clearMsgs, handleFuture))
     }
 
     def render(s: State) = <.span(
