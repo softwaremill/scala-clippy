@@ -28,30 +28,22 @@ object App {
     }
 
     private def handleSendParseError(errorText: String)(email: String): Callback = {
-      CallbackTo(AutowireClient[UiApi].sendCannotParse(errorText, email).call()).map(
-        _.onSuccess {
-          case _ =>
-            (clearMsgs >> $.modState(s => s.copy(
-              page = ContributeStep1,
-              infoMsgs = "Error submitted successfully! We'll get in touch soon." :: s.infoMsgs
-            ))).runNow()
-        }
+      handleFuture(
+        AutowireClient[UiApi].sendCannotParse(errorText, email).call(),
+        Some("Error submitted successfully! We'll get in touch soon."),
+        Some((_: Unit) => $.modState(s => s.copy(page = ContributeStep1)))
       )
     }
 
     private def handleSendAdviceProposal(ap: AdviceProposal): Callback = {
-      CallbackTo(AutowireClient[UiApi].sendAdviceProposal(ap).call()).map(
-        _.onSuccess {
-          case _ =>
-            (clearMsgs >> $.modState(s => s.copy(
-              page = ContributeStep1,
-              infoMsgs = "Advice submitted successfully! We'll get in touch soon, and let you know when your proposal is accepted." :: s.infoMsgs
-            ))).runNow()
-        }
+      handleFuture(
+        AutowireClient[UiApi].sendAdviceProposal(ap).call(),
+        Some("Advice submitted successfully! We'll get in touch soon, and let you know when your proposal is accepted."),
+        Some((_: Unit) => $.modState(s => s.copy(page = ContributeStep1)))
       )
     }
 
-    private def handleFuture = new HandleFuture {
+    private lazy val handleFuture = new HandleFuture {
       override def apply[T](f: Future[T], successMsg: Option[String], successCallback: Option[(T) => Callback]) =
         CallbackTo(f onComplete {
           case Success(v) =>
