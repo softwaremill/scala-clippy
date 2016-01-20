@@ -89,17 +89,17 @@ object Contribute {
             <.input(^.`type` := "text", ^.cls := "form-control", ^.placeholder := "2.11-M3")(mods)),
           <.hr,
           bsFormEl(externalVar($, s, State.email))(mods =>
-            <.div(^.cls := "input-group")(
-              <.div(^.cls := "input-group-addon")("@"), // TODO
-              <.input(^.`type` := "email", ^.cls := "form-control", ^.placeholder := "scalacoder@company.com")(mods)
-            )),
+            <.input(^.`type` := "email", ^.cls := "form-control", ^.placeholder := "scalacoder@company.com")(mods)),
           bsFormEl(externalVar($, s, State.twitter))(mods =>
             <.div(^.cls := "input-group")(
               <.div(^.cls := "input-group-addon")("@"),
               <.input(^.`type` := "text", ^.cls := "form-control", ^.placeholder := "twitter")(mods)
             )),
           bsFormEl(externalVar($, s, State.github))(mods =>
-            <.input(^.`type` := "text", ^.cls := "form-control", ^.placeholder := "github")(mods)),
+            <.div(^.cls := "input-group")(
+              <.div(^.cls := "input-group-addon")("@"),
+              <.input(^.`type` := "text", ^.cls := "form-control", ^.placeholder := "github")(mods)
+            )),
           <.hr,
           bsFormEl(externalVar($, s, State.comment))(mods =>
             <.textarea(^.cls := "form-control", ^.rows := 3)(mods)),
