@@ -44,7 +44,7 @@ object Contribute {
   }
 
   object Step2 {
-    case class Props(ce: CompilationError[ExactOrRegex], reset: Callback, send: AdviceProposal => Callback,
+    case class Props(errorTextRaw: String, ce: CompilationError[ExactOrRegex], reset: Callback, send: AdviceProposal => Callback,
       showError: String => Callback)
 
     @Lenses
@@ -75,7 +75,7 @@ object Contribute {
         ),
         <.form(
           ^.onSubmit ==> FormField.submitValidated($, p.showError)(s => p.send(AdviceProposal(
-            p.ce, s.advice.v, Library(s.libraryGroupId.v, s.libraryArtifactId.v, s.libraryVersion.v),
+            p.errorTextRaw, p.ce, s.advice.v, Library(s.libraryGroupId.v, s.libraryArtifactId.v, s.libraryVersion.v),
             Contributor(s.email.vOpt, s.twitter.vOpt, s.github.vOpt), s.comment.vOpt
           ))),
           bsFormEl(externalVar($, s, State.advice))(mods =>

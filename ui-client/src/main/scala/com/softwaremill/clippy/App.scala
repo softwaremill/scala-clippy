@@ -12,7 +12,7 @@ object App {
   case object UsePage extends Page
   case object ContributeStep1 extends Page
   case class ContributeParseError(errorText: String) extends Page
-  case class ContributeStep2(ce: CompilationError[ExactOrRegex]) extends Page
+  case class ContributeStep2(errorTextRaw: String, ce: CompilationError[ExactOrRegex]) extends Page
   case object ListingPage extends Page
 
   case class State(page: Page, errorMsgs: List[String], infoMsgs: List[String])
@@ -23,7 +23,7 @@ object App {
     private def handleErrorTextSubmitted(errorText: String): Callback = {
       CompilationErrorParser.parse(errorText) match {
         case None => clearMsgs >> $.modState(_.copy(page = ContributeParseError(errorText)))
-        case Some(ce) => clearMsgs >> $.modState(_.copy(page = ContributeStep2(ce.asExactOrRegex)))
+        case Some(ce) => clearMsgs >> $.modState(_.copy(page = ContributeStep2(errorText, ce.asExactOrRegex)))
       }
     }
 
@@ -88,8 +88,8 @@ object App {
       case ContributeParseError(et) =>
         Contribute.ParseError.component(Contribute.ParseError.Props(handleReset, handleSendParseError(et), handleShowError))
 
-      case ContributeStep2(ce) =>
-        Contribute.Step2.component(Contribute.Step2.Props(ce, handleReset, handleSendAdviceProposal, handleShowError))
+      case ContributeStep2(errorTextRaw, ce) =>
+        Contribute.Step2.component(Contribute.Step2.Props(errorTextRaw, ce, handleReset, handleSendAdviceProposal, handleShowError))
 
       case ListingPage =>
         Listing.component(Listing.Props(handleShowError, clearMsgs, handleFuture))

@@ -14,8 +14,8 @@ trait ListingApi {
   def sendSuggestEdit(text: String, contactEmail: String, adviceListing: AdviceListing): Future[Unit]
 }
 
-case class AdviceProposal(compilationError: CompilationError[ExactOrRegex], advice: String, library: Library,
-  contributor: Contributor, comment: Option[String])
+case class AdviceProposal(errorTextRaw: String, compilationError: CompilationError[ExactOrRegex], advice: String,
+  library: Library, contributor: Contributor, comment: Option[String])
 
 case class ContributorListing(twitter: Option[String], github: Option[String])
 
