@@ -21,7 +21,7 @@ object Contribute {
       def render(s: State, p: Props) = <.div(
         bsPanel(
           <.p("Scala Clippy is only as good as its advice database. Help other users by submitting an advice for a compilation error that you have encountered!"),
-          <.p("First, paste in the error and we'll see if we can parse it. Only the error message is needed, without the file name and code snippet, e.g.:"),
+          <.p("First, paste in the error and we'll see if we can parse it. Only the error message is needed, e.g.:"),
           <.pre(
             """[error] type mismatch;
               |[error] found   : akka.http.scaladsl.server.StandardRoute

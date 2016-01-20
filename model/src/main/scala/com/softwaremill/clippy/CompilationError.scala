@@ -10,6 +10,7 @@ sealed trait CompilationError[T <: Template] {
   def matches(other: CompilationError[Exact])(implicit ev: T =:= ExactOrRegex): Boolean
   def asExactOrRegex(implicit ev: T =:= Exact): CompilationError[ExactOrRegex]
 }
+
 case class TypeMismatchError[T <: Template](found: T, foundExpandsTo: Option[T],
   required: T, requiredExpandsTo: Option[T]) extends CompilationError[T] {
 
@@ -59,13 +60,31 @@ case class NotFoundError[T <: Template](what: T) extends CompilationError[T] {
   override def asExactOrRegex(implicit ev: T =:= Exact) = NotFoundError(ExactOrRegex(what.v))
 }
 
+case class NotAMemberError[T <: Template](what: T, notAMemberOf: T) extends CompilationError[T] {
+
+  override def toString = s"Not a member error: $what isn't a member of $notAMemberOf"
+
+  override def toXml =
+    <notAMember>
+      <what>{what.v}</what>
+      <notAMemberOf>{notAMemberOf.v}</notAMemberOf>
+    </notAMember>
+
+  override def matches(other: CompilationError[Exact])(implicit ev: T =:= ExactOrRegex) = other match {
+    case NotAMemberError(w, n) => what.matches(w) && notAMemberOf.matches(n)
+    case _ => false
+  }
+
+  override def asExactOrRegex(implicit ev: T =:= Exact) = NotAMemberError(ExactOrRegex(what.v), ExactOrRegex(notAMemberOf.v))
+}
+
 object CompilationError {
   def fromXmlString(s: String): Option[CompilationError[ExactOrRegex]] = fromXml(XML.loadString(s))
 
   def fromXml(xml: NodeSeq): Option[CompilationError[ExactOrRegex]] = {
     def extractTypeMismatch =
       (xml \\ "typeMismatch").headOption.map { n =>
-        TypeMismatchError[ExactOrRegex](
+        TypeMismatchError(
           ExactOrRegex((n \ "found").text),
           (n \ "foundExpandsTo").headOption.map(n => ExactOrRegex(n.text)),
           ExactOrRegex((n \ "required").text),
@@ -78,8 +97,17 @@ object CompilationError {
         NotFoundError(ExactOrRegex(n.text))
       }
 
+    def extractNotAMemberOf =
+      (xml \\ "notAMember").headOption.map { n =>
+        NotAMemberError(
+          ExactOrRegex((n \ "what").text),
+          ExactOrRegex((n \ "notAMemberOf").text)
+        )
+      }
+
     extractTypeMismatch
       .orElse(extractNotFound)
+      .orElse(extractNotAMemberOf)
   }
 }
 
@@ -89,6 +117,8 @@ object CompilationErrorParser {
   private val AfterRequiredRegexp = """required\s*:\s*([^\n]+)""".r
   private val WhichExpandsToRegexp = """\s*\(which expands to\)\s*([^\n]+)""".r
   private val NotFoundRegexp = """not found\s*:\s*([^\n]+)""".r
+  private val NotAMemberRegexp = """:?\s*([^\n:]+) is not a member of""".r
+  private val NotAMemberOfRegexp = """is not a member of\s*([^\n]+)""".r
 
   def parse(error: String): Option[CompilationError[Exact]] = {
     if (error.contains("type mismatch")) {
@@ -110,6 +140,12 @@ object CompilationErrorParser {
       for {
         what <- NotFoundRegexp.findFirstMatchIn(error)
       } yield NotFoundError[Exact](Exact(what.group(1)))
+    }
+    else if (error.contains("is not a member of")) {
+      for {
+        what <- NotAMemberRegexp.findFirstMatchIn(error)
+        notAMemberOf <- NotAMemberOfRegexp.findFirstMatchIn(error)
+      } yield NotAMemberError[Exact](Exact(what.group(1)), Exact(notAMemberOf.group(1)))
     }
     else None
   }

@@ -67,4 +67,16 @@ class CompilationErrorParserTest extends FlatSpec with Matchers {
 
     CompilationErrorParser.parse(e) should be (Some(NotFoundError(Exact("value wire"))))
   }
+
+  it should "parse not a member of message" in {
+    val e = "value call is not a member of scala.concurrent.Future[Unit]"
+
+    CompilationErrorParser.parse(e) should be (Some(NotAMemberError(Exact("value call"), Exact("scala.concurrent.Future[Unit]"))))
+  }
+
+  it should "parse not a member of message with extra text" in {
+    val e = "[error] /Users/adamw/projects/clippy/ui-client/src/main/scala/com/softwaremill/clippy/Listing.scala:33: value call is not a member of scala.concurrent.Future[Unit]"
+
+    CompilationErrorParser.parse(e) should be (Some(NotAMemberError(Exact("value call"), Exact("scala.concurrent.Future[Unit]"))))
+  }
 }
