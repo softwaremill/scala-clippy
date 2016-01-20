@@ -36,7 +36,7 @@ object Listing {
         )
 
       def rowForAdvice(a: AdviceListing) = <.tr(
-        <.td(a.compilationError.toString),
+        <.td(<.pre(a.compilationError.toString)),
         <.td(a.advice),
         <.td(a.library.toString),
         <.td(<.span(^.cls := "glyphicon glyphicon-edit", ^.onClick --> suggestEditCallback(a)))
@@ -57,13 +57,13 @@ object Listing {
         )
       )
 
-      <.table(^.cls := "table table-striped")(
+      <.table(^.cls := "table table-striped advice-listing")(
         <.thead(
           <.tr(
             <.th("Compilation error"),
-            <.th("Advice"),
-            <.th("Library"),
-            <.th("Suggest edit")
+            <.th(^.width := "25%")("Advice"),
+            <.th(^.width := "15%")("Library"),
+            <.th(^.width := "8%")("Suggest edit")
           )
         ),
         <.tbody(
