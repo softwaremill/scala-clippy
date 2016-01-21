@@ -78,6 +78,24 @@ case class NotAMemberError[T <: Template](what: T, notAMemberOf: T) extends Comp
   override def asExactOrRegex(implicit ev: T =:= Exact) = NotAMemberError(ExactOrRegex(what.v), ExactOrRegex(notAMemberOf.v))
 }
 
+case class ImplicitNotFound[T <: Template](parameter: T, implicitType: T) extends CompilationError[T] {
+
+  override def toString = s"Implicit not found error: for parameter $parameter of type $implicitType"
+
+  override def toXml =
+    <implicitNotFound>
+      <parameter>{parameter.v}</parameter>
+      <implicitType>{implicitType.v}</implicitType>
+    </implicitNotFound>
+
+  override def matches(other: CompilationError[Exact])(implicit ev: T =:= ExactOrRegex) = other match {
+    case ImplicitNotFound(p, i) => parameter.matches(p) && implicitType.matches(i)
+    case _ => false
+  }
+
+  override def asExactOrRegex(implicit ev: T =:= Exact) = ImplicitNotFound(ExactOrRegex(parameter.v), ExactOrRegex(implicitType.v))
+}
+
 object CompilationError {
   def fromXmlString(s: String): Option[CompilationError[ExactOrRegex]] = fromXml(XML.loadString(s))
 
@@ -105,9 +123,18 @@ object CompilationError {
         )
       }
 
+    def extractImplicitNotFound =
+      (xml \\ "implicitNotFound").headOption.map { n =>
+        ImplicitNotFound(
+          ExactOrRegex((n \ "parameter").text),
+          ExactOrRegex((n \ "implicitType").text)
+        )
+      }
+
     extractTypeMismatch
       .orElse(extractNotFound)
       .orElse(extractNotAMemberOf)
+      .orElse(extractImplicitNotFound)
   }
 }
 
@@ -119,6 +146,7 @@ object CompilationErrorParser {
   private val NotFoundRegexp = """not found\s*:\s*([^\n]+)""".r
   private val NotAMemberRegexp = """:?\s*([^\n:]+) is not a member of""".r
   private val NotAMemberOfRegexp = """is not a member of\s*([^\n]+)""".r
+  private val ImplicitNotFoundRegexp = """could not find implicit value for parameter\s*([^:]+):\s*([^\n]+)""".r
 
   def parse(error: String): Option[CompilationError[Exact]] = {
     if (error.contains("type mismatch")) {
@@ -146,6 +174,11 @@ object CompilationErrorParser {
         what <- NotAMemberRegexp.findFirstMatchIn(error)
         notAMemberOf <- NotAMemberOfRegexp.findFirstMatchIn(error)
       } yield NotAMemberError[Exact](Exact(what.group(1)), Exact(notAMemberOf.group(1)))
+    }
+    else if (error.contains("could not find implicit value for parameter")) {
+      for {
+        inf <- ImplicitNotFoundRegexp.findFirstMatchIn(error)
+      } yield ImplicitNotFound[Exact](Exact(inf.group(1)), Exact(inf.group(2)))
     }
     else None
   }

@@ -91,6 +91,18 @@ class CompilationErrorProperties extends Properties("CompilationError") {
       CompilationError.fromXml(e.toXml).contains(e)
     }
 
+  property("obj -> xml -> obj works for not a member error") =
+    forAll { (what: String, notAMemberOf: String) =>
+      val e = NotAMemberError(ExactOrRegex(what), ExactOrRegex(notAMemberOf))
+      CompilationError.fromXml(e.toXml).contains(e)
+    }
+
+  property("obj -> xml -> obj works for implicit not found") =
+    forAll { (parameter: String, implicitType: String) =>
+      val e = ImplicitNotFound(ExactOrRegex(parameter), ExactOrRegex(implicitType))
+      CompilationError.fromXml(e.toXml).contains(e)
+    }
+
   property("match identical not found error") =
     forAll { (what: String) =>
       NotFoundError(ExactOrRegex(what)).matches(NotFoundError(Exact(what)))

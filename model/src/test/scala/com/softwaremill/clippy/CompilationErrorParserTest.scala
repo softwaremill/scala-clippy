@@ -79,4 +79,10 @@ class CompilationErrorParserTest extends FlatSpec with Matchers {
 
     CompilationErrorParser.parse(e) should be (Some(NotAMemberError(Exact("value call"), Exact("scala.concurrent.Future[Unit]"))))
   }
+
+  it should "parse an implicit not found" in {
+    val e = "could not find implicit value for parameter marshaller: spray.httpx.marshalling.ToResponseMarshaller[scala.concurrent.Future[String]]"
+
+    CompilationErrorParser.parse(e) should be (Some(ImplicitNotFound(Exact("marshaller"), Exact("spray.httpx.marshalling.ToResponseMarshaller[scala.concurrent.Future[String]]"))))
+  }
 }
