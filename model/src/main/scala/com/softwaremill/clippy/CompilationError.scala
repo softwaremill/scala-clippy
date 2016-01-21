@@ -78,7 +78,7 @@ case class NotAMemberError[T <: Template](what: T, notAMemberOf: T) extends Comp
   override def asExactOrRegex(implicit ev: T =:= Exact) = NotAMemberError(ExactOrRegex(what.v), ExactOrRegex(notAMemberOf.v))
 }
 
-case class ImplicitNotFound[T <: Template](parameter: T, implicitType: T) extends CompilationError[T] {
+case class ImplicitNotFoundError[T <: Template](parameter: T, implicitType: T) extends CompilationError[T] {
 
   override def toString = s"Implicit not found error: for parameter $parameter of type $implicitType"
 
@@ -89,11 +89,31 @@ case class ImplicitNotFound[T <: Template](parameter: T, implicitType: T) extend
     </implicitNotFound>
 
   override def matches(other: CompilationError[Exact])(implicit ev: T =:= ExactOrRegex) = other match {
-    case ImplicitNotFound(p, i) => parameter.matches(p) && implicitType.matches(i)
+    case ImplicitNotFoundError(p, i) => parameter.matches(p) && implicitType.matches(i)
     case _ => false
   }
 
-  override def asExactOrRegex(implicit ev: T =:= Exact) = ImplicitNotFound(ExactOrRegex(parameter.v), ExactOrRegex(implicitType.v))
+  override def asExactOrRegex(implicit ev: T =:= Exact) = ImplicitNotFoundError(ExactOrRegex(parameter.v), ExactOrRegex(implicitType.v))
+}
+
+case class DivergingImplicitExpansionError[T <: Template](forType: T, startingWith: T, in: T) extends CompilationError[T] {
+
+  override def toString = s"Diverging implicit expansion error: for type $forType starting with $startingWith in $in"
+
+  override def toXml =
+    <divergingImplicitExpansion>
+      <forType>{forType.v}</forType>
+      <startingWith>{startingWith.v}</startingWith>
+      <in>{in.v}</in>
+    </divergingImplicitExpansion>
+
+  override def matches(other: CompilationError[Exact])(implicit ev: T =:= ExactOrRegex) = other match {
+    case DivergingImplicitExpansionError(f, s, i) => forType.matches(f) && startingWith.matches(s) && in.matches(i)
+    case _ => false
+  }
+
+  override def asExactOrRegex(implicit ev: T =:= Exact) = DivergingImplicitExpansionError(
+    ExactOrRegex(forType.v), ExactOrRegex(startingWith.v), ExactOrRegex(in.v))
 }
 
 object CompilationError {
@@ -125,9 +145,18 @@ object CompilationError {
 
     def extractImplicitNotFound =
       (xml \\ "implicitNotFound").headOption.map { n =>
-        ImplicitNotFound(
+        ImplicitNotFoundError(
           ExactOrRegex((n \ "parameter").text),
           ExactOrRegex((n \ "implicitType").text)
+        )
+      }
+
+    def extractDivergingImplicitExpansion =
+      (xml \\ "divergingImplicitExpansion").headOption.map { n =>
+        DivergingImplicitExpansionError(
+          ExactOrRegex((n \ "forType").text),
+          ExactOrRegex((n \ "startingWith").text),
+          ExactOrRegex((n \ "in").text)
         )
       }
 
@@ -135,6 +164,7 @@ object CompilationError {
       .orElse(extractNotFound)
       .orElse(extractNotAMemberOf)
       .orElse(extractImplicitNotFound)
+      .orElse(extractDivergingImplicitExpansion)
   }
 }
 
@@ -147,6 +177,7 @@ object CompilationErrorParser {
   private val NotAMemberRegexp = """:?\s*([^\n:]+) is not a member of""".r
   private val NotAMemberOfRegexp = """is not a member of\s*([^\n]+)""".r
   private val ImplicitNotFoundRegexp = """could not find implicit value for parameter\s*([^:]+):\s*([^\n]+)""".r
+  private val DivergingImplicitExpansionRegexp = """diverging implicit expansion for type\s*([^\s]+)\s*.*\s*starting with method\s*([^\s]+)\s*in\s*([^\n]+)""".r
 
   def parse(error: String): Option[CompilationError[Exact]] = {
     if (error.contains("type mismatch")) {
@@ -178,7 +209,12 @@ object CompilationErrorParser {
     else if (error.contains("could not find implicit value for parameter")) {
       for {
         inf <- ImplicitNotFoundRegexp.findFirstMatchIn(error)
-      } yield ImplicitNotFound[Exact](Exact(inf.group(1)), Exact(inf.group(2)))
+      } yield ImplicitNotFoundError[Exact](Exact(inf.group(1)), Exact(inf.group(2)))
+    }
+    else if (error.contains("diverging implicit expansion for type")) {
+      for {
+        inf <- DivergingImplicitExpansionRegexp.findFirstMatchIn(error)
+      } yield DivergingImplicitExpansionError[Exact](Exact(inf.group(1)), Exact(inf.group(2)), Exact(inf.group(3)))
     }
     else None
   }

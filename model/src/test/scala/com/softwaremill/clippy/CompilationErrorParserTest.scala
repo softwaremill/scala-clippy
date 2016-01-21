@@ -83,6 +83,24 @@ class CompilationErrorParserTest extends FlatSpec with Matchers {
   it should "parse an implicit not found" in {
     val e = "could not find implicit value for parameter marshaller: spray.httpx.marshalling.ToResponseMarshaller[scala.concurrent.Future[String]]"
 
-    CompilationErrorParser.parse(e) should be (Some(ImplicitNotFound(Exact("marshaller"), Exact("spray.httpx.marshalling.ToResponseMarshaller[scala.concurrent.Future[String]]"))))
+    CompilationErrorParser.parse(e) should be (Some(ImplicitNotFoundError(Exact("marshaller"), Exact("spray.httpx.marshalling.ToResponseMarshaller[scala.concurrent.Future[String]]"))))
+  }
+
+  it should "parse a diverging implicit error " in {
+    val e = "diverging implicit expansion for type io.circe.Decoder.Secondary[this.Out] starting with method decodeCaseClass in trait GenericInstances"
+
+    CompilationErrorParser.parse(e) should be (Some(DivergingImplicitExpansionError(
+      Exact("io.circe.Decoder.Secondary[this.Out]"), Exact("decodeCaseClass"), Exact("trait GenericInstances"))))
+  }
+
+  it should "parse a diverging implicit error with extra text" in {
+    val e =
+      """
+        |[error] /home/src/main/scala/Routes.scala:19: diverging implicit expansion for type io.circe.Decoder.Secondary[this.Out]
+        |[error] starting with method decodeCaseClass in trait GenericInstances
+      """.stripMargin
+
+    CompilationErrorParser.parse(e) should be (Some(DivergingImplicitExpansionError(
+      Exact("io.circe.Decoder.Secondary[this.Out]"), Exact("decodeCaseClass"), Exact("trait GenericInstances"))))
   }
 }

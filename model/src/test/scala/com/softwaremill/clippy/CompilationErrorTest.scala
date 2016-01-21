@@ -99,7 +99,13 @@ class CompilationErrorProperties extends Properties("CompilationError") {
 
   property("obj -> xml -> obj works for implicit not found") =
     forAll { (parameter: String, implicitType: String) =>
-      val e = ImplicitNotFound(ExactOrRegex(parameter), ExactOrRegex(implicitType))
+      val e = ImplicitNotFoundError(ExactOrRegex(parameter), ExactOrRegex(implicitType))
+      CompilationError.fromXml(e.toXml).contains(e)
+    }
+
+  property("obj -> xml -> obj works for diverging implicit expansions") =
+    forAll { (forType: String, startingWith: String, in: String) =>
+      val e = DivergingImplicitExpansionError(ExactOrRegex(forType), ExactOrRegex(startingWith), ExactOrRegex(in))
       CompilationError.fromXml(e.toXml).contains(e)
     }
 
