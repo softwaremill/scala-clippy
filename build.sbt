@@ -77,6 +77,7 @@ lazy val plugin = (project in file("plugin"))
   .enablePlugins(BuildInfoPlugin)
   .settings(commonSettings)
   .settings(
+    crossScalaVersions := Seq(scalaVersion.value, "2.10.6"),
     libraryDependencies ++= Seq(
       "org.scala-lang" % "scala-compiler" % scalaVersion.value,
       scalatest, scalacheck),

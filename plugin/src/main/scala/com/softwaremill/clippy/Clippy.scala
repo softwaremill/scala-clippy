@@ -15,7 +15,7 @@ case class Clippy(version: String, advices: List[Advice]) {
 
 object Clippy {
   def fromXml(xml: NodeSeq): Clippy = {
-    val version = xml \\ "clippy" \@ "version"
+    val version = (xml \\ "clippy" \ "@version").text
 
     val advices = (xml \\ "advice").flatMap { n =>
       for {

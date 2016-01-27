@@ -8,7 +8,7 @@ import com.softwaremill.clippy.Utils._
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.tools.nsc.Global
-import scala.util.{Success, Try}
+import scala.util.{Failure, Success, Try}
 import scala.xml.XML
 
 class AdviceLoader(global: Global, url: String, localStoreDir: File)(implicit ec: ExecutionContext) {
@@ -29,7 +29,12 @@ class AdviceLoader(global: Global, url: String, localStoreDir: File)(implicit ec
       }
       else None
 
-      Future.fromTry(Try(loadLocally())).map(bytesToClippy).recoverWith {
+      val localLoad = Try(loadLocally()) match {
+        case Success(v) => Future.successful(v)
+        case Failure(t) => Future.failed(t)
+      }
+
+      localLoad.map(bytesToClippy).recoverWith {
         case e: Exception =>
           global.warning(s"Cannot load advice from local store: $localStore. Trying to fetch from server")
           runningFetch.getOrElse(fetchStoreParse())
