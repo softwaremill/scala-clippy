@@ -30,7 +30,7 @@ Just add the compiler plugin, and you'll see this additional helpful message:
 In your SBT build file, add:
 
 ````scala
-addCompilerPlugin("com.softwaremill.clippy" % "plugin" % "0.1" cross CrossVersion.full)
+addCompilerPlugin("com.softwaremill.clippy" %% "plugin" % "0.1")
 ````
 
 Upon first use, the plugin will download the advice dataset from `https://scala-clippy.org` and store it in the 
