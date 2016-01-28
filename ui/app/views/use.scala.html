@@ -36,11 +36,12 @@
 <h2>Adding the plugin</h2>
 
 <p>
-    In your SBT build file, add:
+    The easiest to use Clippy is via an SBT plugin. If you'd like Clippy to be enabled for all projects, without
+    the need to modify their build, add the following to <code>~/.sbt/0.13/plugins/build.sbt</code>:
 </p>
 
 <pre>
-addCompilerPlugin("com.softwaremill.clippy" %% "plugin" % "0.1")
+addSbtPlugin("com.softwaremill.clippy" % "plugin-sbt" % "0.1")
 </pre>
 
 <p>
@@ -64,3 +65,22 @@ addCompilerPlugin("com.softwaremill.clippy" %% "plugin" % "0.1")
     Speaking of GitHub, you are also welcome to check out (and improve!) the plugin's &amp; website's
     <a href="https://github.com/softwaremill/scala-clippy">source code</a>.
 </p>
+
+<h2>Alternative ways to use Clippy</h2>
+
+<p>
+    You can also use Clippy directly as a compiler plugin. If you use SBT, add the following setting to your
+    project's <code>.sbt</code> file:
+</p>
+
+<pre>
+addCompilerPlugin("com.softwaremill.clippy" %% "plugin" % "0.1")
+</pre>
+
+<p>
+    If you are using <code>scalac</code> directly, add the following option:
+</p>
+
+<pre>
+-Xplugin:clippy-plugin_2.11-0.1.jar
+</pre>

@@ -27,10 +27,11 @@ Just add the compiler plugin, and you'll see this additional helpful message:
 
 # Adding the plugin
 
-In your SBT build file, add:
+The easiest to use Clippy is via an SBT plugin. If you'd like Clippy to be enabled for all projects, without
+the need to modify their build, add the following to `~/.sbt/0.13/plugins/build.sbt`:
 
 ````scala
-addCompilerPlugin("com.softwaremill.clippy" %% "plugin" % "0.1")
+addSbtPlugin("com.softwaremill.clippy" % "plugin-sbt" % "0.1")
 ````
 
 Upon first use, the plugin will download the advice dataset from `https://scala-clippy.org` and store it in the 
@@ -44,6 +45,21 @@ you have encountered!
 
 It will only take you a couple of minutes, no registration required. Just head over to 
 [https://scala-clippy.org](https://scala-clippy.org)! Thanks!
+
+# Alternative ways to use Clippy
+
+You can also use Clippy directly as a compiler plugin. If you use SBT, add the following setting to your
+project's `.sbt` file:
+
+````scala
+addCompilerPlugin("com.softwaremill.clippy" %% "plugin" % "0.1")
+````
+
+If you are using `scalac` directly, add the following option:
+
+````scala
+-Xplugin:clippy-plugin_2.11-0.1.jar
+````
 
 # Contributing to the project
 
