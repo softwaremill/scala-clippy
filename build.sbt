@@ -10,10 +10,9 @@ val scalacheck = "org.scalacheck" %% "scalacheck" % "1.12.5" % "test"
 name := "clippy"
 
 // factor out common settings into a sequence
-lazy val commonSettings = scalariformSettings ++ Seq(
+lazy val commonSettingsNoScalaVersion = scalariformSettings ++ Seq(
   organization := "com.softwaremill.clippy",
   version := "0.1",
-  scalaVersion := "2.11.7",
 
   scalacOptions ++= Seq("-unchecked", "-deprecation"),
 
@@ -54,6 +53,10 @@ lazy val commonSettings = scalariformSettings ++ Seq(
   com.updateimpact.Plugin.apiKey in ThisBuild := sys.env.getOrElse("UPDATEIMPACT_API_KEY", (com.updateimpact.Plugin.apiKey in ThisBuild).value)
 )
 
+lazy val commonSettings = commonSettingsNoScalaVersion ++ Seq(
+  scalaVersion := "2.11.7"
+)
+
 lazy val clippy = (project in file("."))
   .settings(commonSettings)
   .settings(
@@ -62,7 +65,7 @@ lazy val clippy = (project in file("."))
     herokuFatJar in Compile := Some((assemblyOutputPath in ui in assembly).value),
     deployHeroku in Compile <<= (deployHeroku in Compile) dependsOn (assembly in ui)
   )
-  .aggregate(modelJvm, plugin, tests, ui)
+  .aggregate(modelJvm, plugin, pluginSbt, tests, ui)
 
 lazy val model = (crossProject.crossType(CrossType.Pure) in file("model"))
   .settings(commonSettings: _*)
@@ -88,6 +91,17 @@ lazy val plugin = (project in file("plugin"))
   )
 
 lazy val pluginJar = Keys.`package` in (plugin, Compile)
+
+lazy val pluginSbt = (project in file("plugin-sbt"))
+  .enablePlugins(BuildInfoPlugin)
+  .settings(commonSettings)
+  .settings(
+    sbtPlugin := true,
+    name := "plugin-sbt",
+    buildInfoPackage := "com.softwaremill.clippy",
+    buildInfoObject := "ClippyBuildInfo",
+    scalaVersion := "2.10.6"
+  )
 
 lazy val tests = (project in file("tests"))
   .settings(commonSettings)
