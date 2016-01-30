@@ -10,9 +10,9 @@ class CompilationErrorParserTest extends FlatSpec with Matchers {
         | required: akka.stream.scaladsl.Flow[akka.http.scaladsl.model.HttpRequest,akka.http.scaladsl.model.HttpResponse,Any]""".stripMargin
 
     CompilationErrorParser.parse(e) should be (Some(TypeMismatchError(
-      Exact("akka.http.scaladsl.server.StandardRoute"),
+      ExactT("akka.http.scaladsl.server.StandardRoute"),
       None,
-      Exact("akka.stream.scaladsl.Flow[akka.http.scaladsl.model.HttpRequest,akka.http.scaladsl.model.HttpResponse,Any]"),
+      ExactT("akka.stream.scaladsl.Flow[akka.http.scaladsl.model.HttpRequest,akka.http.scaladsl.model.HttpResponse,Any]"),
       None
     )))
   }
@@ -24,9 +24,9 @@ class CompilationErrorParserTest extends FlatSpec with Matchers {
         |[error]  required: akka.stream.scaladsl.Flow[akka.http.scaladsl.model.HttpRequest,akka.http.scaladsl.model.HttpResponse,Any]""".stripMargin
 
     CompilationErrorParser.parse(e) should be (Some(TypeMismatchError(
-      Exact("akka.http.scaladsl.server.StandardRoute"),
+      ExactT("akka.http.scaladsl.server.StandardRoute"),
       None,
-      Exact("akka.stream.scaladsl.Flow[akka.http.scaladsl.model.HttpRequest,akka.http.scaladsl.model.HttpResponse,Any]"),
+      ExactT("akka.stream.scaladsl.Flow[akka.http.scaladsl.model.HttpRequest,akka.http.scaladsl.model.HttpResponse,Any]"),
       None
     )))
   }
@@ -39,10 +39,10 @@ class CompilationErrorParserTest extends FlatSpec with Matchers {
         |   (which expands to)  japgolly.scalajs.react.CompState.ReadDirectWriteCallbackOps[?]""".stripMargin
 
     CompilationErrorParser.parse(e) should be (Some(TypeMismatchError(
-      Exact("japgolly.scalajs.react.CompState.ReadCallbackWriteCallbackOps[com.softwaremill.clippy.Contribute.Step2.State]#This[com.softwaremill.clippy.FormField]"),
+      ExactT("japgolly.scalajs.react.CompState.ReadCallbackWriteCallbackOps[com.softwaremill.clippy.Contribute.Step2.State]#This[com.softwaremill.clippy.FormField]"),
       None,
-      Exact("japgolly.scalajs.react.CompState.AccessRD[?]"),
-      Some(Exact("japgolly.scalajs.react.CompState.ReadDirectWriteCallbackOps[?]"))
+      ExactT("japgolly.scalajs.react.CompState.AccessRD[?]"),
+      Some(ExactT("japgolly.scalajs.react.CompState.ReadDirectWriteCallbackOps[?]"))
     )))
   }
 
@@ -55,42 +55,42 @@ class CompilationErrorParserTest extends FlatSpec with Matchers {
         |   (which expands to)  japgolly.scalajs.react.CompState.ReadDirectWriteCallbackOps[?]""".stripMargin
 
     CompilationErrorParser.parse(e) should be (Some(TypeMismatchError(
-      Exact("japgolly.scalajs.react.CompState.ReadCallbackWriteCallbackOps[com.softwaremill.clippy.Contribute.Step2.State]#This[com.softwaremill.clippy.FormField]"),
-      Some(Exact("japgolly.scalajs.react.CompState.ReadCallbackWriteCallbackOps[com.softwaremill.clippy.FormField]")),
-      Exact("japgolly.scalajs.react.CompState.AccessRD[?]"),
-      Some(Exact("japgolly.scalajs.react.CompState.ReadDirectWriteCallbackOps[?]"))
+      ExactT("japgolly.scalajs.react.CompState.ReadCallbackWriteCallbackOps[com.softwaremill.clippy.Contribute.Step2.State]#This[com.softwaremill.clippy.FormField]"),
+      Some(ExactT("japgolly.scalajs.react.CompState.ReadCallbackWriteCallbackOps[com.softwaremill.clippy.FormField]")),
+      ExactT("japgolly.scalajs.react.CompState.AccessRD[?]"),
+      Some(ExactT("japgolly.scalajs.react.CompState.ReadDirectWriteCallbackOps[?]"))
     )))
   }
 
   it should "parse macwire's wire not found error message" in {
     val e = "not found: value wire"
 
-    CompilationErrorParser.parse(e) should be (Some(NotFoundError(Exact("value wire"))))
+    CompilationErrorParser.parse(e) should be (Some(NotFoundError(ExactT("value wire"))))
   }
 
   it should "parse not a member of message" in {
     val e = "value call is not a member of scala.concurrent.Future[Unit]"
 
-    CompilationErrorParser.parse(e) should be (Some(NotAMemberError(Exact("value call"), Exact("scala.concurrent.Future[Unit]"))))
+    CompilationErrorParser.parse(e) should be (Some(NotAMemberError(ExactT("value call"), ExactT("scala.concurrent.Future[Unit]"))))
   }
 
   it should "parse not a member of message with extra text" in {
     val e = "[error] /Users/adamw/projects/clippy/ui-client/src/main/scala/com/softwaremill/clippy/Listing.scala:33: value call is not a member of scala.concurrent.Future[Unit]"
 
-    CompilationErrorParser.parse(e) should be (Some(NotAMemberError(Exact("value call"), Exact("scala.concurrent.Future[Unit]"))))
+    CompilationErrorParser.parse(e) should be (Some(NotAMemberError(ExactT("value call"), ExactT("scala.concurrent.Future[Unit]"))))
   }
 
   it should "parse an implicit not found" in {
     val e = "could not find implicit value for parameter marshaller: spray.httpx.marshalling.ToResponseMarshaller[scala.concurrent.Future[String]]"
 
-    CompilationErrorParser.parse(e) should be (Some(ImplicitNotFoundError(Exact("marshaller"), Exact("spray.httpx.marshalling.ToResponseMarshaller[scala.concurrent.Future[String]]"))))
+    CompilationErrorParser.parse(e) should be (Some(ImplicitNotFoundError(ExactT("marshaller"), ExactT("spray.httpx.marshalling.ToResponseMarshaller[scala.concurrent.Future[String]]"))))
   }
 
   it should "parse a diverging implicit error " in {
     val e = "diverging implicit expansion for type io.circe.Decoder.Secondary[this.Out] starting with method decodeCaseClass in trait GenericInstances"
 
     CompilationErrorParser.parse(e) should be (Some(DivergingImplicitExpansionError(
-      Exact("io.circe.Decoder.Secondary[this.Out]"), Exact("decodeCaseClass"), Exact("trait GenericInstances"))))
+      ExactT("io.circe.Decoder.Secondary[this.Out]"), ExactT("decodeCaseClass"), ExactT("trait GenericInstances"))))
   }
 
   it should "parse a diverging implicit error with extra text" in {
@@ -101,6 +101,6 @@ class CompilationErrorParserTest extends FlatSpec with Matchers {
       """.stripMargin
 
     CompilationErrorParser.parse(e) should be (Some(DivergingImplicitExpansionError(
-      Exact("io.circe.Decoder.Secondary[this.Out]"), Exact("decodeCaseClass"), Exact("trait GenericInstances"))))
+      ExactT("io.circe.Decoder.Secondary[this.Out]"), ExactT("decodeCaseClass"), ExactT("trait GenericInstances"))))
   }
 }

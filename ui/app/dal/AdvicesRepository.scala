@@ -36,7 +36,7 @@ class AdvicesRepository(database: SqlDatabase, idGenerator: IdGenerator)(implici
 
   private val advices = TableQuery[AdvicesTable]
 
-  def store(errorTextRaw: String, compilationError: CompilationError[ExactOrRegex], advice: String,
+  def store(errorTextRaw: String, compilationError: CompilationError[RegexT], advice: String,
     state: AdviceState, library: Library, contributor: Contributor, comment: Option[String]): Future[StoredAdvice] = {
 
     val a = StoredAdvice(idGenerator.nextId(), errorTextRaw, compilationError, advice, state, library,
@@ -50,7 +50,7 @@ class AdvicesRepository(database: SqlDatabase, idGenerator: IdGenerator)(implici
   }
 }
 
-case class StoredAdvice(id: Long, errorTextRaw: String, compilationError: CompilationError[ExactOrRegex],
+case class StoredAdvice(id: Long, errorTextRaw: String, compilationError: CompilationError[RegexT],
     advice: String, state: AdviceState, library: Library, contributor: Contributor, comment: Option[String]) {
 
   def toAdvice = Advice(id, compilationError, advice, library)

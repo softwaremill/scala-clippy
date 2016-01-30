@@ -25,16 +25,7 @@ class AdvicesController(advicesRepository: AdvicesRepository)(implicit ec: Execu
 
   private def toXmlString(advices: Seq[Advice]): String = {
     val xml = <clippy version={ ClippyBuildInfo.version }>
-                {
-                  advices.map { a =>
-                    <advice>
-                      <id>{ a.id }</id>
-                      { a.compilationError.toXml }
-                      <text>{ a.advice }</text>
-                      { a.library.toXml }
-                    </advice>
-                  }
-                }
+                { advices.map(_.toXml) }
               </clippy>
 
     Utility.trim(xml).toString

@@ -12,7 +12,7 @@ object App {
   case object UsePage extends Page
   case object ContributeStep1 extends Page
   case class ContributeParseError(errorText: String) extends Page
-  case class ContributeStep2(errorTextRaw: String, ce: CompilationError[ExactOrRegex]) extends Page
+  case class ContributeStep2(errorTextRaw: String, ce: CompilationError[RegexT]) extends Page
   case object ListingPage extends Page
   case object FeedbackPage extends Page
 
@@ -24,7 +24,7 @@ object App {
     private def handleErrorTextSubmitted(errorText: String): Callback = {
       CompilationErrorParser.parse(errorText) match {
         case None => clearMsgs >> $.modState(_.copy(page = ContributeParseError(errorText)))
-        case Some(ce) => clearMsgs >> $.modState(_.copy(page = ContributeStep2(errorText, ce.asExactOrRegex)))
+        case Some(ce) => clearMsgs >> $.modState(_.copy(page = ContributeStep2(errorText, ce.asRegex)))
       }
     }
 

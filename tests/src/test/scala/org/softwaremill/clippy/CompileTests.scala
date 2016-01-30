@@ -3,9 +3,9 @@ package org.softwaremill.clippy
 import java.io.{FileOutputStream, File}
 import java.util.zip.GZIPOutputStream
 
+import com.softwaremill.clippy._
 import org.scalatest.{BeforeAndAfterAll, Matchers, FlatSpec}
 
-import scala.io.Source
 import scala.tools.reflect.ToolBoxError
 
 class CompileTests extends FlatSpec with Matchers with BeforeAndAfterAll {
@@ -24,9 +24,32 @@ class CompileTests extends FlatSpec with Matchers with BeforeAndAfterAll {
       localStore.renameTo(localStore2)
     }
 
-    val clippyXml = Source.fromInputStream(this.getClass.getResourceAsStream("/clippy.xml")).getLines().mkString("\n")
+    val advices = List(
+      Advice(
+        1L,
+        TypeMismatchError(ExactT("slick.dbio.DBIOAction[*]"), None, ExactT("slick.lifted.Rep[Option[*]]"), None).asRegex,
+        "Perhaps you forgot to call .result on your Rep[]? This will give you a DBIOAction that you can compose with other DBIOActions.",
+        Library("com.typesafe.slick", "slick", "3.1.0")
+      ),
+      Advice(
+        2L,
+        TypeMismatchError(ExactT("akka.http.scaladsl.server.StandardRoute"), None, ExactT("akka.stream.scaladsl.Flow[akka.http.scaladsl.model.HttpRequest,akka.http.scaladsl.model.HttpResponse,Any]"), None).asRegex,
+        "did you forget to define an implicit akka.stream.ActorMaterializer? It allows routes to be converted into a flow. You can read more at http://doc.akka.io/docs/akka-stream-and-http-experimental/2.0/scala/http/routing-dsl/index.html",
+        Library("com.typesafe.akka", "akka-http-experimental", "2.0.0")
+      ),
+      Advice(
+        3L,
+        NotFoundError(ExactT("value wire")).asRegex,
+        "you need to import com.softwaremill.macwire._",
+        Library("com.softwaremill.macwire", "macros", "2.0.0")
+      )
+    )
+
+    val xml =
+      <clippy version="0.1">{ advices.map(_.toXml) }</clippy>
+
     val os = new GZIPOutputStream(new FileOutputStream(localStore))
-    try os.write(clippyXml.getBytes("UTF-8")) finally os.close()
+    try os.write(xml.toString().getBytes("UTF-8")) finally os.close()
   }
 
   override protected def afterAll() = {

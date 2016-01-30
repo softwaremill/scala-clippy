@@ -18,10 +18,10 @@ trait ListingApi {
   def sendSuggestEdit(text: String, contactEmail: String, adviceListing: AdviceListing): Future[Unit]
 }
 
-case class AdviceProposal(errorTextRaw: String, compilationError: CompilationError[ExactOrRegex], advice: String,
+case class AdviceProposal(errorTextRaw: String, compilationError: CompilationError[RegexT], advice: String,
   library: Library, contributor: Contributor, comment: Option[String])
 
 case class ContributorListing(twitter: Option[String], github: Option[String])
 
-case class AdviceListing(id: Long, compilationError: CompilationError[ExactOrRegex], advice: String,
+case class AdviceListing(id: Long, compilationError: CompilationError[RegexT], advice: String,
   library: Library, contributor: ContributorListing)
