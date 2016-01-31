@@ -32,7 +32,7 @@ object Menu {
                 <.a("Use", ^.onClick ==> switchTo(UsePage), ^.href := "#")
               ),
               <.li(isContributePage ?= (^.cls := "active"))(
-                <.a("Contribute", ^.onClick ==> switchTo(ContributeStep1), ^.href := "#")
+                <.a("Contribute", ^.onClick ==> switchTo(ContributeStep1InputError), ^.href := "#")
               ),
               <.li(isListingPage ?= (^.cls := "active"))(
                 <.a("Browse", ^.onClick ==> switchTo(ListingPage), ^.href := "#")

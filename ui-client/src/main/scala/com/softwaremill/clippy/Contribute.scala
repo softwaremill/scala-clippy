@@ -7,8 +7,8 @@ import Utils._
 import monocle.macros.Lenses
 
 object Contribute {
-  object Step1 {
-    case class Props(submit: String => Callback, showError: String => Callback)
+  object Step1InputError {
+    case class Props(next: String => Callback, showError: String => Callback)
 
     @Lenses
     case class State(errorText: FormField)
@@ -26,26 +26,89 @@ object Contribute {
             """[error] type mismatch;
               |[error] found   : akka.http.scaladsl.server.StandardRoute
               |[error] required: akka.stream.scaladsl.Flow[akka.http.scaladsl.model.HttpRequest,akka.http.scaladsl.model.HttpResponse,Any]""".stripMargin
-          )
+          ),
+          <.p("You will be able to edit the pattern that will be used when matching errors later.")
         ),
         <.form(
-          ^.onSubmit ==> FormField.submitValidated($, p.showError)(s => p.submit(s.errorText.v)),
+          ^.onSubmit ==> FormField.submitValidated($, p.showError)(s => p.next(s.errorText.v)),
           bsFormEl(externalVar($, s, State.errorText))(mods =>
-            <.textarea(^.cls := "form-control", ^.rows := 3)(mods)),
+            <.textarea(^.cls := "form-control", ^.rows := 5)(mods)),
           <.button(^.`type` := "submit", ^.cls := "btn btn-primary")("Next")
         )
       )
     }
 
-    val component = ReactComponentB[Props]("ContributeStep1")
+    val component = ReactComponentB[Props]("Step1InputError")
       .initialState(State(FormField("Error text", required = true)))
       .renderBackend[Backend]
       .build
   }
 
-  object Step2 {
-    case class Props(errorTextRaw: String, ce: CompilationError[RegexT], reset: Callback, send: AdviceProposal => Callback,
+  object Step2EditPattern {
+    case class Props(errorTextRaw: String, ce: CompilationError[ExactT], reset: Callback,
+      next: (String, String, CompilationError[ExactT]) => Callback,
       showError: String => Callback)
+
+    @Lenses
+    case class State(patternText: FormField)
+    implicit val stateVal = new Validatable[State] {
+      override def validated(s: State) = s.copy(patternText = s.patternText.validated)
+      override def fields(s: State) = List(s.patternText)
+    }
+
+    class Backend($: BackendScope[Props, State]) {
+      def render(s: State, p: Props) = {
+        val parsedPattern = CompilationErrorParser.parse(s.patternText.v)
+        val errorMatchesPattern = parsedPattern.map(_.asRegex).map(_.matches(p.ce))
+
+        val alert = errorMatchesPattern match {
+          case None =>
+            <.div(^.cls := "alert alert-danger", ^.role := "alert")("Cannot parse the error")
+          case Some(false) =>
+            <.div(^.cls := "alert alert-danger", ^.role := "alert")("The pattern doesn't match the original error")
+          case Some(true) =>
+            <.div(^.cls := "alert alert-success", ^.role := "alert")("The pattern matches the original error")
+        }
+
+        val canProceed = errorMatchesPattern.getOrElse(false)
+
+        val nextCallback = parsedPattern match {
+          case None => Callback.empty
+          case Some(ceFromPattern) => p.next(p.errorTextRaw, s.patternText.v, ceFromPattern)
+        }
+
+        <.div(
+          bsPanel(
+            <.p("Parsing successfull! Here's what we've found:"),
+            <.pre(p.ce.toString),
+            <.p("You can now create a pattern for matching errors using a wildcard character: *. For example, you can generalize a pattern by replacing concrete type parameters with *:"),
+            <.pre("cats.Monad[List] -> cats.Monad[*]"),
+            <.p("Or, you can just click next and leave the submitted error to be an exact pattern.")
+          ),
+          alert,
+          <.form(
+            ^.onSubmit ==> FormField.submitValidated($, p.showError)(_ => nextCallback),
+            bsFormEl(externalVar($, s, State.patternText))(mods =>
+              <.textarea(^.cls := "form-control", ^.rows := 5)(mods)),
+            <.button(^.`type` := "reset", ^.cls := "btn btn-default", ^.onClick --> p.reset)("Reset"),
+            <.span(" "),
+            <.button(^.`type` := "submit", ^.cls := "btn btn-primary", ^.disabled := !canProceed)("Next")
+          )
+        )
+      }
+    }
+
+    val component = ReactComponentB[Props]("Step2EditPattern")
+      .initialState_P { p =>
+        State(FormField("Pattern", required = true, p.errorTextRaw, error = false))
+      }
+      .renderBackend[Backend]
+      .build
+  }
+
+  object Step3SubmitAdvice {
+    case class Props(errorTextRaw: String, patternRaw: String, ceFromPattern: CompilationError[ExactT], reset: Callback,
+      send: AdviceProposal => Callback, showError: String => Callback)
 
     @Lenses
     case class State(advice: FormField, libraryGroupId: FormField, libraryArtifactId: FormField,
@@ -69,13 +132,14 @@ object Contribute {
     class Backend($: BackendScope[Props, State]) {
       def render(s: State, p: Props) = <.div(
         bsPanel(
-          <.p("Parsing successfull! Here's what we've found:"),
-          <.pre(p.ce.toString),
+          <.p("You can now define the advice associated with the error. Here's the pattern you have entered:"),
+          <.pre(p.ceFromPattern.toString),
           <.p("You can optionally leave an e-mail so that we can let you know when your proposal is accepted, and a twitter/github handle so that we can add proper attribution, visible in the advice browser.")
         ),
         <.form(
           ^.onSubmit ==> FormField.submitValidated($, p.showError)(s => p.send(AdviceProposal(
-            p.errorTextRaw, p.ce, s.advice.v, Library(s.libraryGroupId.v, s.libraryArtifactId.v, s.libraryVersion.v),
+            p.errorTextRaw, p.patternRaw, p.ceFromPattern.asRegex, s.advice.v,
+            Library(s.libraryGroupId.v, s.libraryArtifactId.v, s.libraryVersion.v),
             Contributor(s.email.vOpt, s.twitter.vOpt, s.github.vOpt), s.comment.vOpt
           ))),
           bsFormEl(externalVar($, s, State.advice))(mods =>
@@ -110,7 +174,7 @@ object Contribute {
       )
     }
 
-    val component = ReactComponentB[Props]("ContributeStep2")
+    val component = ReactComponentB[Props]("Step3SubmitAdvice")
       .initialState(State(
         FormField("Advice", required = true),
         FormField("Library group id", required = true),
@@ -151,7 +215,7 @@ object Contribute {
       )
     }
 
-    val component = ReactComponentB[Props]("ContributeParseError")
+    val component = ReactComponentB[Props]("ParseError")
       .initialState(State(FormField("Email", required = true)))
       .renderBackend[Backend]
       .build

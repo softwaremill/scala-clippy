@@ -24,7 +24,8 @@ class UiApiImpl(
 
   override def sendAdviceProposal(ap: AdviceProposal): Future[Unit] = {
     advicesRepository
-      .store(ap.errorTextRaw, ap.compilationError, ap.advice, AdviceState.Pending, ap.library, ap.contributor, ap.comment)
+      .store(ap.errorTextRaw, ap.patternRaw, ap.compilationError, ap.advice, AdviceState.Pending, ap.library,
+        ap.contributor, ap.comment)
       .flatMap { a =>
         emailService.send(contactEmail, "Clippy: new advice proposal",
           s"""

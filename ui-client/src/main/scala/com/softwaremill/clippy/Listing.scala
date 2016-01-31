@@ -60,7 +60,7 @@ object Listing {
       <.table(^.cls := "table table-striped advice-listing")(
         <.thead(
           <.tr(
-            <.th("Compilation error"),
+            <.th("Compilation error (as regex)"),
             <.th(^.width := "25%")("Advice"),
             <.th(^.width := "20%")("Library"),
             <.th(^.width := "8%")("Suggest edit")
