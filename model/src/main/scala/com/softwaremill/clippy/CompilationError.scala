@@ -1,9 +1,5 @@
 package com.softwaremill.clippy
 
-import java.util.regex.Pattern
-
-import scala.util.Try
-import scala.util.matching.Regex
 import scala.xml.{XML, NodeSeq}
 
 sealed trait CompilationError[T <: Template] {
@@ -169,91 +165,5 @@ object CompilationError {
       .orElse(extractNotAMemberOf)
       .orElse(extractImplicitNotFound)
       .orElse(extractDivergingImplicitExpansion)
-  }
-}
-
-object CompilationErrorParser {
-  private val FoundRegexp = """found\s*:\s*([^\n]+)\n""".r
-  private val RequiredPrefixRegexp = """required\s*:""".r
-  private val AfterRequiredRegexp = """required\s*:\s*([^\n]+)""".r
-  private val WhichExpandsToRegexp = """\s*\(which expands to\)\s*([^\n]+)""".r
-  private val NotFoundRegexp = """not found\s*:\s*([^\n]+)""".r
-  private val NotAMemberRegexp = """:?\s*([^\n:]+) is not a member of""".r
-  private val NotAMemberOfRegexp = """is not a member of\s*([^\n]+)""".r
-  private val ImplicitNotFoundRegexp = """could not find implicit value for parameter\s*([^:]+):\s*([^\n]+)""".r
-  private val DivergingImplicitExpansionRegexp = """diverging implicit expansion for type\s*([^\s]+)\s*.*\s*starting with method\s*([^\s]+)\s*in\s*([^\n]+)""".r
-
-  def parse(error: String): Option[CompilationError[ExactT]] = {
-    if (error.contains("type mismatch")) {
-      RequiredPrefixRegexp.split(error).toList match {
-        case List(beforeReq, afterReq) =>
-          for {
-            found <- FoundRegexp.findFirstMatchIn(beforeReq)
-            foundExpandsTo = WhichExpandsToRegexp.findFirstMatchIn(beforeReq)
-            required <- AfterRequiredRegexp.findFirstMatchIn(error)
-            requiredExpandsTo = WhichExpandsToRegexp.findFirstMatchIn(afterReq)
-          } yield TypeMismatchError[ExactT](ExactT(found.group(1)), foundExpandsTo.map(m => ExactT(m.group(1))),
-            ExactT(required.group(1)), requiredExpandsTo.map(m => ExactT(m.group(1))))
-
-        case _ =>
-          None
-      }
-    }
-    else if (error.contains("not found")) {
-      for {
-        what <- NotFoundRegexp.findFirstMatchIn(error)
-      } yield NotFoundError[ExactT](ExactT(what.group(1)))
-    }
-    else if (error.contains("is not a member of")) {
-      for {
-        what <- NotAMemberRegexp.findFirstMatchIn(error)
-        notAMemberOf <- NotAMemberOfRegexp.findFirstMatchIn(error)
-      } yield NotAMemberError[ExactT](ExactT(what.group(1)), ExactT(notAMemberOf.group(1)))
-    }
-    else if (error.contains("could not find implicit value for parameter")) {
-      for {
-        inf <- ImplicitNotFoundRegexp.findFirstMatchIn(error)
-      } yield ImplicitNotFoundError[ExactT](ExactT(inf.group(1)), ExactT(inf.group(2)))
-    }
-    else if (error.contains("diverging implicit expansion for type")) {
-      for {
-        inf <- DivergingImplicitExpansionRegexp.findFirstMatchIn(error)
-      } yield DivergingImplicitExpansionError[ExactT](ExactT(inf.group(1)), ExactT(inf.group(2)), ExactT(inf.group(3)))
-    }
-    else None
-  }
-}
-
-sealed trait Template {
-  def v: String
-}
-
-case class ExactT(v: String) extends Template {
-  override def toString = v
-}
-
-case class RegexT(v: String) extends Template {
-  lazy val regex = Try(new Regex(v)).getOrElse(new Regex("^$"))
-  def matches(e: ExactT): Boolean = regex.pattern.matcher(e.v).matches()
-  override def toString = v
-}
-object RegexT {
-  /**
-    * Patterns can include wildcards (`*`)
-    */
-  def fromPattern(pattern: String): RegexT = {
-    val regexp = pattern
-      .split("\\*", -1)
-      .map(el => if (el != "") Pattern.quote(el) else el)
-      .flatMap(el => List(".*", el))
-      .tail
-      .filter(_.nonEmpty)
-      .mkString("")
-
-    RegexT.fromRegex(regexp)
-  }
-
-  def fromRegex(v: String): RegexT = {
-    new RegexT(v)
   }
 }
