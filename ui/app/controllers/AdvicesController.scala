@@ -1,12 +1,11 @@
 package controllers
 
-import com.softwaremill.clippy.Advice
+import com.softwaremill.clippy.{Clippy, Advice}
 import dal.AdvicesRepository
 import play.api.mvc.{Action, Controller}
 import util.{Zip, ClippyBuildInfo}
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.xml.Utility
 
 class AdvicesController(advicesRepository: AdvicesRepository)(implicit ec: ExecutionContext) extends Controller {
   def get = Action.async {
@@ -19,15 +18,12 @@ class AdvicesController(advicesRepository: AdvicesRepository)(implicit ec: Execu
       val advices = storedAdvices
         //.filter(_.accepted)
         .map(_.toAdvice)
-      Zip.compress(toXmlString(advices))
+      Zip.compress(toJsonString(advices.toList))
     }
   }
 
-  private def toXmlString(advices: Seq[Advice]): String = {
-    val xml = <clippy version={ ClippyBuildInfo.version }>
-                { advices.map(_.toXml) }
-              </clippy>
-
-    Utility.trim(xml).toString
+  private def toJsonString(advices: List[Advice]): String = {
+    import org.json4s.native.JsonMethods.{render => r, compact}
+    compact(r(Clippy(ClippyBuildInfo.version, advices).toJson))
   }
 }

@@ -7,14 +7,14 @@ import java.util.zip.GZIPInputStream
 import com.softwaremill.clippy.Utils._
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.io.Source
 import scala.tools.nsc.Global
 import scala.util.{Failure, Success, Try}
-import scala.xml.XML
 
 class AdviceLoader(global: Global, url: String, localStoreDir: File)(implicit ec: ExecutionContext) {
   private val OneDayMillis = 1000L * 60 * 60 * 24
 
-  private val localStore = new File(localStoreDir, "clippy.xml.gz")
+  private val localStore = new File(localStoreDir, "clippy.json.gz")
 
   def load(): Future[Clippy] = {
     val result = if (!localStore.exists()) {
@@ -41,11 +41,11 @@ class AdviceLoader(global: Global, url: String, localStoreDir: File)(implicit ec
       }
     }
 
-    result.andThen { case Success(v) => v.checkPluginVersion(global.warning) }
+    result.andThen { case Success(v) => v.checkPluginVersion(ClippyBuildInfo.version, global.warning) }
   }
 
   private def fetchStoreParse(): Future[Clippy] =
-    fetchCompressedXml()
+    fetchCompressedJson()
       .map { bytes =>
         storeLocallyInBackground(bytes)
         bytes
@@ -60,7 +60,7 @@ class AdviceLoader(global: Global, url: String, localStoreDir: File)(implicit ec
     f
   }
 
-  private def fetchCompressedXml(): Future[Array[Byte]] = Future {
+  private def fetchCompressedJson(): Future[Array[Byte]] = Future {
     val u = new URL(url)
     val conn = u.openConnection().asInstanceOf[HttpURLConnection]
 
@@ -72,8 +72,10 @@ class AdviceLoader(global: Global, url: String, localStoreDir: File)(implicit ec
   }
 
   private def bytesToClippy(bytes: Array[Byte]): Clippy = {
-    val nodeSeq = XML.load(new GZIPInputStream(new ByteArrayInputStream(bytes)))
-    Clippy.fromXml(nodeSeq)
+    import org.json4s.native.JsonMethods._
+    val data = Source.fromInputStream(new GZIPInputStream(new ByteArrayInputStream(bytes)), "UTF-8").getLines().mkString("\n")
+    Clippy.fromJson(parse(data))
+      .getOrElse(throw new IllegalArgumentException("Cannot deserialize Clippy data"))
   }
 
   private def storeLocally(bytes: Array[Byte]): Unit = {

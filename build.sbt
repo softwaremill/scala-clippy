@@ -1,7 +1,10 @@
 import sbt._
 import Keys._
+import sbtassembly.AssemblyKeys
 
 import scalariform.formatter.preferences._
+
+val json4s = "org.json4s" %% "json4s-native" % "3.2.11"
 
 // testing
 val scalatest = "org.scalatest" %% "scalatest" % "2.2.6" % "test"
@@ -12,7 +15,7 @@ name := "clippy"
 // factor out common settings into a sequence
 lazy val commonSettingsNoScalaVersion = scalariformSettings ++ Seq(
   organization := "com.softwaremill.clippy",
-  version := "0.1",
+  version := "0.2-SNAPSHOT",
 
   scalacOptions ++= Seq("-unchecked", "-deprecation"),
 
@@ -70,7 +73,8 @@ lazy val clippy = (project in file("."))
 lazy val model = (crossProject.crossType(CrossType.Pure) in file("model"))
   .settings(commonSettings: _*)
   .settings(
-    libraryDependencies ++= Seq(scalatest, scalacheck, "org.scala-lang.modules" %% "scala-xml" % "1.0.5")
+    libraryDependencies ++= Seq(scalatest, scalacheck,
+      json4s)
   )
 
 lazy val modelJvm = model.jvm.settings(name := "modelJvm")
@@ -86,11 +90,16 @@ lazy val plugin = (project in file("plugin"))
       scalatest, scalacheck),
     buildInfoPackage := "com.softwaremill.clippy",
     buildInfoObject := "ClippyBuildInfo",
-    // including the model classes for re-compilation, so that the plugin jar has no deps
-    unmanagedSourceDirectories in Compile ++= (sourceDirectories in (modelJvm, Compile)).value
+    artifact in (Compile, assembly) := {
+      val art = (artifact in (Compile, assembly)).value
+      art.copy(`classifier` = Some("bundle"))
+    },
+    assemblyOption in assembly := (assemblyOption in assembly).value.copy(includeScala = false)
   )
+  .settings(addArtifact(artifact in (Compile, assembly), assembly))
+  .dependsOn(modelJvm)
 
-lazy val pluginJar = Keys.`package` in (plugin, Compile)
+lazy val pluginJar = AssemblyKeys.`assembly` in (plugin, Compile)
 
 lazy val pluginSbt = (project in file("plugin-sbt"))
   .enablePlugins(BuildInfoPlugin)
@@ -108,7 +117,7 @@ lazy val tests = (project in file("tests"))
   .settings(
     publishArtifact := false,
     libraryDependencies ++= Seq(
-      scalatest,
+      json4s, scalatest,
       "com.typesafe.akka" %% "akka-http-experimental" % "2.0.1",
       "com.softwaremill.macwire" %% "macros" % "2.2.2" % "provided"
     ),
@@ -116,7 +125,7 @@ lazy val tests = (project in file("tests"))
     scalacOptions ++= List(s"-Xplugin:${pluginJar.value.getAbsolutePath}", "-P:clippy:url=http://localhost:9000"),
     envVars in Test := (envVars in Test).value + ("CLIPPY_PLUGIN_PATH" -> pluginJar.value.getAbsolutePath),
     fork in Test := true
-  ).dependsOn(plugin)
+  ).dependsOn(modelJvm)
 
 val slickVersion = "3.1.1"
 

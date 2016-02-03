@@ -30,8 +30,8 @@ class AdvicesRepository(database: SqlDatabase, idGenerator: IdGenerator)(implici
       (libraryGroupId, libraryArtifactId, libraryVersion),
       (contributorEmail, contributorGithub, contributorTwitter),
       comment).shaped <> (
-        { t => StoredAdvice(t._1, t._2, t._3, CompilationError.fromXmlString(t._4).get, t._5, AdviceState(t._6), (Library.apply _).tupled(t._7), Contributor.tupled(t._8), t._9) },
-        { (a: StoredAdvice) => Some((a.id, a.errorTextRaw, a.patternRaw, a.compilationError.toXmlString, a.advice, a.state.id, Library.unapply(a.library).get, Contributor.unapply(a.contributor).get, a.comment)) }
+        { t => StoredAdvice(t._1, t._2, t._3, CompilationError.fromJsonString(t._4).get, t._5, AdviceState(t._6), (Library.apply _).tupled(t._7), Contributor.tupled(t._8), t._9) },
+        { (a: StoredAdvice) => Some((a.id, a.errorTextRaw, a.patternRaw, a.compilationError.toJsonString, a.advice, a.state.id, Library.unapply(a.library).get, Contributor.unapply(a.contributor).get, a.comment)) }
       )
   }
 

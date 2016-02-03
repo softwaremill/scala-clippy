@@ -1,10 +1,14 @@
 package com.softwaremill.clippy
 
-import scala.xml.{XML, NodeSeq}
+import org.json4s.JValue
+import org.json4s.JsonAST.{JField, JString, JObject}
+import org.json4s.native.JsonMethods._
+
+import CompilationError._
 
 sealed trait CompilationError[T <: Template] {
-  def toXml: NodeSeq
-  def toXmlString: String = toXml.toString()
+  def toJson: JValue
+  def toJsonString: String = compact(render(toJson))
   def matches(other: CompilationError[ExactT])(implicit ev: T =:= RegexT): Boolean
   def asRegex(implicit ev: T =:= ExactT): CompilationError[RegexT]
 }
@@ -17,13 +21,15 @@ case class TypeMismatchError[T <: Template](found: T, foundExpandsTo: Option[T],
     s"Type mismatch error.\nFound: $found${expandsTo(foundExpandsTo)},\nrequired: $required${expandsTo(requiredExpandsTo)}"
   }
 
-  override def toXml =
-    <typeMismatch>
-      <found>{found.v}</found>
-      {foundExpandsTo.fold(NodeSeq.Empty)(e => <foundExpandsTo>{e.v}</foundExpandsTo>)}
-      <required>{required.v}</required>
-      {requiredExpandsTo.fold(NodeSeq.Empty)(e => <requiredExpandsTo>{e.v}</requiredExpandsTo>)}
-    </typeMismatch>
+  override def toJson =
+    JObject(
+      List(
+        TypeField -> JString("typeMismatch"),
+        "found" -> JString(found.v),
+        "required" -> JString(required.v))
+        ++ foundExpandsTo.fold[List[JField]](Nil)(e => List("foundExpandsTo" -> JString(e.v)))
+        ++ requiredExpandsTo.fold[List[JField]](Nil)(e => List("requiredExpandsTo" -> JString(e.v)))
+    )
 
   override def matches(other: CompilationError[ExactT])(implicit ev: T =:= RegexT) = other match {
     case TypeMismatchError(f, fe, r, re) =>
@@ -47,8 +53,8 @@ case class NotFoundError[T <: Template](what: T) extends CompilationError[T] {
 
   override def toString = s"Not found error: $what"
 
-  override def toXml =
-    <notFound>{what.v}</notFound>
+  override def toJson =
+    JObject(TypeField -> JString("notFound"), "what" -> JString(what.v))
 
   override def matches(other: CompilationError[ExactT])(implicit ev: T =:= RegexT) = other match {
     case NotFoundError(w) => what.matches(w)
@@ -62,11 +68,12 @@ case class NotAMemberError[T <: Template](what: T, notAMemberOf: T) extends Comp
 
   override def toString = s"Not a member error: $what isn't a member of $notAMemberOf"
 
-  override def toXml =
-    <notAMember>
-      <what>{what.v}</what>
-      <notAMemberOf>{notAMemberOf.v}</notAMemberOf>
-    </notAMember>
+  override def toJson =
+    JObject(
+      TypeField -> JString("notAMember"),
+      "what" -> JString(what.v),
+      "notAMemberOf" -> JString(notAMemberOf.v)
+    )
 
   override def matches(other: CompilationError[ExactT])(implicit ev: T =:= RegexT) = other match {
     case NotAMemberError(w, n) => what.matches(w) && notAMemberOf.matches(n)
@@ -81,11 +88,12 @@ case class ImplicitNotFoundError[T <: Template](parameter: T, implicitType: T) e
 
   override def toString = s"Implicit not found error: for parameter $parameter of type $implicitType"
 
-  override def toXml =
-    <implicitNotFound>
-      <parameter>{parameter.v}</parameter>
-      <implicitType>{implicitType.v}</implicitType>
-    </implicitNotFound>
+  override def toJson =
+    JObject(
+      TypeField -> JString("implicitNotFound"),
+      "parameter" -> JString(parameter.v),
+      "implicitType" -> JString(implicitType.v)
+    )
 
   override def matches(other: CompilationError[ExactT])(implicit ev: T =:= RegexT) = other match {
     case ImplicitNotFoundError(p, i) => parameter.matches(p) && implicitType.matches(i)
@@ -100,12 +108,13 @@ case class DivergingImplicitExpansionError[T <: Template](forType: T, startingWi
 
   override def toString = s"Diverging implicit expansion error: for type $forType starting with $startingWith in $in"
 
-  override def toXml =
-    <divergingImplicitExpansion>
-      <forType>{forType.v}</forType>
-      <startingWith>{startingWith.v}</startingWith>
-      <in>{in.v}</in>
-    </divergingImplicitExpansion>
+  override def toJson =
+    JObject(
+      TypeField -> JString("divergingImplicitExpansion"),
+      "forType" -> JString(forType.v),
+      "startingWith" -> JString(startingWith.v),
+      "in" -> JString(in.v)
+    )
 
   override def matches(other: CompilationError[ExactT])(implicit ev: T =:= RegexT) = other match {
     case DivergingImplicitExpansionError(f, s, i) => forType.matches(f) && startingWith.matches(s) && in.matches(i)
@@ -117,53 +126,55 @@ case class DivergingImplicitExpansionError[T <: Template](forType: T, startingWi
 }
 
 object CompilationError {
-  def fromXmlString(s: String): Option[CompilationError[RegexT]] = fromXml(XML.loadString(s))
+  val TypeField = "type"
 
-  def fromXml(xml: NodeSeq): Option[CompilationError[RegexT]] = {
-    def extractTypeMismatch =
-      (xml \\ "typeMismatch").headOption.map { n =>
-        TypeMismatchError(
-          RegexT.fromRegex((n \ "found").text),
-          (n \ "foundExpandsTo").headOption.map(n => RegexT.fromRegex(n.text)),
-          RegexT.fromRegex((n \ "required").text),
-          (n \ "requiredExpandsTo").headOption.map(n => RegexT.fromRegex(n.text))
-        )
-      }
+  def fromJsonString(s: String): Option[CompilationError[RegexT]] = fromJson(parse(s))
 
-    def extractNotFound =
-      (xml \\ "notFound").headOption.map { n =>
-        NotFoundError(RegexT.fromRegex(n.text))
-      }
+  def fromJson(jvalue: JValue): Option[CompilationError[RegexT]] = {
 
-    def extractNotAMemberOf =
-      (xml \\ "notAMember").headOption.map { n =>
-        NotAMemberError(
-          RegexT.fromRegex((n \ "what").text),
-          RegexT.fromRegex((n \ "notAMemberOf").text)
-        )
-      }
+    def regexTFromJson(fields: List[JField], name: String): Option[RegexT] =
+      (for {
+        JField(`name`, JString(v)) <- fields
+      } yield RegexT.fromRegex(v)).headOption
 
-    def extractImplicitNotFound =
-      (xml \\ "implicitNotFound").headOption.map { n =>
-        ImplicitNotFoundError(
-          RegexT.fromRegex((n \ "parameter").text),
-          RegexT.fromRegex((n \ "implicitType").text)
-        )
-      }
+    def extractWithType(typeValue: String, fields: List[JField]): Option[CompilationError[RegexT]] = typeValue match {
+      case "typeMismatch" =>
+        for {
+          found <- regexTFromJson(fields, "found")
+          foundExpandsTo = regexTFromJson(fields, "foundExpandsTo")
+          required <- regexTFromJson(fields, "required")
+          requiredExpandsTo = regexTFromJson(fields, "requiredExpandsTo")
+        } yield TypeMismatchError(found, foundExpandsTo, required, requiredExpandsTo)
 
-    def extractDivergingImplicitExpansion =
-      (xml \\ "divergingImplicitExpansion").headOption.map { n =>
-        DivergingImplicitExpansionError(
-          RegexT.fromRegex((n \ "forType").text),
-          RegexT.fromRegex((n \ "startingWith").text),
-          RegexT.fromRegex((n \ "in").text)
-        )
-      }
+      case "notFound" =>
+        for {
+          what <- regexTFromJson(fields, "what")
+        } yield NotFoundError(what)
 
-    extractTypeMismatch
-      .orElse(extractNotFound)
-      .orElse(extractNotAMemberOf)
-      .orElse(extractImplicitNotFound)
-      .orElse(extractDivergingImplicitExpansion)
+      case "notAMember" =>
+        for {
+          what <- regexTFromJson(fields, "what")
+          notAMemberOf <- regexTFromJson(fields, "notAMemberOf")
+        } yield NotAMemberError(what, notAMemberOf)
+
+      case "implicitNotFound" =>
+        for {
+          parameter <- regexTFromJson(fields, "parameter")
+          implicitType <- regexTFromJson(fields, "implicitType")
+        } yield ImplicitNotFoundError(parameter, implicitType)
+
+      case "divergingImplicitExpansion" =>
+        for {
+          forType <- regexTFromJson(fields, "forType")
+          startingWith <- regexTFromJson(fields, "startingWith")
+          in <- regexTFromJson(fields, "in")
+        } yield DivergingImplicitExpansionError(forType, startingWith, in)
+    }
+
+    (for {
+      JObject(fields) <- jvalue
+      JField(TypeField, JString(typeValue)) <- fields
+      v <- extractWithType(typeValue, fields).toList
+    } yield v).headOption
   }
 }

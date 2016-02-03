@@ -11,11 +11,11 @@ import scala.tools.reflect.ToolBoxError
 class CompileTests extends FlatSpec with Matchers with BeforeAndAfterAll {
 
   val localStoreDir = new File(System.getProperty("user.home"), ".clippy")
-  val localStore = new File(localStoreDir, "clippy.xml.gz")
-  val localStore2 = new File(localStoreDir, "clippy2.xml.gz")
+  val localStore = new File(localStoreDir, "clippy.json.gz")
+  val localStore2 = new File(localStoreDir, "clippy2.json.gz")
 
   /**
-   * Writing test xml data to where the plugin will expect to have it cached.
+   * Writing test json data to where the plugin will expect to have it cached.
    */
   override protected def beforeAll() = {
     super.beforeAll()
@@ -45,11 +45,11 @@ class CompileTests extends FlatSpec with Matchers with BeforeAndAfterAll {
       )
     )
 
-    val xml =
-      <clippy version="0.1">{ advices.map(_.toXml) }</clippy>
+    import org.json4s.native.JsonMethods._
+    val data = compact(render(Clippy("0.1", advices).toJson))
 
     val os = new GZIPOutputStream(new FileOutputStream(localStore))
-    try os.write(xml.toString().getBytes("UTF-8")) finally os.close()
+    try os.write(data.getBytes("UTF-8")) finally os.close()
   }
 
   override protected def afterAll() = {

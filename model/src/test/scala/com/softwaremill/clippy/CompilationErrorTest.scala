@@ -78,36 +78,36 @@ class CompilationErrorTest extends FlatSpec with Matchers {
 }
 
 class CompilationErrorProperties extends Properties("CompilationError") {
-  property("obj -> xml -> obj works for type mismatch error") =
+  property("obj -> json -> obj works for type mismatch error") =
     forAll { (found: String, foundExpandsTo: Option[String], required: String, requiredExpandsTo: Option[String]) =>
       val e = TypeMismatchError(RegexT.fromPattern(found), foundExpandsTo.map(RegexT.fromPattern),
         RegexT.fromPattern(required), requiredExpandsTo.map(RegexT.fromPattern))
-      CompilationError.fromXml(e.toXml).contains(e)
+      CompilationError.fromJson(e.toJson).contains(e)
     }
 
-  property("obj -> xml -> obj works for not found error") =
+  property("obj -> json -> obj works for not found error") =
     forAll { (what: String) =>
       val e = NotFoundError(RegexT.fromPattern(what))
-      CompilationError.fromXml(e.toXml).contains(e)
+      CompilationError.fromJson(e.toJson).contains(e)
     }
 
-  property("obj -> xml -> obj works for not a member error") =
+  property("obj -> json -> obj works for not a member error") =
     forAll { (what: String, notAMemberOf: String) =>
       val e = NotAMemberError(RegexT.fromPattern(what), RegexT.fromPattern(notAMemberOf))
-      CompilationError.fromXml(e.toXml).contains(e)
+      CompilationError.fromJson(e.toJson).contains(e)
     }
 
-  property("obj -> xml -> obj works for implicit not found") =
+  property("obj -> json -> obj works for implicit not found") =
     forAll { (parameter: String, implicitType: String) =>
       val e = ImplicitNotFoundError(RegexT.fromPattern(parameter), RegexT.fromPattern(implicitType))
-      CompilationError.fromXml(e.toXml).contains(e)
+      CompilationError.fromJson(e.toJson).contains(e)
     }
 
-  property("obj -> xml -> obj works for diverging implicit expansions") =
+  property("obj -> json -> obj works for diverging implicit expansions") =
     forAll { (forType: String, startingWith: String, in: String) =>
       val e = DivergingImplicitExpansionError(RegexT.fromPattern(forType), RegexT.fromPattern(startingWith),
         RegexT.fromPattern(in))
-      CompilationError.fromXml(e.toXml).contains(e)
+      CompilationError.fromJson(e.toJson).contains(e)
     }
 
   property("match identical not found error") =
