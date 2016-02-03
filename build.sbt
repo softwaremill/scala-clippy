@@ -73,8 +73,7 @@ lazy val clippy = (project in file("."))
 lazy val model = (crossProject.crossType(CrossType.Pure) in file("model"))
   .settings(commonSettings: _*)
   .settings(
-    libraryDependencies ++= Seq(scalatest, scalacheck,
-      json4s)
+    libraryDependencies ++= Seq(scalatest, scalacheck, json4s)
   )
 
 lazy val modelJvm = model.jvm.settings(name := "modelJvm")
@@ -87,17 +86,18 @@ lazy val plugin = (project in file("plugin"))
     crossScalaVersions := Seq(scalaVersion.value, "2.10.6"),
     libraryDependencies ++= Seq(
       "org.scala-lang" % "scala-compiler" % scalaVersion.value,
-      scalatest, scalacheck),
+      scalatest, scalacheck, json4s),
     buildInfoPackage := "com.softwaremill.clippy",
     buildInfoObject := "ClippyBuildInfo",
     artifact in (Compile, assembly) := {
       val art = (artifact in (Compile, assembly)).value
-      art.copy(`classifier` = Some("bundle"))
+      art.copy(`type` = "bundle")
     },
-    assemblyOption in assembly := (assemblyOption in assembly).value.copy(includeScala = false)
+    assemblyOption in assembly := (assemblyOption in assembly).value.copy(includeScala = false),
+    // including the model classes for re-compilation, as for some reason depending on modelJvm doesn't work
+    unmanagedSourceDirectories in Compile ++= (sourceDirectories in (modelJvm, Compile)).value
   )
   .settings(addArtifact(artifact in (Compile, assembly), assembly))
-  .dependsOn(modelJvm)
 
 lazy val pluginJar = AssemblyKeys.`assembly` in (plugin, Compile)
 
