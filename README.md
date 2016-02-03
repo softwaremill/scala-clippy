@@ -52,7 +52,7 @@ You can also use Clippy directly as a compiler plugin. If you use SBT, add the f
 project's `.sbt` file:
 
 ````scala
-addCompilerPlugin("com.softwaremill.clippy" %% "plugin" % "0.2" % "bundle")
+addCompilerPlugin("com.softwaremill.clippy" %% "plugin" % "0.2" classifier "bundle")
 ````
 
 If you are using `scalac` directly, add the following option:

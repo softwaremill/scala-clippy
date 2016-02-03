@@ -91,7 +91,7 @@ lazy val plugin = (project in file("plugin"))
     buildInfoObject := "ClippyBuildInfo",
     artifact in (Compile, assembly) := {
       val art = (artifact in (Compile, assembly)).value
-      art.copy(`type` = "bundle")
+      art.copy(`classifier` = Some("bundle"))
     },
     assemblyOption in assembly := (assemblyOption in assembly).value.copy(includeScala = false),
     // including the model classes for re-compilation, as for some reason depending on modelJvm doesn't work

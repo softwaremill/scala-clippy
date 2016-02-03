@@ -4,7 +4,7 @@ import sbt._
 
 object ClippySbtPlugin extends AutoPlugin {
   override def projectSettings = Seq(
-    addCompilerPlugin("com.softwaremill.clippy" %% "plugin" % ClippyBuildInfo.version % "bundle")
+    addCompilerPlugin("com.softwaremill.clippy" %% "plugin" % ClippyBuildInfo.version classifier "bundle")
   )
 
   override def trigger = allRequirements
