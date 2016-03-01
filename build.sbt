@@ -3,6 +3,11 @@ import Keys._
 import sbtassembly.AssemblyKeys
 
 import scalariform.formatter.preferences._
+import scala.xml.transform.RuleTransformer
+import scala.xml.transform.RewriteRule
+import scala.xml.{Node => XNode}
+import scala.xml.{NodeSeq => XNodeSeq}
+import scala.xml.{Elem => XElem}
 
 val json4s = "org.json4s" %% "json4s-native" % "3.2.11"
 
@@ -79,6 +84,13 @@ lazy val model = (crossProject.crossType(CrossType.Pure) in file("model"))
 lazy val modelJvm = model.jvm.settings(name := "modelJvm")
 lazy val modelJs = model.js.settings(name := "modelJs")
 
+def removeDep(groupId: String, artifactId: String) = new RewriteRule {
+  override def transform(n: XNode): XNodeSeq = n match {
+    case e: XElem if (e \ "groupId").text == groupId && (e \ "artifactId").text.startsWith(artifactId) => XNodeSeq.Empty
+    case _ => n
+  }
+}
+
 lazy val plugin = (project in file("plugin"))
   .enablePlugins(BuildInfoPlugin)
   .settings(commonSettings)
@@ -87,7 +99,10 @@ lazy val plugin = (project in file("plugin"))
     libraryDependencies ++= Seq(
       "org.scala-lang" % "scala-compiler" % scalaVersion.value,
       scalatest, scalacheck, json4s),
-    buildInfoPackage := "com.softwaremill.clippy",
+    pomPostProcess := { (node: XNode) =>
+      new RuleTransformer(removeDep("org.json4s", "json4s-native")).transform(node).head
+    },
+      buildInfoPackage := "com.softwaremill.clippy",
     buildInfoObject := "ClippyBuildInfo",
     artifact in (Compile, assembly) := {
       val art = (artifact in (Compile, assembly)).value
