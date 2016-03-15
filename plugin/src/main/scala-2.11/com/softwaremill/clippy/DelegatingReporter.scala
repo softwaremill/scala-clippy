@@ -7,7 +7,7 @@ class DelegatingReporter(r: Reporter, handleError: (Position, String) => String)
   override protected def info0(pos: Position, msg: String, severity: Severity, force: Boolean) = {
     // cannot delegate to info0 as it's protected, hence special-casing on the possible severity values
     if (severity == INFO) {
-      info(pos, msg, force)
+      r.info(pos, msg, force)
     } else if (severity == WARNING) {
       warning(pos, msg)
     } else if (severity == ERROR) {
