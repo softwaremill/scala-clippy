@@ -3,9 +3,9 @@ package com.softwaremill.clippy
 import org.json4s.JsonAST._
 
 case class Clippy(version: String, advices: List[Advice]) {
-  def checkPluginVersion(ourVersion: String, logWarn: String => Unit) = {
+  def checkPluginVersion(ourVersion: String, logInfo: String => Unit) = {
     if (version != ourVersion) {
-      logWarn(s"New version of clippy plugin available: $version. Please update!")
+      logInfo(s"New version of clippy plugin available: $version. Please update!")
     }
   }
 

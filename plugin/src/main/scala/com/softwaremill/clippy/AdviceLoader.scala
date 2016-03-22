@@ -41,7 +41,7 @@ class AdviceLoader(global: Global, url: String, localStoreDir: File)(implicit ec
       }
     }
 
-    result.andThen { case Success(v) => v.checkPluginVersion(ClippyBuildInfo.version, global.warning) }
+    result.andThen { case Success(v) => v.checkPluginVersion(ClippyBuildInfo.version, global.inform) }
   }
 
   private def fetchStoreParse(): Future[Clippy] =
