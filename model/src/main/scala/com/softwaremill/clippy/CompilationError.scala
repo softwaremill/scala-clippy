@@ -202,6 +202,8 @@ object CompilationError {
           alternativesOf <- regexTFromJson(fields, "alternativesOf")
           alternatives <- multipleRegexTFromJson(fields, "alternatives")
         } yield TypeArgumentsDoNotConformToOverloadedBoundsError(typeArgs, alternativesOf, alternatives)
+
+      case _ => None
     }
 
     (for {
