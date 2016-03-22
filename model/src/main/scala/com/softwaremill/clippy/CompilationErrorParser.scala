@@ -14,7 +14,8 @@ object CompilationErrorParser {
   private val DivergingImplicitExpansionRegexp = """diverging implicit expansion for type\s*([^\s]+)\s*.*\s*starting with method\s*([^\s]+)\s*in\s*([^\n]+)""".r
   private val TypeArgumentsDoNotConformToOverloadedBoundsRegexp = """type arguments \[([^\]]+)\] conform to the bounds of none of the overloaded alternatives of\s*([^:\n]+)[^:]*: ([^\n]+)""".r
 
-  def parse(error: String): Option[CompilationError[ExactT]] = {
+  def parse(e: String): Option[CompilationError[ExactT]] = {
+    val error = e.replaceAll(Pattern.quote("[error]"), "")
     if (error.contains("type mismatch")) {
       RequiredPrefixRegexp.split(error).toList match {
         case List(beforeReq, afterReq) =>
