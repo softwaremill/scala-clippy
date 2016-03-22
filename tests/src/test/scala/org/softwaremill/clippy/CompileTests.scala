@@ -42,6 +42,17 @@ class CompileTests extends FlatSpec with Matchers with BeforeAndAfterAll {
         NotFoundError(ExactT("value wire")).asRegex,
         "you need to import com.softwaremill.macwire._",
         Library("com.softwaremill.macwire", "macros", "2.0.0")
+      ),
+      Advice(
+        4L,
+        TypeArgumentsDoNotConformToOverloadedBoundsError(
+          ExactT("*"), ExactT("value apply"), Set(
+            ExactT("[E <: slick.lifted.AbstractTable[_]]=> slick.lifted.TableQuery[E]"),
+            ExactT("[E <: slick.lifted.AbstractTable[_]](cons: slick.lifted.Tag => E)slick.lifted.TableQuery[E]")
+          )
+        ).asRegex,
+        "incorrect class name passed to TableQuery",
+        Library("com.typesafe.slick", "slick", "3.1.1")
       )
     )
 
@@ -77,7 +88,26 @@ class CompileTests extends FlatSpec with Matchers with BeforeAndAfterAll {
     "macwire" -> """
                      |class A()
                      |val a = wire[A]
-                   """.stripMargin
+                   """.stripMargin,
+    "slick" -> """
+                     |case class User(id1: Long, id2: Long)
+                     |trait TestSchema {
+                     |
+                     |  val db: slick.jdbc.JdbcBackend#DatabaseDef
+                     |  val driver: slick.driver.JdbcProfile
+                     |
+                     |  import driver.api._
+                     |
+                     |  protected val users = TableQuery[User]
+                     |
+                     |  protected class Users(tag: Tag) extends Table[User](tag, "users") {
+                     |    def id1 = column[Long]("id")
+                     |    def id2 = column[Long]("id")
+                     |
+                     |    def * = (id1, id2) <> (User.tupled, User.unapply)
+                     |  }
+                     |}
+                 """.stripMargin
   )
 
   for ((name, s) <- snippets) {

@@ -103,4 +103,18 @@ class CompilationErrorParserTest extends FlatSpec with Matchers {
     CompilationErrorParser.parse(e) should be (Some(DivergingImplicitExpansionError(
       ExactT("io.circe.Decoder.Secondary[this.Out]"), ExactT("decodeCaseClass"), ExactT("trait GenericInstances"))))
   }
+
+  it should "parse a type arguments do not conform to any overloaded bounds error" in {
+    val e =
+      """
+        |[error]  clippy/Working.scala:32: type arguments [org.softwaremill.clippy.User] conform to the bounds of none of the overloaded alternatives of
+        |value apply: [E <: slick.lifted.AbstractTable[_]]=> slick.lifted.TableQuery[E] <and> [E <: slick.lifted.AbstractTable[_]](cons: slick.lifted.Tag => E)slick.lifted.TableQuery[E]
+        |protected val users = TableQuery[User]
+      """.stripMargin
+
+    CompilationErrorParser.parse(e) should be (Some(TypeArgumentsDoNotConformToOverloadedBoundsError(
+      ExactT("org.softwaremill.clippy.User"), ExactT("value apply"), Set(
+        ExactT("[E <: slick.lifted.AbstractTable[_]]=> slick.lifted.TableQuery[E]"),
+        ExactT("[E <: slick.lifted.AbstractTable[_]](cons: slick.lifted.Tag => E)slick.lifted.TableQuery[E]")))))
+  }
 }

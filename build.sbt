@@ -134,7 +134,8 @@ lazy val tests = (project in file("tests"))
     libraryDependencies ++= Seq(
       json4s, scalatest,
       "com.typesafe.akka" %% "akka-http-experimental" % "2.0.1",
-      "com.softwaremill.macwire" %% "macros" % "2.2.2" % "provided"
+      "com.softwaremill.macwire" %% "macros" % "2.2.2" % "provided",
+      "com.typesafe.slick" %% "slick" % "3.1.1"
     ),
     // during tests, read from the local repository, if at all available
     scalacOptions ++= List(s"-Xplugin:${pluginJar.value.getAbsolutePath}", "-P:clippy:url=http://localhost:9000"),

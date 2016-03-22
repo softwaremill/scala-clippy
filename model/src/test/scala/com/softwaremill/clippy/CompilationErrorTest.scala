@@ -110,6 +110,13 @@ class CompilationErrorProperties extends Properties("CompilationError") {
       CompilationError.fromJson(e.toJson).contains(e)
     }
 
+  property("obj -> json -> obj works for type arguments do not conform to overloaded bounds") =
+    forAll { (typeArgs: String, alternativesOf: String, alternatives: Set[String]) =>
+      val e = TypeArgumentsDoNotConformToOverloadedBoundsError(RegexT.fromPattern(typeArgs),
+        RegexT.fromPattern(alternativesOf), alternatives.map(a => RegexT.fromPattern(a)))
+      CompilationError.fromJson(e.toJson).contains(e)
+    }
+
   property("match identical not found error") =
     forAll { (what: String) =>
       NotFoundError(RegexT.fromPattern(what)).matches(NotFoundError(ExactT(what)))

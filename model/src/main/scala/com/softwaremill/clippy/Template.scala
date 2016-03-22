@@ -37,4 +37,10 @@ object RegexT {
   def fromRegex(v: String): RegexT = {
     new RegexT(v)
   }
+
+  def setMatches(rr: Set[RegexT], ee: Set[ExactT]): Boolean = {
+    if (rr.size != ee.size) false else {
+      rr.toList.forall { r => ee.exists(r.matches) }
+    }
+  }
 }

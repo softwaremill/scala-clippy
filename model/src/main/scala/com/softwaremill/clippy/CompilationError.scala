@@ -1,9 +1,8 @@
 package com.softwaremill.clippy
 
 import org.json4s.JValue
-import org.json4s.JsonAST.{JField, JString, JObject}
+import org.json4s.JsonAST.{JArray, JField, JObject, JString}
 import org.json4s.native.JsonMethods._
-
 import CompilationError._
 
 sealed trait CompilationError[T <: Template] {
@@ -125,6 +124,28 @@ case class DivergingImplicitExpansionError[T <: Template](forType: T, startingWi
     RegexT.fromPattern(forType.v), RegexT.fromPattern(startingWith.v), RegexT.fromPattern(in.v))
 }
 
+case class TypeArgumentsDoNotConformToOverloadedBoundsError[T <: Template](typeArgs: T, alternativesOf: T, alternatives: Set[T]) extends CompilationError[T] {
+
+  override def toString = s"Type arguments: $typeArgs for overloaded: $alternativesOf do not conform to any bounds: ${alternatives.map(_.toString).mkString(" <or> ")}"
+
+  override def toJson =
+    JObject(
+      TypeField -> JString("typeArgumentsDoNotConformToOverloadedBounds"),
+      "typeArgs" -> JString(typeArgs.v),
+      "alternativesOf" -> JString(alternativesOf.v),
+      "alternatives" -> JArray(alternatives.map(a => JString(a.v)).toList)
+    )
+
+  override def matches(other: CompilationError[ExactT])(implicit ev: T =:= RegexT) = other match {
+    case TypeArgumentsDoNotConformToOverloadedBoundsError(t, af, a) => typeArgs.matches(t) &&
+      alternativesOf.matches(af) && RegexT.setMatches(alternatives.map(ev.apply), a)
+    case _ => false
+  }
+
+  override def asRegex(implicit ev: T =:= ExactT) = TypeArgumentsDoNotConformToOverloadedBoundsError(
+    RegexT.fromPattern(typeArgs.v), RegexT.fromPattern(alternativesOf.v), alternatives.map(a => RegexT.fromPattern(a.v)))
+}
+
 object CompilationError {
   val TypeField = "type"
 
@@ -136,6 +157,11 @@ object CompilationError {
       (for {
         JField(`name`, JString(v)) <- fields
       } yield RegexT.fromRegex(v)).headOption
+
+    def multipleRegexTFromJson(fields: List[JField], name: String): Option[Set[RegexT]] =
+      (for {
+        JField(`name`, JArray(vv)) <- fields
+      } yield vv.collect { case JString(v) => RegexT.fromRegex(v) }.toSet).headOption
 
     def extractWithType(typeValue: String, fields: List[JField]): Option[CompilationError[RegexT]] = typeValue match {
       case "typeMismatch" =>
@@ -169,6 +195,13 @@ object CompilationError {
           startingWith <- regexTFromJson(fields, "startingWith")
           in <- regexTFromJson(fields, "in")
         } yield DivergingImplicitExpansionError(forType, startingWith, in)
+
+      case "typeArgumentsDoNotConformToOverloadedBounds" =>
+        for {
+          typeArgs <- regexTFromJson(fields, "typeArgs")
+          alternativesOf <- regexTFromJson(fields, "alternativesOf")
+          alternatives <- multipleRegexTFromJson(fields, "alternatives")
+        } yield TypeArgumentsDoNotConformToOverloadedBoundsError(typeArgs, alternativesOf, alternatives)
     }
 
     (for {

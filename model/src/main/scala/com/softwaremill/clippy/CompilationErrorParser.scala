@@ -1,5 +1,7 @@
 package com.softwaremill.clippy
 
+import java.util.regex.Pattern
+
 object CompilationErrorParser {
   private val FoundRegexp = """found\s*:\s*([^\n]+)\n""".r
   private val RequiredPrefixRegexp = """required\s*:""".r
@@ -10,6 +12,7 @@ object CompilationErrorParser {
   private val NotAMemberOfRegexp = """is not a member of\s*([^\n]+)""".r
   private val ImplicitNotFoundRegexp = """could not find implicit value for parameter\s*([^:]+):\s*([^\n]+)""".r
   private val DivergingImplicitExpansionRegexp = """diverging implicit expansion for type\s*([^\s]+)\s*.*\s*starting with method\s*([^\s]+)\s*in\s*([^\n]+)""".r
+  private val TypeArgumentsDoNotConformToOverloadedBoundsRegexp = """type arguments \[([^\]]+)\] conform to the bounds of none of the overloaded alternatives of\s*([^:\n]+)[^:]*: ([^\n]+)""".r
 
   def parse(error: String): Option[CompilationError[ExactT]] = {
     if (error.contains("type mismatch")) {
@@ -47,6 +50,12 @@ object CompilationErrorParser {
       for {
         inf <- DivergingImplicitExpansionRegexp.findFirstMatchIn(error)
       } yield DivergingImplicitExpansionError[ExactT](ExactT(inf.group(1)), ExactT(inf.group(2)), ExactT(inf.group(3)))
+    }
+    else if (error.contains("conform to the bounds of none of the overloaded alternatives")) {
+      for {
+        inf <- TypeArgumentsDoNotConformToOverloadedBoundsRegexp.findFirstMatchIn(error)
+      } yield TypeArgumentsDoNotConformToOverloadedBoundsError[ExactT](ExactT(inf.group(1)), ExactT(inf.group(2)),
+        inf.group(3).split(Pattern.quote(" <and> ")).toSet.map(ExactT.apply))
     }
     else None
   }
