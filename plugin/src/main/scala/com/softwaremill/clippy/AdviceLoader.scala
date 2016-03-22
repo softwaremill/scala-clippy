@@ -17,7 +17,7 @@ class AdviceLoader(global: Global, url: String, localStoreDir: File)(implicit ec
   private val localStore = new File(localStoreDir, "clippy.json.gz")
 
   def load(): Future[Clippy] = {
-    val result = if (!localStore.exists()) {
+    if (!localStore.exists()) {
       fetchStoreParse()
     }
     else {
@@ -40,8 +40,6 @@ class AdviceLoader(global: Global, url: String, localStoreDir: File)(implicit ec
           runningFetch.getOrElse(fetchStoreParse())
       }
     }
-
-    result.andThen { case Success(v) => v.checkPluginVersion(ClippyBuildInfo.version, global.inform) }
   }
 
   private def fetchStoreParse(): Future[Clippy] =
@@ -51,6 +49,7 @@ class AdviceLoader(global: Global, url: String, localStoreDir: File)(implicit ec
         bytes
       }
       .map(bytesToClippy)
+      .andThen { case Success(v) => v.checkPluginVersion(ClippyBuildInfo.version, global.inform) }
 
   private def fetchStoreParseInBackground(): Future[Clippy] = {
     val f = fetchStoreParse()
