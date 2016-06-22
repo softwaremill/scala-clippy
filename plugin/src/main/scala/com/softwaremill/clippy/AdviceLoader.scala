@@ -15,6 +15,12 @@ class AdviceLoader(global: Global, url: String, localStoreDir: File)(implicit ec
   private val OneDayMillis = 1000L * 60 * 60 * 24
 
   private val localStore = new File(localStoreDir, "clippy.json.gz")
+  private val projectAdviceFile = new File(".clippy.json")
+  private val projectAdvice: List[Advice] = {
+    Try(loadLocally(projectAdviceFile))
+      .map(bytes => inputStreamToClippy(decodeUtf8Bytes(bytes)).advices)
+      .getOrElse(Nil)
+  }
 
   def load(): Future[Clippy] = {
     if (!localStore.exists()) {
@@ -34,11 +40,15 @@ class AdviceLoader(global: Global, url: String, localStoreDir: File)(implicit ec
         case Failure(t) => Future.failed(t)
       }
 
-      localLoad.map(bytesToClippy).recoverWith {
+      val localClippy = localLoad.map(bytes => inputStreamToClippy(decodeZippedBytes(bytes))).recoverWith {
         case e: Exception =>
+          println(e)
           global.warning(s"Cannot load advice from local store: $localStore. Trying to fetch from server")
           runningFetch.getOrElse(fetchStoreParse())
       }
+
+      //Add in project specific advice
+      localClippy.map(clippy => clippy.copy(advices = clippy.advices ++ projectAdvice))
     }
   }
 
@@ -48,7 +58,7 @@ class AdviceLoader(global: Global, url: String, localStoreDir: File)(implicit ec
         storeLocallyInBackground(bytes)
         bytes
       }
-      .map(bytesToClippy)
+      .map(bytes => inputStreamToClippy(decodeZippedBytes(bytes)))
       .andThen { case Success(v) => v.checkPluginVersion(ClippyBuildInfo.version, global.inform) }
 
   private def fetchStoreParseInBackground(): Future[Clippy] = {
@@ -70,9 +80,13 @@ class AdviceLoader(global: Global, url: String, localStoreDir: File)(implicit ec
     finally conn.disconnect()
   }
 
-  private def bytesToClippy(bytes: Array[Byte]): Clippy = {
+  private def decodeZippedBytes(bytes: Array[Byte]): GZIPInputStream = new GZIPInputStream(decodeUtf8Bytes(bytes))
+
+  private def decodeUtf8Bytes(bytes: Array[Byte]): ByteArrayInputStream = new ByteArrayInputStream(bytes)
+
+  private def inputStreamToClippy(byteStream: InputStream): Clippy = {
     import org.json4s.native.JsonMethods._
-    val data = Source.fromInputStream(new GZIPInputStream(new ByteArrayInputStream(bytes)), "UTF-8").getLines().mkString("\n")
+    val data = Source.fromInputStream(byteStream, "UTF-8").getLines().mkString("\n")
     Clippy.fromJson(parse(data))
       .getOrElse(throw new IllegalArgumentException("Cannot deserialize Clippy data"))
   }
@@ -95,5 +109,5 @@ class AdviceLoader(global: Global, url: String, localStoreDir: File)(implicit ec
     }
   }
 
-  private def loadLocally(): Array[Byte] = inputStreamToBytes(new FileInputStream(localStore))
+  private def loadLocally(source: File = localStore): Array[Byte] = inputStreamToBytes(new FileInputStream(source))
 }
