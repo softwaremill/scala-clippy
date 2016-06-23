@@ -12,7 +12,7 @@ Did you ever see a Scala compiler error such as:
 [error]  found   : akka.http.scaladsl.server.StandardRoute
 [error]  required: akka.stream.scaladsl.Flow[akka.http.scaladsl.model.HttpRequest,akka.http.scaladsl.model.HttpResponse,Any]
 [error]   Http().bindAndHandle(r, "localhost", 8080)
-`````
+````
 
 and had no idea what to do next? Well in this case, you need to provide an implicit instance of an `ActorMaterializer`,
 but the compiler isn't smart enough to be able to tell you that. Luckily, **ScalaClippy is here to help**!
@@ -45,6 +45,34 @@ you have encountered!
 
 It will only take you a couple of minutes, no registration required. Just head over to 
 [https://scala-clippy.org](https://scala-clippy.org)! Thanks!
+
+# Project specific advice
+
+If you have advice that you feel is too specific to be worth sharing on [https://scala-clippy.org](https://scala-clippy.org)
+you can add it to your project specific advice file.
+Just create a file named .clippy.json in the root of your project directory and add the advice json in the format illustrated below:
+
+````
+{
+  "version": "0.2.5",
+  "advices": [
+    {
+      "id": 2,
+      "error": {
+        "type": "typeMismatch",
+        "found": "scala\\.concurrent\\.Future\\[Int\\]",
+        "required": "Int"
+      },
+      "text": "Maybe you used map where you should have used flatMap?",
+      "library": {
+        "groupId": "scala.lang",
+        "artifactId": "Future",
+        "version": "1.0"
+      }
+    }
+  ]
+}
+````
 
 # Alternative ways to use Clippy
 
