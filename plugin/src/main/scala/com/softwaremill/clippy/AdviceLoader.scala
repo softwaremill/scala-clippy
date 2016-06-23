@@ -17,13 +17,21 @@ class AdviceLoader(global: Global, url: String, localStoreDir: File)(implicit ec
   private val localStore = new File(localStoreDir, "clippy.json.gz")
   private val projectAdviceFile = new File(".clippy.json")
   private val projectAdvice: List[Advice] = {
-    Try(loadLocally(projectAdviceFile))
-      .map(bytes => inputStreamToClippy(decodeUtf8Bytes(bytes)).advices)
-      .getOrElse(Nil)
+    if (projectAdviceFile.exists()) {
+      Try(loadLocally(projectAdviceFile))
+        .map(bytes => inputStreamToClippy(decodeUtf8Bytes(bytes)).advices)
+        .recover {
+          case e: Exception =>
+            global.warning(s"Cannot load advice from project store: $projectAdviceFile. Ignoring.")
+            Nil
+        }
+        .getOrElse(Nil)
+    }
+    else Nil
   }
 
   def load(): Future[Clippy] = {
-    if (!localStore.exists()) {
+    val localClippy = if (!localStore.exists()) {
       fetchStoreParse()
     }
     else {
@@ -40,15 +48,15 @@ class AdviceLoader(global: Global, url: String, localStoreDir: File)(implicit ec
         case Failure(t) => Future.failed(t)
       }
 
-      val localClippy = localLoad.map(bytes => inputStreamToClippy(decodeZippedBytes(bytes))).recoverWith {
+      localLoad.map(bytes => inputStreamToClippy(decodeZippedBytes(bytes))).recoverWith {
         case e: Exception =>
           global.warning(s"Cannot load advice from local store: $localStore. Trying to fetch from server")
           runningFetch.getOrElse(fetchStoreParse())
       }
-
-      //Add in project specific advice
-      localClippy.map(clippy => clippy.copy(advices = clippy.advices ++ projectAdvice))
     }
+
+    // Add in project specific advice
+    localClippy.map(clippy => clippy.copy(advices = clippy.advices ++ projectAdvice))
   }
 
   private def fetchStoreParse(): Future[Clippy] =
