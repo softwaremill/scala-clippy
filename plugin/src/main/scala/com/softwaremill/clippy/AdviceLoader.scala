@@ -42,7 +42,6 @@ class AdviceLoader(global: Global, url: String, localStoreDir: File)(implicit ec
 
       val localClippy = localLoad.map(bytes => inputStreamToClippy(decodeZippedBytes(bytes))).recoverWith {
         case e: Exception =>
-          println(e)
           global.warning(s"Cannot load advice from local store: $localStore. Trying to fetch from server")
           runningFetch.getOrElse(fetchStoreParse())
       }
