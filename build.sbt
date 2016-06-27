@@ -118,7 +118,7 @@ lazy val pluginJar = AssemblyKeys.`assembly` in (plugin, Compile)
 
 lazy val pluginSbt = (project in file("plugin-sbt"))
   .enablePlugins(BuildInfoPlugin)
-  .settings(commonSettings)
+  .settings(commonSettingsNoScalaVersion)
   .settings(
     sbtPlugin := true,
     name := "plugin-sbt",
