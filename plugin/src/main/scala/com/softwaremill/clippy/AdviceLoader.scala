@@ -71,7 +71,7 @@ class AdviceLoader(global: Global, url: String, localStoreDir: File)(implicit ec
   private def fetchStoreParseInBackground(): Future[Clippy] = {
     val f = fetchStoreParse()
     f.onFailure {
-      case e: Exception => global.warning(s"Cannot fetch data from $url due to: $e")
+      case e: Exception => global.inform(s"Cannot fetch data from $url due to: $e")
     }
     f
   }
