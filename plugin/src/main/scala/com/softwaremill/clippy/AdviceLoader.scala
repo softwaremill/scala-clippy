@@ -57,7 +57,7 @@ class AdviceLoader(global: Global, url: String, localStoreDir: File)(implicit ec
     }
 
     // Add in project specific advice
-    localClippy.map(clippy => clippy.copy(advices = clippy.advices ++ projectAdvice))
+    localClippy.map(clippy => clippy.copy(advices = projectAdvice ++ clippy.advices))
   }
 
   private def fetchStoreParse(): Future[Clippy] =
