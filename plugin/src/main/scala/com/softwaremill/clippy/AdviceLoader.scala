@@ -15,7 +15,8 @@ class AdviceLoader(global: Global, url: String, localStoreDir: File)(implicit ec
   private val OneDayMillis = 1000L * 60 * 60 * 24
 
   private val localStore = new File(localStoreDir, "clippy.json.gz")
-  private val projectAdviceFile = new File(".clippy.json")
+  private val projectRoot = sys.props.get("user.dir").getOrElse(".")
+  private val projectAdviceFile = new File(s"$projectRoot/.clippy.json")
   private val projectAdvice: List[Advice] = {
     if (projectAdviceFile.exists()) {
       Try(loadLocally(projectAdviceFile))
