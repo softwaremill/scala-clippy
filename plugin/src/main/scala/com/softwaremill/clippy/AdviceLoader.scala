@@ -11,25 +11,21 @@ import scala.io.Source
 import scala.tools.nsc.Global
 import scala.util.{Failure, Success, Try}
 
-class AdviceLoader(global: Global, url: String, localStoreDir: File)(implicit ec: ExecutionContext) {
+class AdviceLoader(global: Global, url: String, localStoreDir: File, projectAdviceFile: Option[File])(implicit ec: ExecutionContext) {
   private val OneDayMillis = 1000L * 60 * 60 * 24
 
   private val localStore = new File(localStoreDir, "clippy.json.gz")
-  private val projectRoot = sys.props.get("user.dir").getOrElse(".")
-  private val projectAdviceFile = new File(s"$projectRoot/.clippy.json")
-  private val projectAdvice: List[Advice] = {
-    if (projectAdviceFile.exists()) {
-      Try(loadLocally(projectAdviceFile))
+
+  private val projectAdvice: List[Advice] =
+    projectAdviceFile.flatMap { file =>
+      Try(loadLocally(file))
         .map(bytes => inputStreamToClippy(decodeUtf8Bytes(bytes)).advices)
         .recover {
           case e: Exception =>
-            global.warning(s"Cannot load advice from project store: $projectAdviceFile. Ignoring.")
-            Nil
-        }
-        .getOrElse(Nil)
-    }
-    else Nil
-  }
+            global.warning(s"Cannot load advice from project store: $file. Ignoring.")
+            throw e
+        }.toOption
+    }.getOrElse(Nil)
 
   def load(): Future[Clippy] = {
     val localClippy = if (!localStore.exists()) {
