@@ -22,7 +22,8 @@ class ClippyPlugin(val global: Global) extends Plugin {
 
     val url = urlFromOptions(options)
     val localStoreDir = localStoreDirFromOptions(options)
-    val advices = loadAdvices(url, localStoreDir)
+    val projectRoot = projectRootFromOptions(options)
+    val advices = loadAdvices(url, localStoreDir, projectRoot)
 
     global.reporter = new DelegatingReporter(r, handleError)
 
@@ -37,18 +38,23 @@ class ClippyPlugin(val global: Global) extends Plugin {
   private def urlFromOptions(options: List[String]): String =
     options.find(_.startsWith("url=")).map(_.substring(4)).getOrElse("https://www.scala-clippy.org") + "/api/advices"
 
+  private def projectRootFromOptions(options: List[String]): Option[File] =
+    options.find(_.startsWith("projectRoot=")).map(_.substring(12))
+      .map(new File(_, ".clippy.json"))
+      .filter(_.exists())
+
   private def localStoreDirFromOptions(options: List[String]): File =
     options.find(_.startsWith("store=")).map(_.substring(6)).map(new File(_)).getOrElse {
       new File(System.getProperty("user.home"), ".clippy")
     }
 
-  private def loadAdvices(url: String, localStoreDir: File): List[Advice] = {
+  private def loadAdvices(url: String, localStoreDir: File, projectAdviceFile: Option[File]): List[Advice] = {
     implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
     try {
       Await
         .result(
-          new AdviceLoader(global, url, localStoreDir).load(),
+          new AdviceLoader(global, url, localStoreDir, projectAdviceFile).load(),
           10.seconds
         )
         .advices
