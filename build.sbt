@@ -9,11 +9,11 @@ import scala.xml.{Node => XNode}
 import scala.xml.{NodeSeq => XNodeSeq}
 import scala.xml.{Elem => XElem}
 
-val json4s = "org.json4s" %% "json4s-native" % "3.2.11"
+val json4s = "org.json4s" %% "json4s-native" % "3.4.2"
 
 // testing
-val scalatest = "org.scalatest" %% "scalatest" % "2.2.6" % "test"
-val scalacheck = "org.scalacheck" %% "scalacheck" % "1.12.5" % "test"
+val scalatest = "org.scalatest" %% "scalatest" % "3.0.0" % "test"
+val scalacheck = "org.scalacheck" %% "scalacheck" % "1.12.6" % "test"
 
 name := "clippy"
 
@@ -95,7 +95,7 @@ lazy val plugin = (project in file("plugin"))
   .enablePlugins(BuildInfoPlugin)
   .settings(commonSettings)
   .settings(
-    crossScalaVersions := Seq(scalaVersion.value, "2.10.6"),
+    crossScalaVersions := Seq(scalaVersion.value, "2.10.6", "2.12.0"),
     libraryDependencies ++= Seq(
       "org.scala-lang" % "scala-compiler" % scalaVersion.value,
       scalatest, scalacheck, json4s),
