@@ -62,7 +62,7 @@ lazy val commonSettingsNoScalaVersion = scalariformSettings ++ Seq(
 )
 
 lazy val commonSettings = commonSettingsNoScalaVersion ++ Seq(
-  scalaVersion := "2.11.7"
+  scalaVersion := "2.11.8"
 )
 
 lazy val clippy = (project in file("."))
