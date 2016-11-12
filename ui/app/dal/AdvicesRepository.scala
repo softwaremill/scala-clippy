@@ -54,7 +54,7 @@ class AdvicesRepository(database: SqlDatabase, idGenerator: IdGenerator)(implici
 case class StoredAdvice(id: Long, errorTextRaw: String, patternRaw: String, compilationError: CompilationError[RegexT],
     advice: String, state: AdviceState, library: Library, contributor: Contributor, comment: Option[String]) {
 
-  def toAdvice = Advice(id, compilationError, advice, library)
+  def toAdvice = Advice(compilationError, advice, library)
   def toAdviceListing = AdviceListing(id, compilationError, advice, library,
     ContributorListing(contributor.github, contributor.twitter))
 }
