@@ -10,11 +10,24 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.io.Source
 import scala.tools.nsc.Global
 import scala.util.{Failure, Success, Try}
+import scala.collection.JavaConversions._
 
 class AdviceLoader(global: Global, url: String, localStoreDir: File, projectAdviceFile: Option[File])(implicit ec: ExecutionContext) {
   private val OneDayMillis = 1000L * 60 * 60 * 24
 
   private val localStore = new File(localStoreDir, "clippy.json.gz")
+
+  private val resourcesAdvice: List[Advice] = {
+    getClass.getClassLoader
+      .getResources("clippy.json")
+      .toIterator
+      .map{ url =>
+        val is = url.openStream()
+        val clips = inputStreamToClippy(is)
+        is.close()
+        clips.advices
+      }
+  }.flatten.toList
 
   private val projectAdvice: List[Advice] =
     projectAdviceFile.flatMap { file =>
@@ -52,8 +65,9 @@ class AdviceLoader(global: Global, url: String, localStoreDir: File, projectAdvi
       }
     }
 
-    // Add in project specific advice
-    localClippy.map(clippy => clippy.copy(advices = projectAdvice ++ clippy.advices))
+    // Add in advice found in resources and project root
+    localClippy.map(clippy =>
+      clippy.copy(advices = (projectAdvice ++ resourcesAdvice ++ clippy.advices).distinct))
   }
 
   private def fetchStoreParse(): Future[Clippy] =
