@@ -12,7 +12,7 @@ import scala.xml.{Elem => XElem}
 val json4s = "org.json4s" %% "json4s-native" % "3.4.2"
 
 // testing
-val scalatest = "org.scalatest" %% "scalatest" % "3.0.0" % "test"
+val scalatest = "org.scalatest" %% "scalatest" % "3.0.1" % "test"
 val scalacheck = "org.scalacheck" %% "scalacheck" % "1.12.6" % "test"
 
 name := "clippy"
