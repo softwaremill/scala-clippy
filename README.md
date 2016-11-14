@@ -61,7 +61,6 @@ Then create a file named .clippy.json in the root of your project directory and 
   "version": "0.3.1",
   "advices": [
     {
-      "id": 2,
       "error": {
         "type": "typeMismatch",
         "found": "scala\\.concurrent\\.Future\\[Int\\]",
@@ -77,6 +76,15 @@ Then create a file named .clippy.json in the root of your project directory and 
   ]
 }
 ````
+
+# Library specific advice
+
+If you have advice that is specific to a library or library version you can also bundle the advice with your library.
+If your users have Scala-Clippy installed they will see your advice if your library is inclued in their project.
+This can be helpful in the common case where users of your library need specific imports to be able to use your functionality.
+To bundle clippy advice with your library just put it in a file named clippy.json in your resources directory
+
+For examples on how to write tests for advice to ensure it does not go out of date see [CompileTests.scala](./tests/src/test/scala/org/softwaremill/clippy/CompileTests.scala)
 
 # Alternative ways to use Clippy
 
