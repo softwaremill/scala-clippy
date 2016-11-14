@@ -17,28 +17,23 @@ class AdviceLoader(global: Global, url: String, localStoreDir: File, projectAdvi
 
   private val localStore = new File(localStoreDir, "clippy.json.gz")
 
-  private val resourcesAdvice: List[Advice] = {
+  private val resourcesAdvice: List[Advice] =
     getClass.getClassLoader
       .getResources("clippy.json")
-      .toIterator
-      .map{ url =>
-        val is = url.openStream()
-        val clips = inputStreamToClippy(is)
-        is.close()
-        clips.advices
-      }
-  }.flatten.toList
+      .toList
+      .flatMap(loadAdviceFromUrL)
+
+  private def loadAdviceFromUrL(url: URL): List[Advice] =
+    TryWith(url.openStream())(inputStreamToClippy(_).advices) match {
+      case Success(advices) => advices
+      case Failure(_) =>
+        global.warning(s"Cannot load advice from ${url.getPath} : Ignoring.")
+        Nil
+    }
 
   private val projectAdvice: List[Advice] =
-    projectAdviceFile.flatMap { file =>
-      Try(loadLocally(file))
-        .map(bytes => inputStreamToClippy(decodeUtf8Bytes(bytes)).advices)
-        .recover {
-          case e: Exception =>
-            global.warning(s"Cannot load advice from project store: $file. Ignoring.")
-            throw e
-        }.toOption
-    }.getOrElse(Nil)
+    projectAdviceFile.map(file =>
+      loadAdviceFromUrL(file.toURI.toURL)).getOrElse(Nil)
 
   def load(): Future[Clippy] = {
     val localClippy = if (!localStore.exists()) {
@@ -113,8 +108,7 @@ class AdviceLoader(global: Global, url: String, localStoreDir: File, projectAdvi
     if (!localStoreDir.isDirectory && !localStoreDir.mkdir()) {
       throw new IOException(s"Cannot create directory $localStoreDir")
     }
-    val os = new FileOutputStream(localStore)
-    try os.write(bytes) finally os.close()
+    TryWith(new FileOutputStream(localStore))(_.write(bytes)).get
   }
 
   private def storeLocallyInBackground(bytes: Array[Byte]): Unit = {
