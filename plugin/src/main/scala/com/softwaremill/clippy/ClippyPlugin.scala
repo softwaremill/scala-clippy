@@ -28,10 +28,18 @@ class ClippyPlugin(val global: Global) extends Plugin {
     global.reporter = new DelegatingReporter(r, handleError)
 
     def handleError(pos: Position, msg: String): String = {
-      val totalMatchingFunction = advices.map(_.errMatching)
-        .foldLeft(PartialFunction.empty[CompilationError[ExactT], String])(_.orElse(_)).lift
-      val adviceText = CompilationErrorParser.parse(msg).flatMap(totalMatchingFunction).map("\n Clippy advises: " + _).getOrElse("")
-      msg + adviceText
+      val parsedMsg = CompilationErrorParser.parse(msg)
+      val matchers = advices.map(_.errMatching.lift)
+      val matches = matchers.flatMap(pf => parsedMsg.flatMap(pf))
+
+      matches.size match {
+        case 0 =>
+          msg
+        case 1 =>
+          matches.mkString(s"$msg\n Clippy advises: ", "", "")
+        case _ =>
+          matches.mkString(s"$msg\n Clippy advises you to try one of these solutions: \n   ", "\n or\n   ", "")
+      }
     }
   }
 

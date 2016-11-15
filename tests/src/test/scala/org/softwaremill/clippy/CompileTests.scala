@@ -6,6 +6,7 @@ import java.util.zip.GZIPOutputStream
 import com.softwaremill.clippy._
 import org.scalatest.{BeforeAndAfterAll, Matchers, FlatSpec}
 
+import scala.tools.reflect.ToolBox
 import scala.tools.reflect.ToolBoxError
 
 class CompileTests extends FlatSpec with Matchers with BeforeAndAfterAll {
@@ -26,31 +27,32 @@ class CompileTests extends FlatSpec with Matchers with BeforeAndAfterAll {
 
     val advices = List(
       Advice(
-        1L,
         TypeMismatchError(ExactT("slick.dbio.DBIOAction[*]"), None, ExactT("slick.lifted.Rep[Option[*]]"), None).asRegex,
         "Perhaps you forgot to call .result on your Rep[]? This will give you a DBIOAction that you can compose with other DBIOActions.",
         Library("com.typesafe.slick", "slick", "3.1.0")
       ),
       Advice(
-        2L,
         TypeMismatchError(ExactT("akka.http.scaladsl.server.StandardRoute"), None, ExactT("akka.stream.scaladsl.Flow[akka.http.scaladsl.model.HttpRequest,akka.http.scaladsl.model.HttpResponse,Any]"), None).asRegex,
         "did you forget to define an implicit akka.stream.ActorMaterializer? It allows routes to be converted into a flow. You can read more at http://doc.akka.io/docs/akka-stream-and-http-experimental/2.0/scala/http/routing-dsl/index.html",
         Library("com.typesafe.akka", "akka-http-experimental", "2.0.0")
       ),
       Advice(
-        3L,
         NotFoundError(ExactT("value wire")).asRegex,
         "you need to import com.softwaremill.macwire._",
         Library("com.softwaremill.macwire", "macros", "2.0.0")
       ),
       Advice(
-        4L,
+        NotFoundError(ExactT("value wire")).asRegex,
+        "If you need further help check out the macwire readme at https://github.com/adamw/macwire",
+        Library("com.softwaremill.macwire", "macros", "2.0.0")
+      ),
+      Advice(
         TypeArgumentsDoNotConformToOverloadedBoundsError(
-          ExactT("*"), ExactT("value apply"), Set(
-            ExactT("[E <: slick.lifted.AbstractTable[_]]=> slick.lifted.TableQuery[E]"),
-            ExactT("[E <: slick.lifted.AbstractTable[_]](cons: slick.lifted.Tag => E)slick.lifted.TableQuery[E]")
-          )
-        ).asRegex,
+        ExactT("*"), ExactT("value apply"), Set(
+          ExactT("[E <: slick.lifted.AbstractTable[_]]=> slick.lifted.TableQuery[E]"),
+          ExactT("[E <: slick.lifted.AbstractTable[_]](cons: slick.lifted.Tag => E)slick.lifted.TableQuery[E]")
+        )
+      ).asRegex,
         "incorrect class name passed to TableQuery",
         Library("com.typesafe.slick", "slick", "3.1.1")
       )
@@ -110,24 +112,26 @@ class CompileTests extends FlatSpec with Matchers with BeforeAndAfterAll {
                  """.stripMargin
   )
 
+  val tb = {
+    val cpp = sys.env("CLIPPY_PLUGIN_PATH")
+
+    import scala.reflect.runtime._
+    val cm = universe.runtimeMirror(getClass.getClassLoader)
+
+    cm.mkToolBox(options = s"-Xplugin:$cpp -Xplugin-require:clippy")
+  }
+
+  def parse(snippet: String) = tb.eval(tb.parse(snippet))
+
   for ((name, s) <- snippets) {
     name should "compile with errors" in {
-      val cpp = sys.env("CLIPPY_PLUGIN_PATH")
-
-      import scala.reflect.runtime._
-      val cm = universe.runtimeMirror(getClass.getClassLoader)
-
-      import scala.tools.reflect.ToolBox
-      val tb = cm.mkToolBox(options = s"-Xplugin:$cpp -Xplugin-require:clippy")
-
-      try {
-        tb.eval(tb.parse(s))
-        fail("Should report compile errors")
-      }
-      catch {
-        case e: ToolBoxError =>
-          e.message should include("Clippy advises")
-      }
+      (the[ToolBoxError] thrownBy parse(s)).message should include("Clippy advises")
     }
   }
+
+  "Clippy" should "return all matching advice" in {
+    (the[ToolBoxError] thrownBy parse(snippets("macwire")))
+      .message should include("Clippy advises you to try one of these")
+  }
+
 }

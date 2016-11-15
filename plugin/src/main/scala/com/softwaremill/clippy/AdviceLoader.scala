@@ -10,22 +10,30 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.io.Source
 import scala.tools.nsc.Global
 import scala.util.{Failure, Success, Try}
+import scala.collection.JavaConversions._
 
 class AdviceLoader(global: Global, url: String, localStoreDir: File, projectAdviceFile: Option[File])(implicit ec: ExecutionContext) {
   private val OneDayMillis = 1000L * 60 * 60 * 24
 
   private val localStore = new File(localStoreDir, "clippy.json.gz")
 
+  private val resourcesAdvice: List[Advice] =
+    getClass.getClassLoader
+      .getResources("clippy.json")
+      .toList
+      .flatMap(loadAdviceFromUrL)
+
+  private def loadAdviceFromUrL(url: URL): List[Advice] =
+    TryWith(url.openStream())(inputStreamToClippy(_).advices) match {
+      case Success(advices) => advices
+      case Failure(_) =>
+        global.warning(s"Cannot load advice from ${url.getPath} : Ignoring.")
+        Nil
+    }
+
   private val projectAdvice: List[Advice] =
-    projectAdviceFile.flatMap { file =>
-      Try(loadLocally(file))
-        .map(bytes => inputStreamToClippy(decodeUtf8Bytes(bytes)).advices)
-        .recover {
-          case e: Exception =>
-            global.warning(s"Cannot load advice from project store: $file. Ignoring.")
-            throw e
-        }.toOption
-    }.getOrElse(Nil)
+    projectAdviceFile.map(file =>
+      loadAdviceFromUrL(file.toURI.toURL)).getOrElse(Nil)
 
   def load(): Future[Clippy] = {
     val localClippy = if (!localStore.exists()) {
@@ -52,8 +60,9 @@ class AdviceLoader(global: Global, url: String, localStoreDir: File, projectAdvi
       }
     }
 
-    // Add in project specific advice
-    localClippy.map(clippy => clippy.copy(advices = projectAdvice ++ clippy.advices))
+    // Add in advice found in resources and project root
+    localClippy.map(clippy =>
+      clippy.copy(advices = (projectAdvice ++ resourcesAdvice ++ clippy.advices).distinct))
   }
 
   private def fetchStoreParse(): Future[Clippy] =
@@ -99,8 +108,7 @@ class AdviceLoader(global: Global, url: String, localStoreDir: File, projectAdvi
     if (!localStoreDir.isDirectory && !localStoreDir.mkdir()) {
       throw new IOException(s"Cannot create directory $localStoreDir")
     }
-    val os = new FileOutputStream(localStore)
-    try os.write(bytes) finally os.close()
+    TryWith(new FileOutputStream(localStore))(_.write(bytes)).get
   }
 
   private def storeLocallyInBackground(bytes: Array[Byte]): Unit = {
