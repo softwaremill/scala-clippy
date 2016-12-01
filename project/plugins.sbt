@@ -21,5 +21,5 @@ addSbtPlugin("com.typesafe.sbt" % "sbt-mocha" % "1.1.0")
 
 // scalajs
 
-addSbtPlugin("com.vmunier" % "sbt-play-scalajs" % "0.2.8")
-addSbtPlugin("org.scala-js" % "sbt-scalajs" % "0.6.8")
+addSbtPlugin("com.vmunier" % "sbt-web-scalajs" % "1.0.3")
+addSbtPlugin("org.scala-js" % "sbt-scalajs" % "0.6.13")

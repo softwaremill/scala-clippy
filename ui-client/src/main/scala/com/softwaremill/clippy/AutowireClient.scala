@@ -2,7 +2,7 @@ package com.softwaremill.clippy
 
 import org.scalajs.dom
 import scala.concurrent.Future
-import scalajs.concurrent.JSExecutionContext.Implicits.runNow
+import scalajs.concurrent.JSExecutionContext.Implicits.queue
 import upickle.default._
 import upickle.Js
 

@@ -9,5 +9,5 @@ object Use {
       val html = org.scalajs.dom.document.getElementById("use").innerHTML
       <.span(^.dangerouslySetInnerHtml(html))
     }
-    .buildU
+    .build
 }

@@ -18,7 +18,7 @@ object Main extends js.JSApp {
     val app = ReactComponentB[Unit]("App")
       .initialState(App.State(App.UsePage, Nil, Nil))
       .renderBackend[App.Backend]
-      .buildU
+      .build
 
     ReactDOM.render(app(), mountNode)
   }
