@@ -9,6 +9,8 @@ import scala.xml.{Node => XNode}
 import scala.xml.{NodeSeq => XNodeSeq}
 import scala.xml.{Elem => XElem}
 
+val slickVersion = "3.1.1"
+
 val json4s = "org.json4s" %% "json4s-native" % "3.4.2"
 
 // testing
@@ -33,9 +35,9 @@ lazy val commonSettingsNoScalaVersion = scalariformSettings ++ Seq(
     .setPreference(SpacesAroundMultiImports, false),
 
   // Sonatype OSS deployment
-  publishTo <<= version { (v: String) =>
+  publishTo := {
     val nexus = "https://oss.sonatype.org/"
-    if (v.trim.endsWith("SNAPSHOT"))
+    if (version.value.trim.endsWith("SNAPSHOT"))
       Some("snapshots" at nexus + "content/repositories/snapshots")
     else
       Some("releases"  at nexus + "service/local/staging/deploy/maven2")
@@ -71,7 +73,7 @@ lazy val clippy = (project in file("."))
     publishArtifact := false,
     // heroku
     herokuFatJar in Compile := Some((assemblyOutputPath in ui in assembly).value),
-    deployHeroku in Compile <<= (deployHeroku in Compile) dependsOn (assembly in ui)
+    deployHeroku in Compile := (deployHeroku in Compile).dependsOn(assembly in ui).value
   )
   .aggregate(modelJvm, plugin, pluginSbt, tests, ui)
 
@@ -133,9 +135,9 @@ lazy val tests = (project in file("tests"))
     publishArtifact := false,
     libraryDependencies ++= Seq(
       json4s, scalatest,
-      "com.typesafe.akka" %% "akka-http-experimental" % "2.0.1",
+      "com.typesafe.akka" %% "akka-http" % "10.0.0",
       "com.softwaremill.macwire" %% "macros" % "2.2.2" % "provided",
-      "com.typesafe.slick" %% "slick" % "3.1.1"
+      "com.typesafe.slick" %% "slick" % slickVersion
     ),
     // during tests, read from the local repository, if at all available
     scalacOptions ++= List(s"-Xplugin:${pluginJar.value.getAbsolutePath}", "-P:clippy:url=http://localhost:9000"),
@@ -143,7 +145,7 @@ lazy val tests = (project in file("tests"))
     fork in Test := true
   ).dependsOn(modelJvm)
 
-val slickVersion = "3.1.1"
+
 
 lazy val ui: Project = (project in file("ui"))
   .enablePlugins(BuildInfoPlugin)
@@ -164,7 +166,7 @@ lazy val ui: Project = (project in file("ui"))
       "org.flywaydb" % "flyway-core" % "3.2.1"
     ),
     scalaJSProjects := Seq(uiClient),
-    pipelineStages := Seq(scalaJSProd),
+    pipelineStages in Assets := Seq(scalaJSProd),
     routesGenerator := InjectedRoutesGenerator,
     // heroku & fat-jar
     assemblyJarName in assembly := "app.jar",
@@ -185,7 +187,7 @@ lazy val ui: Project = (project in file("ui"))
   .aggregate(uiClient)
   .dependsOn(uiSharedJvm)
 
-val scalaJsReactVersion = "0.10.3"
+val scalaJsReactVersion = "0.11.3"
 
 lazy val uiClient: Project = (project in file("ui-client"))
   .settings(commonSettings)
@@ -195,19 +197,19 @@ lazy val uiClient: Project = (project in file("ui-client"))
     persistLauncher in Test := false,
     addCompilerPlugin(compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)), // for @Lenses
     libraryDependencies ++= Seq(
-      "org.scala-js" %%% "scalajs-dom" % "0.8.2",
-      "be.doeraene" %%% "scalajs-jquery" % "0.8.1",
+      "org.scala-js" %%% "scalajs-dom" % "0.9.1",
+      "be.doeraene" %%% "scalajs-jquery" % "0.9.1",
       "com.github.japgolly.scalajs-react" %%% "core" % scalaJsReactVersion,
       "com.github.japgolly.scalajs-react" %%% "ext-monocle" % scalaJsReactVersion,
       "com.github.japgolly.fork.monocle" %%% "monocle-macro" % "1.2.0"
     ),
     jsDependencies ++= Seq(
       RuntimeDOM % "test",
-      "org.webjars.bower" % "react" % "0.14.3" / "react-with-addons.js" minified "react-with-addons.min.js" commonJSName "React",
-      "org.webjars.bower" % "react" % "0.14.3" / "react-dom.js" minified  "react-dom.min.js" dependsOn "react-with-addons.js" commonJSName "ReactDOM"
+      "org.webjars.bower" % "react" % "15.3.2" / "react-with-addons.js" minified "react-with-addons.min.js" commonJSName "React",
+      "org.webjars.bower" % "react" % "15.3.2" / "react-dom.js" minified  "react-dom.min.js" dependsOn "react-with-addons.js" commonJSName "ReactDOM"
     )
   )
-  .enablePlugins(ScalaJSPlugin, ScalaJSPlay)
+  .enablePlugins(ScalaJSPlugin, ScalaJSWeb)
   .dependsOn(uiSharedJs)
 
 lazy val uiShared = (crossProject.crossType(CrossType.Pure) in file("ui-shared"))
@@ -219,7 +221,7 @@ lazy val uiShared = (crossProject.crossType(CrossType.Pure) in file("ui-shared")
       "com.lihaoyi" %%% "upickle" % "0.3.6"
     )
   )
-  .jsConfigure(_ enablePlugins ScalaJSPlay)
+  .jsConfigure(_ enablePlugins ScalaJSWeb)
   .dependsOn(model)
 
 lazy val uiSharedJvm = uiShared.jvm.settings(name := "uiSharedJvm")
