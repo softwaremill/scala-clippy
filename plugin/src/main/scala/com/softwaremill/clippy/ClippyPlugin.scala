@@ -34,13 +34,31 @@ class ClippyPlugin(val global: Global) extends Plugin {
 
       matches.size match {
         case 0 =>
-          msg
+          parsedMsg match {
+            case Some(tme: TypeMismatchError[ExactT]) => prettyPrintTypeMismatchError(tme, msg)
+            case _ => msg
+          }
         case 1 =>
           matches.mkString(s"$msg\n Clippy advises: ", "", "")
         case _ =>
           matches.mkString(s"$msg\n Clippy advises you to try one of these solutions: \n   ", "\n or\n   ", "")
       }
     }
+  }
+
+  private def prettyPrintTypeMismatchError(tme: TypeMismatchError[ExactT], msg: String): String = {
+    val plain = new StringDiff(tme.required.toString, tme.found.toString)
+    val expands = new StringDiff(tme.requiredExpandsTo.toString, tme.foundExpandsTo.toString)
+    val finalMsg =
+      s"""
+         | $msg
+         | Clippy advises:
+         | Type mismatch error, pay attention to the parts marked in red:
+         |          ${plain.diff("Types: required %s found %s")}
+         | ${expands.diff("Expanded types: required %s found %s")}
+                """.stripMargin
+    println(finalMsg.toString)
+    finalMsg
   }
 
   private def urlFromOptions(options: List[String]): String =

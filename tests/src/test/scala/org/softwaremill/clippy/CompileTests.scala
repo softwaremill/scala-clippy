@@ -83,42 +83,77 @@ class CompileTests extends FlatSpec with Matchers with BeforeAndAfterAll {
   }
 
   val snippets = Map(
-    "akka http" -> """
-                     |import akka.actor.ActorSystem
-                     |import akka.http.scaladsl.Http
-                     |
-                     |import akka.http.scaladsl.server.Directives._
-                     |
-                     |implicit val system = ActorSystem()
-                     |
-                     |val r = complete("ok")
-                     |
-                     |Http().bindAndHandle(r, "localhost", 8080)
-                   """.stripMargin,
-    "macwire" -> """
-                     |class A()
-                     |val a = wire[A]
-                   """.stripMargin,
-    "missing_typeclass" -> "Seq(java.time.LocalDate.MIN, java.time.LocalDate.MAX).sorted",
-    "slick" -> """
-                     |case class User(id1: Long, id2: Long)
-                     |trait TestSchema {
-                     |
-                     |  val db: slick.jdbc.JdbcBackend#DatabaseDef
-                     |  val driver: slick.driver.JdbcProfile
-                     |
-                     |  import driver.api._
-                     |
-                     |  protected val users = TableQuery[User]
-                     |
-                     |  protected class Users(tag: Tag) extends Table[User](tag, "users") {
-                     |    def id1 = column[Long]("id")
-                     |    def id2 = column[Long]("id")
-                     |
-                     |    def * = (id1, id2) <> (User.tupled, User.unapply)
-                     |  }
-                     |}
-                 """.stripMargin
+    "akka http" ->
+      """
+        |import akka.actor.ActorSystem
+        |import akka.http.scaladsl.Http
+        |
+        |import akka.http.scaladsl.server.Directives._
+        |
+        |implicit val system = ActorSystem()
+        |
+        |val r = complete("ok")
+        |
+        |Http().bindAndHandle(r, "localhost", 8080)
+      """.stripMargin,
+    "macwire" ->
+      """
+        |class A()
+        |val a = wire[A]
+      """.stripMargin,
+    "slick" ->
+      """
+        |case class User(id1: Long, id2: Long)
+        |trait TestSchema {
+        |
+        |  val db: slick.jdbc.JdbcBackend#DatabaseDef
+        |  val driver: slick.driver.JdbcProfile
+        |
+        |  import driver.api._
+        |
+        |  protected val users = TableQuery[User]
+        |
+        |  protected class Users(tag: Tag) extends Table[User](tag, "users") {
+        |    def id1 = column[Long]("id")
+        |    def id2 = column[Long]("id")
+        |
+        |    def * = (id1, id2) <> (User.tupled, User.unapply)
+        |  }
+        |}
+      """.stripMargin,
+    "missmatch1" ->
+      """
+        |class Test {
+        |
+        |  type Dog = (String, String, Int, Option[String], Long)
+        |  type Puppy = (String, String, Int, String, Long)
+        |
+        |  def test(dog: Dog): Puppy = dog
+        |
+        |}
+      """.stripMargin,
+    "missmatch2" ->
+      """
+        |class Test {
+        |
+        |  type Dog = (String, String, Int, Option[String], Long, String)
+        |  type Puppy = (String, String, Int, String, Long, String, Int)
+        |
+        |  def test(dog: Dog): Puppy = dog
+        |
+        |}
+      """.stripMargin,
+    "missmatch3" ->
+      """
+        |class Test {
+        |
+        |  type Dog = (String, String, Int, Option[String], Long, String)
+        |  type Puppy = (String, String, Int, String, Int, Long, String)
+        |
+        |  def test(dog: Dog): Puppy = dog
+        |
+        |}
+      """.stripMargin
   )
 
   val tb = {
