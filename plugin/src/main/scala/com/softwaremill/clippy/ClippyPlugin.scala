@@ -57,7 +57,6 @@ class ClippyPlugin(val global: Global) extends Plugin {
          |          ${plain.diff("Types: required %s found %s")}
          | ${expands.diff("Expanded types: required %s found %s")}
                 """.stripMargin
-    println(finalMsg.toString)
     finalMsg
   }
 

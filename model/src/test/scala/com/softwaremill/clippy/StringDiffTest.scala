@@ -11,7 +11,7 @@ class StringDiffTest extends FlatSpec with Matchers {
     ("(String, String)", "Super[Option[String], String]", "expected " + DELTA_START + "(String, String)" + DELTA_END + " but was " + DELTA_START + "Super[Option[String], String]" + DELTA_END)
   )
 
-  "StringDiff" should "do diff" in {
+  "StringDiff" should "diff" in {
     for ((expected, actual, expectedDiff) <- testData) {
 
       val diff = new StringDiff(expected, actual).diff("expected %s but was %s")

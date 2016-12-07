@@ -121,36 +121,14 @@ class CompileTests extends FlatSpec with Matchers with BeforeAndAfterAll {
         |  }
         |}
       """.stripMargin,
-    "missmatch1" ->
+    "Type mismatch pretty diff" ->
       """
         |class Test {
         |
-        |  type Dog = (String, String, Int, Option[String], Long)
-        |  type Puppy = (String, String, Int, String, Long)
+        |  type Cool = (String, String, Int, Option[String], Long)
+        |  type Bool = (String, String, Int, String, Long)
         |
-        |  def test(dog: Dog): Puppy = dog
-        |
-        |}
-      """.stripMargin,
-    "missmatch2" ->
-      """
-        |class Test {
-        |
-        |  type Dog = (String, String, Int, Option[String], Long, String)
-        |  type Puppy = (String, String, Int, String, Long, String, Int)
-        |
-        |  def test(dog: Dog): Puppy = dog
-        |
-        |}
-      """.stripMargin,
-    "missmatch3" ->
-      """
-        |class Test {
-        |
-        |  type Dog = (String, String, Int, Option[String], Long, String)
-        |  type Puppy = (String, String, Int, String, Int, Long, String)
-        |
-        |  def test(dog: Dog): Puppy = dog
+        |  def test(cool: Cool): Bool = cool
         |
         |}
       """.stripMargin
