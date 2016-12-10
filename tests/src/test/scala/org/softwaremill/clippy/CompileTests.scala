@@ -55,6 +55,14 @@ class CompileTests extends FlatSpec with Matchers with BeforeAndAfterAll {
       ).asRegex,
         "incorrect class name passed to TableQuery",
         Library("com.typesafe.slick", "slick", "3.1.1")
+      ),
+      Advice(
+        TypeclassNotFoundError(
+          ExactT("Ordering"),
+          ExactT("java.time.LocalDate")
+        ).asRegex,
+        "implicit val localDateOrdering: Ordering[java.time.LocalDate] = Ordering.by(_.toEpochDay)",
+        Library("java-lang", "time", "8+")
       )
     )
 
@@ -91,6 +99,7 @@ class CompileTests extends FlatSpec with Matchers with BeforeAndAfterAll {
                      |class A()
                      |val a = wire[A]
                    """.stripMargin,
+    "missing_typeclass" -> "Seq(java.time.LocalDate.MIN, java.time.LocalDate.MAX).sorted",
     "slick" -> """
                      |case class User(id1: Long, id2: Long)
                      |trait TestSchema {

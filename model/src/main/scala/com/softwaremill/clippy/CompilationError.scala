@@ -103,6 +103,26 @@ case class ImplicitNotFoundError[T <: Template](parameter: T, implicitType: T) e
     RegexT.fromPattern(implicitType.v))
 }
 
+case class TypeclassNotFoundError[T <: Template](typeclass: T, forType: T) extends CompilationError[T] {
+
+  override def toString = s"Implicit $typeclass typeclass not found error: for type $forType"
+
+  override def toJson =
+    JObject(
+      TypeField -> JString("typeclassNotFound"),
+      "typeclass" -> JString(typeclass.v),
+      "forType" -> JString(forType.v)
+    )
+
+  override def matches(other: CompilationError[ExactT])(implicit ev: T =:= RegexT) = other match {
+    case TypeclassNotFoundError(p, i) => typeclass.matches(p) && forType.matches(i)
+    case _ => false
+  }
+
+  override def asRegex(implicit ev: T =:= ExactT) = TypeclassNotFoundError(RegexT.fromPattern(typeclass.v),
+    RegexT.fromPattern(forType.v))
+}
+
 case class DivergingImplicitExpansionError[T <: Template](forType: T, startingWith: T, in: T) extends CompilationError[T] {
 
   override def toString = s"Diverging implicit expansion error: for type $forType starting with $startingWith in $in"
@@ -202,6 +222,12 @@ object CompilationError {
           alternativesOf <- regexTFromJson(fields, "alternativesOf")
           alternatives <- multipleRegexTFromJson(fields, "alternatives")
         } yield TypeArgumentsDoNotConformToOverloadedBoundsError(typeArgs, alternativesOf, alternatives)
+
+      case "typeclassNotFound" =>
+        for {
+          typeclass <- regexTFromJson(fields, "typeclass")
+          forType <- regexTFromJson(fields, "forType")
+        } yield TypeclassNotFoundError(typeclass, forType)
 
       case _ => None
     }
