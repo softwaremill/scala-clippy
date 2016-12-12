@@ -58,9 +58,9 @@ class CompileTests extends FlatSpec with Matchers with BeforeAndAfterAll {
       ),
       Advice(
         TypeclassNotFoundError(
-          ExactT("Ordering"),
-          ExactT("java.time.LocalDate")
-        ).asRegex,
+        ExactT("Ordering"),
+        ExactT("java.time.LocalDate")
+      ).asRegex,
         "implicit val localDateOrdering: Ordering[java.time.LocalDate] = Ordering.by(_.toEpochDay)",
         Library("java-lang", "time", "8+")
       )
