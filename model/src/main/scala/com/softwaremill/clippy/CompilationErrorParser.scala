@@ -13,6 +13,13 @@ object CompilationErrorParser {
   private val ImplicitNotFoundRegexp = """could not find implicit value for parameter\s*([^:]+):\s*([^\n]+)""".r
   private val DivergingImplicitExpansionRegexp = """diverging implicit expansion for type\s*([^\s]+)\s*.*\s*starting with method\s*([^\s]+)\s*in\s*([^\n]+)""".r
   private val TypeArgumentsDoNotConformToOverloadedBoundsRegexp = """type arguments \[([^\]]+)\] conform to the bounds of none of the overloaded alternatives of\s*([^:\n]+)[^:]*: ([^\n]+)""".r
+  private val TypeclassNotFoundRegexp = """No implicit (.*) defined for (.*)\.""".r
+
+  /*
+  No implicit Ordering defined for java.time.LocalDate.
+    Seq(java.time.LocalDate.MIN, java.time.LocalDate.MAX).sorted
+  ^
+  */
 
   def parse(e: String): Option[CompilationError[ExactT]] = {
     val error = e.replaceAll(Pattern.quote("[error]"), "")
@@ -57,6 +64,11 @@ object CompilationErrorParser {
         inf <- TypeArgumentsDoNotConformToOverloadedBoundsRegexp.findFirstMatchIn(error)
       } yield TypeArgumentsDoNotConformToOverloadedBoundsError[ExactT](ExactT(inf.group(1)), ExactT(inf.group(2)),
         inf.group(3).split(Pattern.quote(" <and> ")).toSet.map(ExactT.apply))
+    }
+    else if (error.contains("No implicit")) {
+      for {
+        inf <- TypeclassNotFoundRegexp.findFirstMatchIn(error)
+      } yield TypeclassNotFoundError(ExactT(inf.group(1)), ExactT(inf.group(2)))
     }
     else None
   }
