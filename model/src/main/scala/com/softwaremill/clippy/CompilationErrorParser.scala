@@ -13,7 +13,7 @@ object CompilationErrorParser {
   private val ImplicitNotFoundRegexp = """could not find implicit value for parameter\s*([^:]+):\s*([^\n]+)""".r
   private val DivergingImplicitExpansionRegexp = """diverging implicit expansion for type\s*([^\s]+)\s*.*\s*starting with method\s*([^\s]+)\s*in\s*([^\n]+)""".r
   private val TypeArgumentsDoNotConformToOverloadedBoundsRegexp = """type arguments \[([^\]]+)\] conform to the bounds of none of the overloaded alternatives of\s*([^:\n]+)[^:]*: ([^\n]+)""".r
-  private val TypeclassNotFoundRegexp = """No implicit (.*) defined for (.*)\.""".r
+  private val TypeclassNotFoundRegexp = """No implicit (.*) defined for (.*)""".r
 
   /*
   No implicit Ordering defined for java.time.LocalDate.

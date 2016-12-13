@@ -117,4 +117,14 @@ class CompilationErrorParserTest extends FlatSpec with Matchers {
         ExactT("[E <: slick.lifted.AbstractTable[_]]=> slick.lifted.TableQuery[E]"),
         ExactT("[E <: slick.lifted.AbstractTable[_]](cons: slick.lifted.Tag => E)slick.lifted.TableQuery[E]")))))
   }
+
+  it should "parse a no implicit defined for" in {
+    val e =
+      """
+        |No implicit Ordering defined for java.time.LocalDateTime
+      """.stripMargin
+
+    CompilationErrorParser.parse(e) should be (Some(TypeclassNotFoundError(
+      ExactT("Ordering"), ExactT("java.time.LocalDateTime"))))
+  }
 }
