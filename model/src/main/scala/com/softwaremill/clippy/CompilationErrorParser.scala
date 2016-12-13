@@ -15,12 +15,6 @@ object CompilationErrorParser {
   private val TypeArgumentsDoNotConformToOverloadedBoundsRegexp = """type arguments \[([^\]]+)\] conform to the bounds of none of the overloaded alternatives of\s*([^:\n]+)[^:]*: ([^\n]+)""".r
   private val TypeclassNotFoundRegexp = """No implicit (.*) defined for (.*)""".r
 
-  /*
-  No implicit Ordering defined for java.time.LocalDate.
-    Seq(java.time.LocalDate.MIN, java.time.LocalDate.MAX).sorted
-  ^
-  */
-
   def parse(e: String): Option[CompilationError[ExactT]] = {
     val error = e.replaceAll(Pattern.quote("[error]"), "")
     if (error.contains("type mismatch")) {
