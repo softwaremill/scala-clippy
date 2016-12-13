@@ -3,7 +3,7 @@ package com.softwaremill.clippy
 import java.util.regex.Pattern
 
 object CompilationErrorParser {
-  private val FoundRegexp = """found\s*:\s*([^\n]+)\n""".r
+  private val FoundRegexp = """found\s*:\s*([^\n]+)""".r
   private val RequiredPrefixRegexp = """required\s*:""".r
   private val AfterRequiredRegexp = """required\s*:\s*([^\n]+)""".r
   private val WhichExpandsToRegexp = """\s*\(which expands to\)\s*([^\n]+)""".r
@@ -13,7 +13,7 @@ object CompilationErrorParser {
   private val ImplicitNotFoundRegexp = """could not find implicit value for parameter\s*([^:]+):\s*([^\n]+)""".r
   private val DivergingImplicitExpansionRegexp = """diverging implicit expansion for type\s*([^\s]+)\s*.*\s*starting with method\s*([^\s]+)\s*in\s*([^\n]+)""".r
   private val TypeArgumentsDoNotConformToOverloadedBoundsRegexp = """type arguments \[([^\]]+)\] conform to the bounds of none of the overloaded alternatives of\s*([^:\n]+)[^:]*: ([^\n]+)""".r
-  private val TypeclassNotFoundRegexp = """No implicit (.*) defined for (.*).\n""".r
+  private val TypeclassNotFoundRegexp = """No implicit (.*) defined for ([^\n]+)""".r
 
   def parse(e: String): Option[CompilationError[ExactT]] = {
     val error = e.replaceAll(Pattern.quote("[error]"), "")
@@ -62,7 +62,8 @@ object CompilationErrorParser {
     else if (error.contains("No implicit")) {
       for {
         inf <- TypeclassNotFoundRegexp.findFirstMatchIn(error)
-      } yield TypeclassNotFoundError(ExactT(inf.group(1)), ExactT(inf.group(2)))
+        group2 = inf.group(2)
+      } yield TypeclassNotFoundError(ExactT(inf.group(1)), ExactT(if (group2.endsWith(".")) group2.substring(0, group2.length-1) else group2))
     }
     else None
   }
