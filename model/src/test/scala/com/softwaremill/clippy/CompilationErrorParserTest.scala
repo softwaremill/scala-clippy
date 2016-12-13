@@ -121,10 +121,11 @@ class CompilationErrorParserTest extends FlatSpec with Matchers {
   it should "parse a no implicit defined for" in {
     val e =
       """
-        |No implicit Ordering defined for java.time.LocalDateTime
+        |[error] /Users/clippy/model/src/main/scala/com/softwaremill/clippy/CompilationErrorParser.scala:18: No implicit Ordering defined for java.time.LocalDate.
+        |[error]   Seq(java.time.LocalDate.MIN, java.time.LocalDate.MAX).sorted
       """.stripMargin
 
     CompilationErrorParser.parse(e) should be (Some(TypeclassNotFoundError(
-      ExactT("Ordering"), ExactT("java.time.LocalDateTime"))))
+      ExactT("Ordering"), ExactT("java.time.LocalDate"))))
   }
 }
