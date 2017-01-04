@@ -1,12 +1,12 @@
 package com.softwaremill.clippy
 
-import com.softwaremill.clippy.StringDiff.{DELTA_END, DELTA_START}
+import com.softwaremill.clippy.StringDiff.{DeltaEnd, DeltaStart}
 
 object StringDiff {
-  val ANSI_RESET = "\u001B[0m"
-  val ANSI_RED = "\u001B[31m"
-  val DELTA_END = ANSI_RESET
-  val DELTA_START = ANSI_RED
+  val AnsiReset = "\u001B[0m"
+  val AnsiRed = "\u001B[31m"
+  val DeltaEnd = AnsiReset
+  val DeltaStart = AnsiRed
 }
 
 class StringDiff(expected: String, actual: String) {
@@ -23,7 +23,7 @@ class StringDiff(expected: String, actual: String) {
   private def markDiff(source: String) = {
     val prefix = findCommonPrefix()
     val suffix = findCommonSuffix()
-    val diff = DELTA_START + source.substring(prefix.length, source.length - suffix.length) + DELTA_END
+    val diff = DeltaStart + source.substring(prefix.length, source.length - suffix.length) + DeltaEnd
     prefix + diff + suffix
   }
 
