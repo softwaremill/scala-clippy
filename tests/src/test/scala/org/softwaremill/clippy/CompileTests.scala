@@ -140,7 +140,7 @@ class CompileTests extends FlatSpec with Matchers with BeforeAndAfterAll {
     import scala.reflect.runtime._
     val cm = universe.runtimeMirror(getClass.getClassLoader)
 
-    cm.mkToolBox(options = s"-Xplugin:$cpp -Xplugin-require:clippy")
+    cm.mkToolBox(options = s"-Xplugin:$cpp -Xplugin-require:clippy -P:clippy:colors=true")
   }
 
   def parse(snippet: String) = tb.eval(tb.parse(snippet))
