@@ -21,6 +21,7 @@ class ClippyPlugin(val global: Global) extends Plugin {
     val r = global.reporter
 
     val url = urlFromOptions(options)
+    val enableColors = colorsFromOptions(options)
     val localStoreDir = localStoreDirFromOptions(options)
     val projectRoot = projectRootFromOptions(options)
     val advices = loadAdvices(url, localStoreDir, projectRoot)
@@ -35,7 +36,7 @@ class ClippyPlugin(val global: Global) extends Plugin {
       matches.size match {
         case 0 =>
           parsedMsg match {
-            case Some(tme: TypeMismatchError[ExactT]) => prettyPrintTypeMismatchError(tme, msg)
+            case Some(tme: TypeMismatchError[ExactT]) if enableColors => prettyPrintTypeMismatchError(tme, msg)
             case _ => msg
           }
         case 1 =>
@@ -62,6 +63,11 @@ class ClippyPlugin(val global: Global) extends Plugin {
 
   private def urlFromOptions(options: List[String]): String =
     options.find(_.startsWith("url=")).map(_.substring(4)).getOrElse("https://www.scala-clippy.org") + "/api/advices"
+
+  private def colorsFromOptions(options: List[String]): Boolean =
+    options.find(_.startsWith("colors=")).map(_.substring(7))
+      .getOrElse("false")
+      .toBoolean
 
   private def projectRootFromOptions(options: List[String]): Option[File] =
     options.find(_.startsWith("projectRoot=")).map(_.substring(12))
