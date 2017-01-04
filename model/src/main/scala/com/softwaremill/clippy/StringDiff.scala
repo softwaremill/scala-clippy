@@ -11,8 +11,6 @@ object StringDiff {
 
 class StringDiff(expected: String, actual: String) {
 
-
-
   def diff(message: String): String = {
     if (this.expected == this.actual) format(message, this.expected, this.actual)
     else format(message, markDiff(expected), markDiff(actual))
@@ -27,12 +25,10 @@ class StringDiff(expected: String, actual: String) {
     prefix + diff + suffix
   }
 
-  private def findCommonPrefix(): String = {
-    expected.zip(actual).takeWhile(Function.tupled(_ == _)).map(_._1).mkString
+  private def findCommonPrefix(expectedStr: String = expected, actualStr: String = actual): String = {
+    expectedStr.zip(actualStr).takeWhile(Function.tupled(_ == _)).map(_._1).mkString
   }
 
-  private def findCommonSuffix(): String = {
-    val reverse = expected.reverse.zip(actual.reverse)
-    reverse.takeWhile(Function.tupled(_ == _)).map(_._1).reverse.mkString
-  }
+  private def findCommonSuffix(): String =
+    findCommonPrefix(expected.reverse, actual.reverse).reverse
 }
