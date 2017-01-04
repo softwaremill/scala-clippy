@@ -16,7 +16,7 @@ class StringDiffTest extends FlatSpec with Matchers {
 
       val diff = new StringDiff(expected, actual).diff("expected %s but was %s")
 
-      diff should equal(expectedDiff)
+      diff should be(expectedDiff)
     }
   }
 
