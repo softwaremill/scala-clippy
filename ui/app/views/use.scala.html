@@ -49,6 +49,20 @@ addSbtPlugin("com.softwaremill.clippy" % "plugin-sbt" % "0.3.4")
     in the <code>$HOME/.clippy</code> directory. The dataset will be updated at most once a day, in the background.
 </p>
 
+
+<h2>Enabling colors</h2>
+
+<p>
+    For type errors, clippy can use ANSI colors and highlight diff between expected and actual types. This may be
+    especially helpful for long type signatures. If you'd like to enable colors on your terminal, you can add
+    <code>-P:clippy:colors=true</code> compiler option. To enable globally, add this compiler option to
+    <code>~/.sbt/0.13/clippy.sbt</code> so it applies to all projects:
+</p>
+
+<pre>
+    scalacOptions += "-P:clippy:colors=true"
+</pre>
+
 <h2>Contributing</h2>
 
 <p>

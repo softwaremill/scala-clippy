@@ -40,8 +40,10 @@ dataset URL and local store by using the `-P:clippy:url=` and `-P:clippy:store=`
 
 # Enabling colors
 
-Clippy enhances some compiler errors with ANSI colors. If you'd like to enable colors on your terminal, you can
-`-P:clippy:colors=true` compiler option. To enable globally, add following line to `~/.sbt/0.13/clippy.sbt`:
+For type errors, clippy can use ANSI colors and highlight diff between expected and actual types. This may be
+especially helpful for long type signatures. If you'd like to enable colors on your terminal, you can add
+`-P:clippy:colors=true` compiler option. To enable globally, add this compiler option to `~/.sbt/0.13/clippy.sbt` so it 
+applies to all projects:
 
 ````scala
 scalacOptions += "-P:clippy:colors=true"
