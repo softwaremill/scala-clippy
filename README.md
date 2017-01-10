@@ -38,12 +38,14 @@ Upon first use, the plugin will download the advice dataset from `https://scala-
 `$HOME/.clippy` directory. The dataset will be updated at most once a day, in the background. You can customize the
 dataset URL and local store by using the `-P:clippy:url=` and `-P:clippy:store=` compiler options.
 
-# Enabling colors
+# Enabling colored type mismatch diffs
 
-For type errors, clippy can use ANSI colors and highlight diff between expected and actual types. This may be
-especially helpful for long type signatures. If you'd like to enable colors on your terminal, you can add
-`-P:clippy:colors=true` compiler option. To enable globally, add this compiler option to `~/.sbt/0.13/clippy.sbt` so it 
-applies to all projects:
+For type mismatch errors, Clippy can compute and show a colored diff between expected and actual types. This may be
+especially helpful for long type signatures. If you'd like to enable this feature, add the
+`-P:clippy:colors=true` compiler option.
+
+If you're using the SBT plugin, you can enable coloring globally by adding the following line to
+`~/.sbt/0.13/clippy.sbt` (these are your local SBT settings, they will apply to all projects):
 
 ````scala
 scalacOptions += "-P:clippy:colors=true"

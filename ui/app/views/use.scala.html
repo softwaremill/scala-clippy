@@ -50,13 +50,15 @@ addSbtPlugin("com.softwaremill.clippy" % "plugin-sbt" % "0.3.4")
 </p>
 
 
-<h2>Enabling colors</h2>
+<h2>Enabling colored type mismatch diffs</h2>
 
 <p>
-    For type errors, clippy can use ANSI colors and highlight diff between expected and actual types. This may be
-    especially helpful for long type signatures. If you'd like to enable colors on your terminal, you can add
-    <code>-P:clippy:colors=true</code> compiler option. To enable globally, add this compiler option to
-    <code>~/.sbt/0.13/clippy.sbt</code> so it applies to all projects:
+    For type mismatch errors, Clippy can compute and show a colored diff between expected and actual types. This may be
+    especially helpful for long type signatures. If you'd like to enable this feature, add the
+    <code>-P:clippy:colors=true</code> compiler option.
+
+    If you're using the SBT plugin, you can enable coloring globally by adding the following line to
+    <code>~/.sbt/0.13/clippy.sbt</code> (these are your local SBT settings, they will apply to all projects):
 </p>
 
 <pre>
