@@ -38,6 +38,17 @@ Upon first use, the plugin will download the advice dataset from `https://scala-
 `$HOME/.clippy` directory. The dataset will be updated at most once a day, in the background. You can customize the
 dataset URL and local store by using the `-P:clippy:url=` and `-P:clippy:store=` compiler options.
 
+# Enabling colors
+
+For type errors, clippy can use ANSI colors and highlight diff between expected and actual types. This may be
+especially helpful for long type signatures. If you'd like to enable colors on your terminal, you can add
+`-P:clippy:colors=true` compiler option. To enable globally, add this compiler option to `~/.sbt/0.13/clippy.sbt` so it 
+applies to all projects:
+
+````scala
+scalacOptions += "-P:clippy:colors=true"
+````
+
 # Contributing advice
 
 Scala Clippy is only as good as its advice database. Help other users by submitting a fix for a compilation error that

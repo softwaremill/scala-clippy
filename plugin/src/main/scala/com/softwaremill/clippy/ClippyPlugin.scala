@@ -21,6 +21,7 @@ class ClippyPlugin(val global: Global) extends Plugin {
     val r = global.reporter
 
     val url = urlFromOptions(options)
+    val enableColors = colorsFromOptions(options)
     val localStoreDir = localStoreDirFromOptions(options)
     val projectRoot = projectRootFromOptions(options)
     val advices = loadAdvices(url, localStoreDir, projectRoot)
@@ -34,7 +35,10 @@ class ClippyPlugin(val global: Global) extends Plugin {
 
       matches.size match {
         case 0 =>
-          msg
+          parsedMsg match {
+            case Some(tme: TypeMismatchError[ExactT]) if enableColors => prettyPrintTypeMismatchError(tme, msg)
+            case _ => msg
+          }
         case 1 =>
           matches.mkString(s"$msg\n Clippy advises: ", "", "")
         case _ =>
@@ -43,8 +47,27 @@ class ClippyPlugin(val global: Global) extends Plugin {
     }
   }
 
+  private def prettyPrintTypeMismatchError(tme: TypeMismatchError[ExactT], msg: String): String = {
+    val plain = new StringDiff(tme.required.toString, tme.found.toString)
+    val expands = new StringDiff(tme.requiredExpandsTo.toString, tme.foundExpandsTo.toString)
+    val finalMsg =
+      s"""
+         | $msg
+         | Clippy advises:
+         | Type mismatch error, pay attention to the parts marked in red:
+         |          ${plain.diff("Types: required %s found %s")}
+         | ${expands.diff("Expanded types: required %s found %s")}
+                """.stripMargin
+    finalMsg
+  }
+
   private def urlFromOptions(options: List[String]): String =
     options.find(_.startsWith("url=")).map(_.substring(4)).getOrElse("https://www.scala-clippy.org") + "/api/advices"
+
+  private def colorsFromOptions(options: List[String]): Boolean =
+    options.find(_.startsWith("colors=")).map(_.substring(7))
+      .getOrElse("false")
+      .toBoolean
 
   private def projectRootFromOptions(options: List[String]): Option[File] =
     options.find(_.startsWith("projectRoot=")).map(_.substring(12))
