@@ -8,7 +8,7 @@ class InjectReporter(handleError: (Position, String) => String, superGlobal: Glo
 
   override val global = superGlobal
 
-  override val runsAfter = List[String](" parser")
+  override val runsAfter = List[String]("parser")
   override val runsBefore = List[String]("namer")
   override val phaseName = "inject-clippy-reporter"
 
