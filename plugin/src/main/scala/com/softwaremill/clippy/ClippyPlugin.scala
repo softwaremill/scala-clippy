@@ -17,6 +17,7 @@ class ClippyPlugin(val global: Global) extends Plugin {
 
   var url: String = ""
   var enableColors = false
+  var testMode = false
   val DefaultStoreDir = new File(System.getProperty("user.home"), ".clippy")
   var localStoreDir = DefaultStoreDir
   var projectRoot: Option[File] = None
@@ -43,8 +44,14 @@ class ClippyPlugin(val global: Global) extends Plugin {
   override def processOptions(options: List[String], error: (String) => Unit): Unit = {
     enableColors = colorsFromOptions(options)
     url = urlFromOptions(options)
+    testMode = testModeFromOptions(options)
     localStoreDir = localStoreDirFromOptions(options)
     projectRoot = projectRootFromOptions(options)
+
+    if (testMode) {
+      val r = global.reporter
+      global.reporter = new DelegatingReporter(r, handleError)
+    }
   }
 
   override val components: List[PluginComponent] = List(new InjectReporter(handleError, global))
@@ -66,8 +73,12 @@ class ClippyPlugin(val global: Global) extends Plugin {
   private def urlFromOptions(options: List[String]): String =
     options.find(_.startsWith("url=")).map(_.substring(4)).getOrElse("https://www.scala-clippy.org") + "/api/advices"
 
-  private def colorsFromOptions(options: List[String]): Boolean =
-    options.find(_.startsWith("colors=")).map(_.substring(7))
+  private def colorsFromOptions(options: List[String]): Boolean = boolFromOptions(options, "colors")
+
+  private def testModeFromOptions(options: List[String]): Boolean = boolFromOptions(options, "testmode")
+
+  private def boolFromOptions(options: List[String], option: String): Boolean =
+    options.find(_.startsWith(s"$option=")).map(_.substring(option.length + 1))
       .getOrElse("false")
       .toBoolean
 

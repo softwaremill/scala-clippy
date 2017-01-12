@@ -2,10 +2,9 @@ package org.softwaremill.clippy
 
 import java.io.{FileOutputStream, File}
 import java.util.zip.GZIPOutputStream
-
+import scala.reflect.runtime.currentMirror
 import com.softwaremill.clippy._
 import org.scalatest.{BeforeAndAfterAll, Matchers, FlatSpec}
-
 import scala.tools.reflect.ToolBox
 import scala.tools.reflect.ToolBoxError
 
@@ -136,23 +135,19 @@ class CompileTests extends FlatSpec with Matchers with BeforeAndAfterAll {
 
   val tb = {
     val cpp = sys.env("CLIPPY_PLUGIN_PATH")
-
-    import scala.reflect.runtime._
-    val cm = universe.runtimeMirror(getClass.getClassLoader)
-
-    cm.mkToolBox(options = s"-Xplugin:$cpp -Xplugin-require:clippy -P:clippy:colors=true")
+    currentMirror.mkToolBox(options = s"-Xplugin:$cpp -Xplugin-require:clippy -P:clippy:colors=true -P:clippy:testmode=true")
   }
 
-  def parse(snippet: String) = tb.eval(tb.parse(snippet))
+  def tryCompile(snippet: String) = tb.compile(tb.parse(snippet))
 
   for ((name, s) <- snippets) {
     name should "compile with errors" in {
-      (the[ToolBoxError] thrownBy parse(s)).message should include("Clippy advises")
+      (the[ToolBoxError] thrownBy tryCompile(s)).message should include("Clippy advises")
     }
   }
 
   "Clippy" should "return all matching advice" in {
-    (the[ToolBoxError] thrownBy parse(snippets("macwire")))
+    (the[ToolBoxError] thrownBy tryCompile(snippets("macwire")))
       .message should include("Clippy advises you to try one of these")
   }
 
