@@ -3,10 +3,8 @@ package com.softwaremill.clippy
 import com.softwaremill.clippy.StringDiff.{DeltaEnd, DeltaStart}
 
 object StringDiff {
-  val AnsiReset = "\u001B[0m"
-  val AnsiRed = "\u001B[31m"
-  val DeltaEnd = AnsiReset
-  val DeltaStart = AnsiRed
+  val DeltaEnd = Console.RESET
+  val DeltaStart = Console.RED
 }
 
 class StringDiff(expected: String, actual: String) {
