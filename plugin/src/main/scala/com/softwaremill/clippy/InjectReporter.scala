@@ -4,6 +4,9 @@ import scala.reflect.internal.util.Position
 import scala.tools.nsc.plugins.PluginComponent
 import scala.tools.nsc.{Global, Phase}
 
+/**
+  * Responsible for replacing the global reporter with our custom Clippy reporter after the first phase of compilation.
+  */
 class InjectReporter(handleError: (Position, String) => String, superGlobal: Global) extends PluginComponent {
 
   override val global = superGlobal

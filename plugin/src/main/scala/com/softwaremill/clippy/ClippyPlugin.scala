@@ -54,7 +54,7 @@ class ClippyPlugin(val global: Global) extends Plugin {
     }
   }
 
-  override val components: List[PluginComponent] = List(new InjectReporter(handleError, global))
+  override val components: List[PluginComponent] = List(new InjectReporter(handleError, global), new RestoreReporter(global))
 
   private def prettyPrintTypeMismatchError(tme: TypeMismatchError[ExactT], msg: String): String = {
     val plain = new StringDiff(tme.required.toString, tme.found.toString)
