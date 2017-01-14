@@ -48,8 +48,8 @@ lazy val commonSettingsNoScalaVersion = scalariformSettings ++ Seq(
   pomIncludeRepository := { _ => false },
   pomExtra :=
     <scm>
-      <url>git@github.com:adamw/macwire.git</url>
-      <connection>scm:git:git@github.com:adamw/macwire.git</connection>
+      <url>git@github.com:softwaremill/scala-clippy.git</url>
+      <connection>scm:git:git@github.com:softwaremill/scala-clippy.git</connection>
     </scm>
       <developers>
         <developer>
