@@ -59,15 +59,17 @@ class ClippyPlugin(val global: Global) extends Plugin {
   private def prettyPrintTypeMismatchError(tme: TypeMismatchError[ExactT], msg: String): String = {
     val plain = new StringDiff(tme.required.toString, tme.found.toString)
     val expands = new StringDiff(tme.requiredExpandsTo.toString, tme.foundExpandsTo.toString)
-    val finalMsg =
-      s"""
-         | $msg
+
+    val expandsMsg =
+      if (expands.isEmpty)
+        ""
+      else
+        s"""${expands.diff("\nExpanded types:\nfound   : %s\\nrequired: %s\"")}"""
+
+    s""" type mismatch;
          | Clippy advises:
-         | Type mismatch error, pay attention to the parts marked in red:
-         |          ${plain.diff("Types: required %s found %s")}
-         | ${expands.diff("Expanded types: required %s found %s")}
-                """.stripMargin
-    finalMsg
+         | Pay attention to the parts marked in red:
+         | ${plain.diff("found   : %s\n required: %s")}$expandsMsg""".stripMargin
   }
 
   private def urlFromOptions(options: List[String]): String =

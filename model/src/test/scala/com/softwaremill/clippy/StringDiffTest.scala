@@ -20,4 +20,8 @@ class StringDiffTest extends FlatSpec with Matchers {
     }
   }
 
+  it should "be considered empty for equal expected and actal texts" in {
+    new StringDiff("None", "None") should be('empty)
+  }
+
 }

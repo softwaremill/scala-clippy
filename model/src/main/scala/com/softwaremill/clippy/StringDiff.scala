@@ -14,6 +14,8 @@ class StringDiff(expected: String, actual: String) {
     else format(message, markDiff(expected), markDiff(actual))
   }
 
+  def isEmpty: Boolean = expected == actual
+
   private def format(msg: String, expected: String, actual: String) = msg.format(expected, actual)
 
   private def markDiff(source: String) = {
