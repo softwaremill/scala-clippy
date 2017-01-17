@@ -130,6 +130,11 @@ You can also help developing the plugin and/or the UI for submitting new advices
 * `ui-client` - the Scala.JS client-side code
 * `ui-shared` - code shared between the UI server and UI client (but not needed for the plugin)
 
+If you want to write your own tests with compilation using `mkToolbox`, remember to add a `-P:clippy:testmode=true`
+compiler option. It ensuers that a correct reporter replacement mechanism is used, which needs to be different
+specifically for tests. See [CompileTests.scala](tests/src/test/scala/org/softwaremill/clippy/CompileTests.scala) for
+reference.
+
 To publish locally append "-SNAPSHOT" to the version number then run
 ````scala
 sbt "project plugin" "+ publishLocal"
