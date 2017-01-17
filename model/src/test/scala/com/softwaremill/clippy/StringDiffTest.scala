@@ -21,10 +21,6 @@ class StringDiffTest extends FlatSpec with Matchers {
     }
   }
 
-  it should "be considered empty for equal expected and actal texts" in {
-    new StringDiff("None", "None") should be('empty)
-  }
-
   it should "find common prefix" in {
     new StringDiff("Map[Long, Double]", "Map[String, Double]").findCommonPrefix() should be("Map[")
   }

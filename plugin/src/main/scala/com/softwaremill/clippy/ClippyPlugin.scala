@@ -64,13 +64,15 @@ class ClippyPlugin(val global: Global) extends Plugin {
 
   private def prettyPrintTypeMismatchError(tme: TypeMismatchError[ExactT], msg: String): String = {
     val plain = new StringDiff(tme.required.toString, tme.found.toString)
-    val expands = new StringDiff(tme.requiredExpandsTo.toString, tme.foundExpandsTo.toString)
 
-    val expandsMsg =
-      if (expands.isEmpty)
-        ""
-      else
-        s"""${expands.diff("\nExpanded types:\nfound   : %s\\nrequired: %s\"")}"""
+    val expandsMsg = if (tme.hasExpands) {
+      val reqExpandsTo = tme.requiredExpandsTo.getOrElse(tme.required)
+      val foundExpandsTo = tme.foundExpandsTo.getOrElse(tme.found)
+      val expands = new StringDiff(reqExpandsTo.toString, foundExpandsTo.toString)
+      s"""${expands.diff("\nExpanded types:\nfound   : %s\nrequired: %s\"")}"""
+    }
+    else
+      ""
 
     s""" type mismatch;
          | Clippy advises:
