@@ -10,7 +10,7 @@ import scala.tools.nsc.{Global, Phase}
 class InjectReporter(handleError: (Position, String) => String, superGlobal: Global) extends PluginComponent {
 
   override val global = superGlobal
-
+  def isEnabled: Boolean = true
   override val runsAfter = List[String]("parser")
   override val runsBefore = List[String]("namer")
   override val phaseName = "inject-clippy-reporter"
@@ -22,8 +22,10 @@ class InjectReporter(handleError: (Position, String) => String, superGlobal: Glo
     override def description = "Switches the reporter to Clippy's DelegatingReporter"
 
     override def run(): Unit = {
-      val r = global.reporter
-      global.reporter = new DelegatingReporter(r, handleError)
+      if (isEnabled) {
+        val r = global.reporter
+        global.reporter = new DelegatingReporter(r, handleError)
+      }
     }
   }
 

@@ -56,9 +56,9 @@ class ClippyPlugin(val global: Global) extends Plugin {
 
   override val components: List[PluginComponent] = List(
     new InjectReporter(handleError, global) {
-      override def enabled = !testMode
+      override def isEnabled = !testMode
     }, new RestoreReporter(global) {
-      override def enabled = !testMode
+      override def isEnabled = !testMode
     }
   )
 

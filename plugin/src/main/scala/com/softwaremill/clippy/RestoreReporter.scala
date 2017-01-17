@@ -11,7 +11,7 @@ import scala.tools.nsc.{Global, Phase}
 class RestoreReporter(val global: Global) extends PluginComponent {
 
   val originalReporter = global.reporter
-
+  def isEnabled: Boolean = true
   override val runsAfter = List[String]("jvm")
   override val runsBefore = List[String]("terminal")
   override val phaseName = "restore-original-reporter"
@@ -23,7 +23,8 @@ class RestoreReporter(val global: Global) extends PluginComponent {
     override def description = "Switches the reporter from Clippy's DelegatingReporter back to original one"
 
     override def run(): Unit = {
-      global.reporter = originalReporter
+      if (isEnabled)
+        global.reporter = originalReporter
     }
   }
 
