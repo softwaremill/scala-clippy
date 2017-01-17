@@ -4,10 +4,10 @@ import scala.tools.nsc.plugins.PluginComponent
 import scala.tools.nsc.{Global, Phase}
 
 /**
-  * Replaces global reporter back with the original global reporter. Sbt uses its own xsbt.DelegatingReporter
-  * which we cannot replace outside of Scala compilation phases. This component makes sure that before the compilation
-  * is over, original reporter gets reassigned to the global field.
-  */
+ * Replaces global reporter back with the original global reporter. Sbt uses its own xsbt.DelegatingReporter
+ * which we cannot replace outside of Scala compilation phases. This component makes sure that before the compilation
+ * is over, original reporter gets reassigned to the global field.
+ */
 class RestoreReporter(val global: Global) extends PluginComponent {
 
   val originalReporter = global.reporter
