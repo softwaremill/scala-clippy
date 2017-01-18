@@ -71,7 +71,6 @@ Then create a file named .clippy.json in the root of your project directory and 
 
 ````
 {
-  "version": "0.3.1",
   "advices": [
     {
       "error": {
@@ -114,6 +113,12 @@ If you are using `scalac` directly, add the following option:
 -Xplugin:clippy-plugin_2.11-0.4.0-bundle.jar
 ````
 
+If you would like local advice to work in intellij which defaults to running in a different directory than the project:
+
+````scala
+-P:clippy:projectRoot=$projectDir
+````
+
 # Contributing to the project
 
 You can also help developing the plugin and/or the UI for submitting new advices! The module structure is:
@@ -124,6 +129,17 @@ You can also help developing the plugin and/or the UI for submitting new advices
 * `ui` - the ui server project in Play
 * `ui-client` - the Scala.JS client-side code
 * `ui-shared` - code shared between the UI server and UI client (but not needed for the plugin)
+
+To publish locally append "-SNAPSHOT" to the version number then run
+````scala
+sbt "project plugin" "+ publishLocal"
+````
+
+Run advice tests with
+````scala
+sbt tests/test
+````
+
 
 # Heroku deployment
 
