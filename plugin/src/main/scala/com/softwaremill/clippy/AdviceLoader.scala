@@ -27,7 +27,7 @@ class AdviceLoader(global: Global, url: String, localStoreDir: File, projectAdvi
     TryWith(url.openStream())(inputStreamToClippy(_).advices) match {
       case Success(advices) => advices
       case Failure(_) =>
-        global.warning(s"Cannot load advice from ${url.getPath} : Ignoring.")
+        global.inform(s"Cannot load advice from ${url.getPath} : Ignoring.")
         Nil
     }
 
@@ -72,6 +72,11 @@ class AdviceLoader(global: Global, url: String, localStoreDir: File, projectAdvi
         bytes
       }
       .map(bytes => inputStreamToClippy(decodeZippedBytes(bytes)))
+      .recover{
+        case e: Exception =>
+          global.inform(s"Unable to load/store local Clippy advice due to: ${e.getMessage}")
+          Clippy(ClippyBuildInfo.version, Nil)
+      }
       .andThen { case Success(v) => v.checkPluginVersion(ClippyBuildInfo.version, global.inform) }
 
   private def fetchStoreParseInBackground(): Future[Clippy] = {
@@ -117,7 +122,7 @@ class AdviceLoader(global: Global, url: String, localStoreDir: File, projectAdvi
         storeLocally(bytes)
       }
     }.onFailure {
-      case e: Exception => global.warning(s"Cannot store data at $localStore due to: $e")
+      case e: Exception => global.inform(s"Cannot store data at $localStore due to: $e")
     }
   }
 
