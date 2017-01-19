@@ -43,6 +43,8 @@ case class TypeMismatchError[T <: Template](found: T, foundExpandsTo: Option[T],
       false
   }
 
+  def hasExpands: Boolean = foundExpandsTo.nonEmpty || requiredExpandsTo.nonEmpty
+
   override def asRegex(implicit ev: T =:= ExactT) = TypeMismatchError(
     RegexT.fromPattern(found.v), foundExpandsTo.map(fe => RegexT.fromPattern(fe.v)),
     RegexT.fromPattern(required.v), requiredExpandsTo.map(re => RegexT.fromPattern(re.v)))
