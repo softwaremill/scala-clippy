@@ -3,7 +3,7 @@ package com.softwaremill.clippy
 object StringDiff {
   val DeltaEnd = Console.RESET
   val DeltaStart = Console.RED
-  val separators = List(' ', ',', '(', ')', '[', ']', '#', '#', '=', '>', '{')
+  val separators = List(' ', ',', '(', ')', '[', ']', '#', '#', '=', '>', '{', '.')
   def isSeparator(char: Char) = separators.contains(char)
 }
 

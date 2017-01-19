@@ -21,7 +21,7 @@ class StringDiffSpecification extends Properties("StringDiff") with TypeNamesGen
     new StringDiff(x, y).diff("expected: %s actual: %s") == s"""expected: $S$x$E actual: $S$y$E"""
   }
 
-  property("X[Y[Z]] vs X[V[Z]] always gives X[<diff>[Z]]") =
+  property("X[Y[Z]] vs X[V[Z]] always gives X[<diff>[Z]] excluding packages") =
     forAll(different(singleTypeName)(4))(innerTypeDiffsCorrectly)
 
   property("X[Y[Z]] vs X[V[Z]] always gives X[<diff>[Z]] if Y and V have common prefix") =
@@ -37,6 +37,15 @@ class StringDiffSpecification extends Properties("StringDiff") with TypeNamesGen
       val actual = s"$b[$x]"
       val msg = new StringDiff(expected, actual).diff("expected: %s actual: %s")
       msg == s"""expected: $S$a$E[$x] actual: $S$b$E[$x]"""
+    }
+
+  property("package.A[X] vs package.B[X] always gives package.<diff>A</diff>[X]") =
+    forAll(javaPackage, different(singleTypeName)(2), complexTypeName(maxDepth = 3)) { (pkg, outerTypes, x) =>
+      val List(a, b) = outerTypes
+      val expected = s"$pkg$a[$x]"
+      val actual = s"$pkg$b[$x]"
+      val msg = new StringDiff(expected, actual).diff("expected: %s actual: %s")
+      msg == s"""expected: $pkg$S$a$E[$x] actual: $pkg$S$b$E[$x]"""
     }
 
   property("any complex X vs Y is a full diff when X and Y don't have common suffix nor prefix") =

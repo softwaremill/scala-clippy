@@ -29,11 +29,15 @@ trait TypeNamesGenerators {
     (c :: cs).mkString
   }
 
-  def randomTypeName: Gen[String] = for {
+  def randomTypeWithPackage: Gen[String] = for {
     p <- javaPackage
+    t <- randomTypeWithPackage
+  } yield p + t
+
+  def randomTypeName: Gen[String] = for {
     c <- alphaChar
     cs <- Gen.resize(7, listOf(typeNameChar))
-  } yield p + (c :: cs).mkString
+  } yield (c :: cs).mkString
 
   def singleTypeName = frequency((3, randomTypeName), (7, specialTypeName))
 
