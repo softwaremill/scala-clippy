@@ -3,22 +3,27 @@ package com.softwaremill.clippy
 import scala.reflect.internal.util.Position
 import scala.tools.nsc.reporters.Reporter
 
-class DelegatingReporter(r: Reporter, handleError: (Position, String) => String) extends Reporter {
+class DelegatingReporter(r: Reporter, handleError: (Position, String) => String, colorsConfig: ColorsConfig) extends Reporter {
   override protected def info0(pos: Position, msg: String, severity: Severity, force: Boolean) = {
+    val wrapped = DelegatingPosition.wrap(pos, colorsConfig)
+
     // cannot delegate to info0 as it's protected, hence special-casing on the possible severity values
     if (severity == INFO) {
-      r.info(pos, msg, force)
-    } else if (severity == WARNING) {
-      warning(pos, msg)
-    } else if (severity == ERROR) {
-      error(pos, msg)
-    } else {
-      error(pos, s"UNKNOWN SEVERITY: $severity\n$msg")
+      r.info(wrapped, msg, force)
+    }
+    else if (severity == WARNING) {
+      warning(wrapped, msg)
+    }
+    else if (severity == ERROR) {
+      error(wrapped, msg)
+    }
+    else {
+      error(wrapped, s"UNKNOWN SEVERITY: $severity\n$msg")
     }
   }
 
   override def echo(msg: String) = r.echo(msg)
-  override def comment(pos: Position, msg: String) = r.comment(pos, msg)
+  override def comment(pos: Position, msg: String) = r.comment(DelegatingPosition.wrap(pos, colorsConfig), msg)
   override def hasErrors = r.hasErrors || cancelled
   override def reset() = {
     cancelled = false
@@ -27,8 +32,8 @@ class DelegatingReporter(r: Reporter, handleError: (Position, String) => String)
 
   //
 
-  override def echo(pos: Position, msg: String) = r.echo(pos, msg)
-  override def warning(pos: Position, msg: String) = r.warning(pos, msg)
+  override def echo(pos: Position, msg: String) = r.echo(DelegatingPosition.wrap(pos, colorsConfig), msg)
+  override def warning(pos: Position, msg: String) = r.warning(DelegatingPosition.wrap(pos, colorsConfig), msg)
   override def errorCount = r.errorCount
   override def warningCount = r.warningCount
   override def hasWarnings = r.hasWarnings
@@ -46,5 +51,8 @@ class DelegatingReporter(r: Reporter, handleError: (Position, String) => String)
 
   //
 
-  override def error(pos: Position, msg: String) = r.error(pos, handleError(pos, msg))
+  override def error(pos: Position, msg: String) = {
+    val wrapped = DelegatingPosition.wrap(pos, colorsConfig)
+    r.error(wrapped, handleError(wrapped, msg))
+  }
 }

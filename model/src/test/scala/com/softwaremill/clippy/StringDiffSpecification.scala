@@ -5,20 +5,21 @@ import org.scalacheck.Properties
 
 class StringDiffSpecification extends Properties("StringDiff") with TypeNamesGenerators {
 
-  val S = StringDiff.DeltaStart
-  val E = StringDiff.DeltaEnd
+  val S = "S"
+  val E = "E"
+  val AddSE = (s: String) => S + s + E
 
   def innerTypeDiffsCorrectly(fourTypes: List[String]): Boolean = {
     val List(x, y, v, z) = fourTypes
     val expected = s"$x[$y[$z]]"
     val actual = s"$x[$v[$z]]"
-    val msg = new StringDiff(expected, actual).diff("expected: %s actual: %s")
+    val msg = new StringDiff(expected, actual, AddSE).diff("expected: %s actual: %s")
     msg == s"""expected: $x[$S$y$E[$z]] actual: $x[$S$v$E[$z]]"""
   }
 
   def twoTypesAreFullyDiff(twoTypes: List[String]): Boolean = {
     val List(x, y) = twoTypes
-    new StringDiff(x, y).diff("expected: %s actual: %s") == s"""expected: $S$x$E actual: $S$y$E"""
+    new StringDiff(x, y, AddSE).diff("expected: %s actual: %s") == s"""expected: $S$x$E actual: $S$y$E"""
   }
 
   property("X[Y[Z]] vs X[V[Z]] always gives X[<diff>[Z]] excluding packages") =
@@ -35,7 +36,7 @@ class StringDiffSpecification extends Properties("StringDiff") with TypeNamesGen
       val List(a, b) = outerTypes
       val expected = s"$a[$x]"
       val actual = s"$b[$x]"
-      val msg = new StringDiff(expected, actual).diff("expected: %s actual: %s")
+      val msg = new StringDiff(expected, actual, AddSE).diff("expected: %s actual: %s")
       msg == s"""expected: $S$a$E[$x] actual: $S$b$E[$x]"""
     }
 
@@ -44,7 +45,7 @@ class StringDiffSpecification extends Properties("StringDiff") with TypeNamesGen
       val List(a, b) = outerTypes
       val expected = s"$pkg$a[$x]"
       val actual = s"$pkg$b[$x]"
-      val msg = new StringDiff(expected, actual).diff("expected: %s actual: %s")
+      val msg = new StringDiff(expected, actual, AddSE).diff("expected: %s actual: %s")
       msg == s"""expected: $pkg$S$a$E[$x] actual: $pkg$S$b$E[$x]"""
     }
 

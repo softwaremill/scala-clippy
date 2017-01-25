@@ -16,7 +16,7 @@ class ClippyPlugin(val global: Global) extends Plugin {
   override val description: String = "gives good advice"
 
   var url: String = ""
-  var enableColors = false
+  var colorsConfig: ColorsConfig = ColorsConfig.Disabled
   var testMode = false
   val DefaultStoreDir = new File(System.getProperty("user.home"), ".clippy")
   var localStoreDir = DefaultStoreDir
@@ -30,8 +30,8 @@ class ClippyPlugin(val global: Global) extends Plugin {
 
     matches.size match {
       case 0 =>
-        parsedMsg match {
-          case Some(tme: TypeMismatchError[ExactT]) if enableColors => prettyPrintTypeMismatchError(tme, msg)
+        (parsedMsg, colorsConfig) match {
+          case (Some(tme: TypeMismatchError[ExactT]), cc: ColorsConfig.Enabled) => prettyPrintTypeMismatchError(tme, msg, cc)
           case _ => msg
         }
       case 1 =>
@@ -42,7 +42,7 @@ class ClippyPlugin(val global: Global) extends Plugin {
   }
 
   override def processOptions(options: List[String], error: (String) => Unit): Unit = {
-    enableColors = colorsFromOptions(options)
+    colorsConfig = colorsFromOptions(options)
     url = urlFromOptions(options)
     testMode = testModeFromOptions(options)
     localStoreDir = localStoreDirFromOptions(options)
@@ -50,40 +50,77 @@ class ClippyPlugin(val global: Global) extends Plugin {
 
     if (testMode) {
       val r = global.reporter
-      global.reporter = new DelegatingReporter(r, handleError)
+      global.reporter = new DelegatingReporter(r, handleError, colorsConfig)
     }
   }
 
   override val components: List[PluginComponent] = List(
     new InjectReporter(handleError, global) {
+      override def colorsConfig = ClippyPlugin.this.colorsConfig
       override def isEnabled = !testMode
     }, new RestoreReporter(global) {
       override def isEnabled = !testMode
     }
   )
 
-  private def prettyPrintTypeMismatchError(tme: TypeMismatchError[ExactT], msg: String): String = {
-    val plain = new StringDiff(tme.required.toString, tme.found.toString)
+  private def prettyPrintTypeMismatchError(tme: TypeMismatchError[ExactT], msg: String, colors: ColorsConfig.Enabled): String = {
+    val colorDiff = (s: String) => colors.diff(s).toString
+    val plain = new StringDiff(tme.found.toString, tme.required.toString, colorDiff)
 
     val expandsMsg = if (tme.hasExpands) {
       val reqExpandsTo = tme.requiredExpandsTo.getOrElse(tme.required)
       val foundExpandsTo = tme.foundExpandsTo.getOrElse(tme.found)
-      val expands = new StringDiff(reqExpandsTo.toString, foundExpandsTo.toString)
+      val expands = new StringDiff(foundExpandsTo.toString, reqExpandsTo.toString, colorDiff)
       s"""${expands.diff("\nExpanded types:\nfound   : %s\nrequired: %s\"")}"""
     }
     else
       ""
 
     s""" type mismatch;
-         | Clippy advises:
-         | Pay attention to the parts marked in red:
+         | Clippy advises, pay attention to the marked parts:
          | ${plain.diff("found   : %s\n required: %s")}$expandsMsg""".stripMargin
   }
 
   private def urlFromOptions(options: List[String]): String =
     options.find(_.startsWith("url=")).map(_.substring(4)).getOrElse("https://www.scala-clippy.org") + "/api/advices"
 
-  private def colorsFromOptions(options: List[String]): Boolean = boolFromOptions(options, "colors")
+  private def colorsFromOptions(options: List[String]): ColorsConfig = {
+    if (boolFromOptions(options, "colors")) {
+
+      def colorToFansi(color: String): fansi.Attrs = color match {
+        case "black" => fansi.Color.Black
+        case "red" => fansi.Color.Red
+        case "green" => fansi.Color.Green
+        case "yellow" => fansi.Color.Yellow
+        case "blue" => fansi.Color.Blue
+        case "magenta" => fansi.Color.Magenta
+        case "cyan" => fansi.Color.Cyan
+        case "white" => fansi.Color.White
+        case "none" => fansi.Attrs.Empty
+        case x =>
+          global.warning("Unknown color: " + x)
+          fansi.Attrs.Empty
+      }
+
+      val partColorPattern = "colors-(.*)=(.*)".r
+      options.filter(_.startsWith("colors-")).foldLeft(ColorsConfig.defaultEnabled) {
+        case (current, partAndColor) =>
+          val partColorPattern(part, colorStr) = partAndColor
+          val color = colorToFansi(colorStr.trim.toLowerCase())
+          part.trim.toLowerCase match {
+            case "diff" => current.copy(diff = color)
+            case "comment" => current.copy(comment = color)
+            case "type" => current.copy(`type` = color)
+            case "literal" => current.copy(literal = color)
+            case "keyword" => current.copy(keyword = color)
+            case x =>
+              global.warning("Unknown colored part: " + x)
+              current
+          }
+      }
+    }
+    else ColorsConfig.Disabled
+  }
 
   private def testModeFromOptions(options: List[String]): Boolean = boolFromOptions(options, "testmode")
 

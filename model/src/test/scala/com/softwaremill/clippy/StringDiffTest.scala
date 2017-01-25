@@ -1,31 +1,34 @@
 package com.softwaremill.clippy
 
-import com.softwaremill.clippy.StringDiff.{DeltaEnd, DeltaStart}
 import org.scalatest.{FlatSpec, Matchers}
 
 class StringDiffTest extends FlatSpec with Matchers {
 
+  val S = "S"
+  val E = "E"
+  val AddSE = (s: String) => S + s + E 
+  
   val testData = List(
-    ("Super[String, String]", "Super[Option[String], String]", "expected Super[" + DeltaStart + "String" + DeltaEnd + ", String] but was Super[" + DeltaStart + "Option[String]" + DeltaEnd + ", String]"),
-    ("Cool[String, String]", "Super[Option[String], String]", "expected " + DeltaStart + "Cool[String" + DeltaEnd + ", String] but was " + DeltaStart + "Super[Option[String]" + DeltaEnd + ", String]"),
-    ("(String, String)", "Super[Option[String], String]", "expected " + DeltaStart + "(String, String)" + DeltaEnd + " but was " + DeltaStart + "Super[Option[String], String]" + DeltaEnd),
-    ("Map[Long, Double]", "Map[String, Double]", "expected Map[" + DeltaStart + "Long" + DeltaEnd + ", Double] but was Map[" + DeltaStart + "String" + DeltaEnd + ", Double]")
+    ("Super[String, String]", "Super[Option[String], String]", "expected Super[" + S + "String" + E + ", String] but was Super[" + S + "Option[String]" + E + ", String]"),
+    ("Cool[String, String]", "Super[Option[String], String]", "expected " + S + "Cool[String" + E + ", String] but was " + S + "Super[Option[String]" + E + ", String]"),
+    ("(String, String)", "Super[Option[String], String]", "expected " + S + "(String, String)" + E + " but was " + S + "Super[Option[String], String]" + E),
+    ("Map[Long, Double]", "Map[String, Double]", "expected Map[" + S + "Long" + E + ", Double] but was Map[" + S + "String" + E + ", Double]")
   )
 
   "StringDiff" should "diff" in {
     for ((expected, actual, expectedDiff) <- testData) {
 
-      val diff = new StringDiff(expected, actual).diff("expected %s but was %s")
+      val diff = new StringDiff(expected, actual, AddSE).diff("expected %s but was %s")
 
       diff should be(expectedDiff)
     }
   }
 
   it should "find common prefix" in {
-    new StringDiff("Map[Long, Double]", "Map[String, Double]").findCommonPrefix() should be("Map[")
+    new StringDiff("Map[Long, Double]", "Map[String, Double]", AddSE).findCommonPrefix() should be("Map[")
   }
 
   it should "find common suffix" in {
-    new StringDiff("Map[Long, Double]", "Map[String, Double]").findCommonSuffix() should be(", Double]")
+    new StringDiff("Map[Long, Double]", "Map[String, Double]", AddSE).findCommonSuffix() should be(", Double]")
   }
 }
