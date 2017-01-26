@@ -11,5 +11,5 @@ install:
   - npm install
   - npm install jsdom
 script:
-- sbt ++$TRAVIS_SCALA_VERSION test
+- sbt test
 - '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && sbt updateImpactSubmit || true'
