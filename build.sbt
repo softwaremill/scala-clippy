@@ -97,12 +97,16 @@ lazy val plugin = (project in file("plugin"))
   .enablePlugins(BuildInfoPlugin)
   .settings(commonSettings)
   .settings(
-    crossScalaVersions := Seq(scalaVersion.value, "2.12.1"),
+    crossScalaVersions := Seq(scalaVersion.value, "2.12.1", "2.10.6"),
     libraryDependencies ++= Seq(
-      "org.scala-lang" % "scala-compiler" % scalaVersion.value,
+      "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
       "com.lihaoyi" %% "scalaparse" % "0.4.2",
       "com.lihaoyi" %% "fansi" % "0.2.3",
       scalatest, scalacheck, json4s),
+    // this is needed for fastparse to work on 2.10
+    libraryDependencies ++= (if (scalaVersion.value startsWith "2.10.")
+      Seq(compilerPlugin("org.scalamacros" % s"paradise" % "2.1.0" cross CrossVersion.full))
+    else Seq()),
     pomPostProcess := { (node: XNode) =>
       new RuleTransformer(removeDep("org.json4s", "json4s-native")).transform(node).head
     },
