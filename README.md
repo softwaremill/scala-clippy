@@ -36,7 +36,17 @@ addSbtPlugin("com.softwaremill.clippy" % "plugin-sbt" % "0.4.1")
 
 Upon first use, the plugin will download the advice dataset from `https://scala-clippy.org` and store it in the
 `$HOME/.clippy` directory. The dataset will be updated at most once a day, in the background. You can customize the
-dataset URL and local store by using the `-P:clippy:url=` and `-P:clippy:store=` compiler options.
+dataset URL and local store by setting the `clippyUrl` and `clippyLocalStoreDir` sbt options to non-`None`-values.
+
+Note: to customize a global sbt plugin (a plugin which is added via `~/.sbt/0.13/plugins/build.sbt`) keep in mind
+that:
+
+* customize the plugin settings in `~/.sbt/0.13/build.sbt` (one directory up!). These settings will be
+automatically added to all of your projects.
+* you'll need to add `import com.softwaremill.clippy.ClippySbtPlugin._` to access the setting names as auto-imports 
+don't work in the global settings
+* the clippy sbt settings are just a convenient syntax for adding compiler options (e.g., enabling colors is same 
+as `scalacOptions += "-P:clippy:colors=true"`)
 
 # Enabling syntax and type mismatch diffs highlighting
 
@@ -46,17 +56,12 @@ Clippy can highlight:
 signatures
 * syntax when displaying code fragments with errors
 
-If you'd like to enable this feature, add the `-P:clippy:colors=true` compiler option. To customize the colors,
-add any number of options in the format: `-P:clippy:colors-[part]=[color]`, where `part` is one of: `diff`, `comment`,
-`type`, `literal`, `keyword` and color is one of: `black`, `red`, `green`, `yellow`, `blue`, `magenta`, `cyan`,
-`white`, `none`.
+If you'd like to enable this feature, set `clippyColorsEnabled := true` in sbt (to enable globally, add this to
+`~/.sbt/0.13/build.sbt`, as explained above). 
 
-If you're using the SBT plugin, you can enable coloring globally by adding the following line to
-`~/.sbt/0.13/clippy.sbt` (these are your local SBT settings, they will apply to all projects):
-
-````scala
-scalacOptions += "-P:clippy:colors=true"
-````
+To customize the colors, set any of `clippyColorDiff`, `clippyColorComment`,
+`clippyColorType`, `clippyColorLiteral`, `clippyColorKeyword` to `Some(ClippyColor.[name])`, where `[name]` can be:
+`Black`, `Red`, `Green`, `Yellow`, `Blue`, `Magenta`, `Cyan`, `White` or `None`.
 
 # Contributing advice
 
@@ -70,10 +75,12 @@ It will only take you a couple of minutes, no registration required. Just head o
 
 If you have advice that you feel is too specific to be worth sharing on [https://scala-clippy.org](https://scala-clippy.org)
 you can add it to your project specific advice file.
-First set your project root
+First set your project root:
+
 ````
-scalacOptions += "-P:clippy:projectRoot=" + (baseDirectory in ThisBuild).value
+clippyProjectRoot := Some((baseDirectory in ThisBuild).value) 
 ````
+
 Then create a file named .clippy.json in the root of your project directory and add the advice json in the format illustrated below:
 
 ````
@@ -120,6 +127,8 @@ If you are using `scalac` directly, add the following option:
 -Xplugin:clippy-plugin_2.11-0.4.1-bundle.jar
 ````
 
+This can be followed by any of the available options, e.g. `-P:clippy:colors=true`.
+
 If you would like local advice to work in intellij which defaults to running in a different directory than the project:
 
 ````scala
@@ -138,7 +147,7 @@ You can also help developing the plugin and/or the UI for submitting new advices
 * `ui-shared` - code shared between the UI server and UI client (but not needed for the plugin)
 
 If you want to write your own tests with compilation using `mkToolbox`, remember to add a `-P:clippy:testmode=true`
-compiler option. It ensuers that a correct reporter replacement mechanism is used, which needs to be different
+compiler option. It ensures that a correct reporter replacement mechanism is used, which needs to be different
 specifically for tests. See [CompileTests.scala](tests/src/test/scala/org/softwaremill/clippy/CompileTests.scala) for
 reference.
 
