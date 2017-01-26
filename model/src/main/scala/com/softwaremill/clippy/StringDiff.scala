@@ -1,13 +1,11 @@
 package com.softwaremill.clippy
 
 object StringDiff {
-  val DeltaEnd = Console.RESET
-  val DeltaStart = Console.RED
   val separators = List(' ', ',', '(', ')', '[', ']', '#', '#', '=', '>', '{', '.')
-  def isSeparator(char: Char) = separators.contains(char)
+  def isSeparator(char: Char): Boolean = separators.contains(char)
 }
 
-class StringDiff(expected: String, actual: String) {
+class StringDiff(expected: String, actual: String, color: String => String) {
   import StringDiff._
   def diff(message: String): String = {
     if (this.expected == this.actual) format(message, this.expected, this.actual)
@@ -19,7 +17,7 @@ class StringDiff(expected: String, actual: String) {
   private def markDiff(source: String) = {
     val prefix = findCommonPrefix()
     val suffix = findCommonSuffix()
-    val diff = DeltaStart + source.substring(prefix.length, source.length - suffix.length) + DeltaEnd
+    val diff = color(source.substring(prefix.length, source.length - suffix.length))
     prefix + diff + suffix
   }
 

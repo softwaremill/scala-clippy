@@ -11,7 +11,7 @@ import scala.xml.{Elem => XElem}
 
 val slickVersion = "3.1.1"
 
-val json4s = "org.json4s" %% "json4s-native" % "3.4.2"
+val json4s = "org.json4s" %% "json4s-native" % "3.5.0"
 
 // testing
 val scalatest = "org.scalatest" %% "scalatest" % "3.0.1" % "test"
@@ -22,7 +22,7 @@ name := "clippy"
 // factor out common settings into a sequence
 lazy val commonSettingsNoScalaVersion = scalariformSettings ++ Seq(
   organization := "com.softwaremill.clippy",
-  version := "0.4.1",
+  version := "0.5.0-SNAPSHOT",
 
   scalacOptions ++= Seq("-unchecked", "-deprecation"),
 
@@ -97,14 +97,20 @@ lazy val plugin = (project in file("plugin"))
   .enablePlugins(BuildInfoPlugin)
   .settings(commonSettings)
   .settings(
-    crossScalaVersions := Seq(scalaVersion.value, "2.10.6", "2.12.0"),
+    crossScalaVersions := Seq(scalaVersion.value, "2.12.1", "2.10.6"),
     libraryDependencies ++= Seq(
-      "org.scala-lang" % "scala-compiler" % scalaVersion.value,
+      "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
+      "com.lihaoyi" %% "scalaparse" % "0.4.2",
+      "com.lihaoyi" %% "fansi" % "0.2.3",
       scalatest, scalacheck, json4s),
+    // this is needed for fastparse to work on 2.10
+    libraryDependencies ++= (if (scalaVersion.value startsWith "2.10.")
+      Seq(compilerPlugin("org.scalamacros" % s"paradise" % "2.1.0" cross CrossVersion.full))
+    else Seq()),
     pomPostProcess := { (node: XNode) =>
       new RuleTransformer(removeDep("org.json4s", "json4s-native")).transform(node).head
     },
-      buildInfoPackage := "com.softwaremill.clippy",
+    buildInfoPackage := "com.softwaremill.clippy",
     buildInfoObject := "ClippyBuildInfo",
     artifact in (Compile, assembly) := {
       val art = (artifact in (Compile, assembly)).value
@@ -140,7 +146,7 @@ lazy val tests = (project in file("tests"))
       "com.typesafe.slick" %% "slick" % slickVersion
     ),
     // during tests, read from the local repository, if at all available
-    scalacOptions ++= List(s"-Xplugin:${pluginJar.value.getAbsolutePath}", "-P:clippy:url=http://localhost:9000"),
+    scalacOptions ++= List(s"-Xplugin:${pluginJar.value.getAbsolutePath}", "-P:clippy:url=http://localhost:9000", "-P:clippy:colors=true"),
     envVars in Test := (envVars in Test).value + ("CLIPPY_PLUGIN_PATH" -> pluginJar.value.getAbsolutePath),
     fork in Test := true
   ).dependsOn(modelJvm)
