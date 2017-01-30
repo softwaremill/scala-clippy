@@ -17,7 +17,7 @@ object ColorsConfig {
     fansi.Color.Red,
     fansi.Color.Blue,
     fansi.Color.Green,
-    fansi.Color.Cyan,
+    fansi.Color.Magenta,
     fansi.Color.Yellow
   )
 }
