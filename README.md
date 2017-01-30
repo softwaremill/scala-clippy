@@ -28,7 +28,7 @@ Just add the compiler plugin, and you'll see this additional helpful message:
 # Adding the plugin
 
 The easiest to use Clippy is via an SBT plugin. If you'd like Clippy to be enabled for all projects, without
-the need to modify their build, add the following to `~/.sbt/0.13/plugins/build.sbt`:
+the need to modify each project's build, add the following to `~/.sbt/0.13/plugins/build.sbt`:
 
 ````scala
 addSbtPlugin("com.softwaremill.clippy" % "plugin-sbt" % "0.4.1")
@@ -56,12 +56,19 @@ Clippy can highlight:
 signatures
 * syntax when displaying code fragments with errors
 
-If you'd like to enable this feature, set `clippyColorsEnabled := true` in sbt (to enable globally, add this to
-`~/.sbt/0.13/build.sbt`, as explained above). 
+If you'd like to enable this feature in sbt globally, add the following to `~/.sbt/0.13/build.sbt`: (see also notes
+above)
+ 
+````scala
+import com.softwaremill.clippy.ClippySbtPlugin._ // needed in global configuration only
+clippyColorsEnabled := true
+````
 
 To customize the colors, set any of `clippyColorDiff`, `clippyColorComment`,
 `clippyColorType`, `clippyColorLiteral`, `clippyColorKeyword` to `Some(ClippyColor.[name])`, where `[name]` can be:
 `Black`, `Red`, `Green`, `Yellow`, `Blue`, `Magenta`, `Cyan`, `White` or `None`.
+
+You can of course add clippy on a per-project basis as well.
 
 # Contributing advice
 
