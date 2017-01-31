@@ -177,3 +177,14 @@ Locally:
 * run `sbt deployHeroku` to deploy the current code as a fat-jar
 
 Currently deployed on `https://www.scala-clippy.org`
+
+# Credits
+
+Clippy contributors:
+
+* [Krzysztof Ciesielski](https://github.com/kciesielski)
+* [Łukasz Żuchowski](https://github.com/Zuchos)
+* [Shane Delmore](https://github.com/ShaneDelmore)
+* [Adam Warski](https://github.com/adamw)
+
+Syntax highlighting code is copied from [Ammonite](http://www.lihaoyi.com/Ammonite/).
