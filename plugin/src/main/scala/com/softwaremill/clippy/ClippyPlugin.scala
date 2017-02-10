@@ -96,6 +96,7 @@ class ClippyPlugin(val global: Global) extends Plugin {
         case "magenta" => fansi.Color.Magenta
         case "cyan" => fansi.Color.Cyan
         case "white" => fansi.Color.White
+        case "light-gray" => fansi.Color.LightGray
         case "none" => fansi.Attrs.Empty
         case x =>
           global.warning("Unknown color: " + x)
@@ -113,6 +114,7 @@ class ClippyPlugin(val global: Global) extends Plugin {
             case "type" => current.copy(`type` = color)
             case "literal" => current.copy(literal = color)
             case "keyword" => current.copy(keyword = color)
+            case "reset" => current.copy(reset = color)
             case x =>
               global.warning("Unknown colored part: " + x)
               current
