@@ -66,7 +66,8 @@ clippyColorsEnabled := true
 
 To customize the colors, set any of `clippyColorDiff`, `clippyColorComment`,
 `clippyColorType`, `clippyColorLiteral`, `clippyColorKeyword`, `clippyColorReset` to `Some(ClippyColor.[name])`, where `[name]` can be:
-`Black`, `Red`, `Green`, `Yellow`, `Blue`, `Magenta`, `Cyan`, `White`, `LightGray` or `None`.
+`Black`, `LightGray`, `DarkGray`, `Red`, `LightRed`, `Green`, `LightGreen`, `Yellow`, `LightYellow`, `Blue`, `LightBlue`, 
+`Magenta`, `LightMagenta`, `Cyan`, `LightCyan`, `White`,  or `None`.
 
 ### Windows Users
 If you notice that colors don't get correctly reset, that's probably caused by problems with interpreting the

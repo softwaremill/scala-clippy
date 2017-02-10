@@ -8,14 +8,21 @@ import scala.collection.mutable.ListBuffer
 object ClippySbtPlugin extends AutoPlugin {
   object ClippyColor extends Enumeration {
     val Black = Value("black")
-    val Red = Value("red")
-    val Green = Value("green")
-    val Yellow = Value("yellow")
-    val Blue = Value("blue")
-    val Magenta = Value("magenta")
-    val Cyan = Value("cyan")
-    val White = Value("white")
     val LightGray = Value("light-gray")
+    val DarkGray = Value("dark-gray")
+    val Red = Value("red")
+    val LightRed = Value("light-red")
+    val Green = Value("green")
+    val LightGreen = Value("light-green")
+    val Yellow = Value("yellow")
+    val LightYellow = Value("light-yellow")
+    val Blue = Value("blue")
+    val LightBlue = Value("light-blue")
+    val Magenta = Value("magenta")
+    val LightMagenta = Value("light-magenta")
+    val Cyan = Value("cyan")
+    val LightCyan = Value("light-cyan")
+    val White = Value("white")
     val None = Value("none")
   }
 

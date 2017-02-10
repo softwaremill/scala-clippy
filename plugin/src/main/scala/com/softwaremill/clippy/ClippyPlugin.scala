@@ -89,14 +89,21 @@ class ClippyPlugin(val global: Global) extends Plugin {
 
       def colorToFansi(color: String): fansi.Attrs = color match {
         case "black" => fansi.Color.Black
-        case "red" => fansi.Color.Red
-        case "green" => fansi.Color.Green
-        case "yellow" => fansi.Color.Yellow
-        case "blue" => fansi.Color.Blue
-        case "magenta" => fansi.Color.Magenta
-        case "cyan" => fansi.Color.Cyan
-        case "white" => fansi.Color.White
         case "light-gray" => fansi.Color.LightGray
+        case "dark-gray" => fansi.Color.DarkGray
+        case "red" => fansi.Color.Red
+        case "light-red" => fansi.Color.LightRed
+        case "green" => fansi.Color.Green
+        case "light-green" => fansi.Color.LightGreen
+        case "yellow" => fansi.Color.Yellow
+        case "light-yellow" => fansi.Color.LightYellow
+        case "blue" => fansi.Color.Blue
+        case "light-blue" => fansi.Color.LightBlue
+        case "magenta" => fansi.Color.Magenta
+        case "light-magenta" => fansi.Color.LightMagenta
+        case "cyan" => fansi.Color.Cyan
+        case "light-cyan" => fansi.Color.LightCyan
+        case "white" => fansi.Color.White
         case "none" => fansi.Attrs.Empty
         case x =>
           global.warning("Unknown color: " + x)
