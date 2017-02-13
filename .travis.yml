@@ -5,11 +5,14 @@ jdk:
 scala:
 - 2.11.8
 install:
-  - . $HOME/.nvm/nvm.sh
-  - nvm install stable
-  - nvm use stable
-  - npm install
-  - npm install jsdom
+- ". $HOME/.nvm/nvm.sh"
+- nvm install stable
+- nvm use stable
+- npm install
+- npm install jsdom
 script:
 - sbt test
 - '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && sbt updateImpactSubmit || true'
+notifications:
+  slack:
+    secure: BLLFmdz5G6098EfMgw+CXNqqnwQPDHhaXp0Bg3GWkUoAh3/BoWFhI6iTRgJW3q85IBLa6A2el0wLY8mK1lyD4mRg5dLTPWCILqb8eaF6Shop/FQi0O3pyACvfYUitW9EBalug9VVZzceKsHDaW9pbuqDxCWv1qWyBlTv7aSfVnyYlh6LC+3YqsWFeMHA7/W/lSAklvHkk7GTYIp3A30DsYup2K/EHMJ4ZxuA0CZOOrE4jOfEOzZgm787asPT8o12yb3CWEBZai3Fxs4s6I25w1t6Y5JTPXnYi01OIug6mDtZRDAh1ZJHUdyhOXbxqib6QbCrayg1ou3yde8pKm3KgnMMAJtu6wB8XCMlCDCJ81qkfOCY7TtUfax2spTD5xyIkoQxHPSqOnKyaBYXMKaQ4gMMGiJQToZ8hPtQTYDZTMK5VD5CS1kNMqJBI4V7YlFnKchbv1NUBTKA18QouTCVu369hBb2gANzI1IR4AoP+LRgFjCqEyAAcqoa1jkuENyF1KZykTa3NrkENBlzhEJofYwIi9TP8JUY8mCJp2dnLqnWU/PlJJBTEkMd/00My92znleo2S4gaDgd79quD7iJuZotJt5pkad9auh18ZFQcgmgo9dc3nS3yCk+/vVfPvYKP0pHRWe5RmPkaVbCZ6kCP79LIVlMcA1oYhpNRiwXe5o=
