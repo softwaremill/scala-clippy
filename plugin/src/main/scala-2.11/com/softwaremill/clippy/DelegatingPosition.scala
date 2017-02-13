@@ -16,7 +16,7 @@ class DelegatingPosition(delegate: Position, colorsConfig: ColorsConfig) extends
       Highlighter.defaultHighlight(
         str.toVector,
         e.comment, e.`type`, e.literal,
-        e.keyword, fansi.Attr.Reset
+        e.keyword, e.reset
       ).mkString
     case _ => str
   }
