@@ -12,7 +12,8 @@ class StringDiffTest extends FlatSpec with Matchers {
     ("Super[String, String]", "Super[Option[String], String]", "expected Super[" + S + "String" + E + ", String] but was Super[" + S + "Option[String]" + E + ", String]"),
     ("Cool[String, String]", "Super[Option[String], String]", "expected " + S + "Cool[String" + E + ", String] but was " + S + "Super[Option[String]" + E + ", String]"),
     ("(String, String)", "Super[Option[String], String]", "expected " + S + "(String, String)" + E + " but was " + S + "Super[Option[String], String]" + E),
-    ("Map[Long, Double]", "Map[String, Double]", "expected Map[" + S + "Long" + E + ", Double] but was Map[" + S + "String" + E + ", Double]")
+    ("Map[Long, Double]", "Map[String, Double]", "expected Map[" + S + "Long" + E + ", Double] but was Map[" + S + "String" + E + ", Double]"),
+    ("(Int, Int, Float, Int, Char)", "(Int, Int, Int, Char)", "expected (Int, Int, " + S + "Float" + E + ", Int, Char) but was (Int, Int, Int, Char)")
   )
 
   "StringDiff" should "diff" in {
