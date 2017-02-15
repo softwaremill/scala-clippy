@@ -77,7 +77,7 @@ class AdviceLoader(global: Global, url: String, localStoreDir: File, projectAdvi
           global.inform(s"Unable to load/store local Clippy advice due to: ${e.getMessage}")
           Clippy(ClippyBuildInfo.version, Nil)
       }
-      .andThen { case Success(v) => v.checkPluginVersion(ClippyBuildInfo.version, global.inform) }
+      .andThen { case Success(v) => v.checkPluginVersion(ClippyBuildInfo.version, println) }
 
   private def fetchStoreParseInBackground(): Future[Clippy] = {
     val f = fetchStoreParse()
