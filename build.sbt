@@ -22,7 +22,7 @@ name := "clippy"
 // factor out common settings into a sequence
 lazy val commonSettingsNoScalaVersion = scalariformSettings ++ Seq(
   organization := "com.softwaremill.clippy",
-  version := "0.5.0",
+  version := "0.5.1",
 
   scalacOptions ++= Seq("-unchecked", "-deprecation"),
 
