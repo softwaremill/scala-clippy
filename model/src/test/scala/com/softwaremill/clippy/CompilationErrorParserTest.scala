@@ -13,6 +13,7 @@ class CompilationErrorParserTest extends FlatSpec with Matchers {
       ExactT("akka.http.scaladsl.server.StandardRoute"),
       None,
       ExactT("akka.stream.scaladsl.Flow[akka.http.scaladsl.model.HttpRequest,akka.http.scaladsl.model.HttpResponse,Any]"),
+      None,
       None
     )))
   }
@@ -27,6 +28,7 @@ class CompilationErrorParserTest extends FlatSpec with Matchers {
       ExactT("akka.http.scaladsl.server.StandardRoute"),
       None,
       ExactT("akka.stream.scaladsl.Flow[akka.http.scaladsl.model.HttpRequest,akka.http.scaladsl.model.HttpResponse,Any]"),
+      None,
       None
     )))
   }
@@ -42,7 +44,8 @@ class CompilationErrorParserTest extends FlatSpec with Matchers {
       ExactT("japgolly.scalajs.react.CompState.ReadCallbackWriteCallbackOps[com.softwaremill.clippy.Contribute.Step2.State]#This[com.softwaremill.clippy.FormField]"),
       None,
       ExactT("japgolly.scalajs.react.CompState.AccessRD[?]"),
-      Some(ExactT("japgolly.scalajs.react.CompState.ReadDirectWriteCallbackOps[?]"))
+      Some(ExactT("japgolly.scalajs.react.CompState.ReadDirectWriteCallbackOps[?]")),
+      None
     )))
   }
 
@@ -58,7 +61,8 @@ class CompilationErrorParserTest extends FlatSpec with Matchers {
       ExactT("japgolly.scalajs.react.CompState.ReadCallbackWriteCallbackOps[com.softwaremill.clippy.Contribute.Step2.State]#This[com.softwaremill.clippy.FormField]"),
       Some(ExactT("japgolly.scalajs.react.CompState.ReadCallbackWriteCallbackOps[com.softwaremill.clippy.FormField]")),
       ExactT("japgolly.scalajs.react.CompState.AccessRD[?]"),
-      Some(ExactT("japgolly.scalajs.react.CompState.ReadDirectWriteCallbackOps[?]"))
+      Some(ExactT("japgolly.scalajs.react.CompState.ReadDirectWriteCallbackOps[?]")),
+      None
     )))
   }
 
@@ -127,5 +131,54 @@ class CompilationErrorParserTest extends FlatSpec with Matchers {
 
     CompilationErrorParser.parse(e) should be (Some(TypeclassNotFoundError(
       ExactT("Ordering"), ExactT("java.time.LocalDate"))))
+  }
+
+  it should "parse an error with notes" in {
+    val e =
+      """
+        |type mismatch;
+        | found   : org.softwaremill.clippy.ImplicitResolutionDiamond.C
+        | required: Array[String]
+        |Note that implicit conversions are not applicable because they are ambiguous:
+        | both method toMessage in object B of type (b: org.softwaremill.clippy.ImplicitResolutionDiamond.B)Array[String]
+        | and method toMessage in object A of type (a: org.softwaremill.clippy.ImplicitResolutionDiamond.A)Array[String]
+        | are possible conversion functions from org.softwaremill.clippy.ImplicitResolutionDiamond.C to Array[String]
+      """.stripMargin
+
+    CompilationErrorParser.parse(e) should be (Some(TypeMismatchError(
+      ExactT("org.softwaremill.clippy.ImplicitResolutionDiamond.C"),
+      None,
+      ExactT("Array[String]"),
+      None,
+      Some("""Note that implicit conversions are not applicable because they are ambiguous:
+             | both method toMessage in object B of type (b: org.softwaremill.clippy.ImplicitResolutionDiamond.B)Array[String]
+             | and method toMessage in object A of type (a: org.softwaremill.clippy.ImplicitResolutionDiamond.A)Array[String]
+             | are possible conversion functions from org.softwaremill.clippy.ImplicitResolutionDiamond.C to Array[String]""".stripMargin)
+    )))
+  }
+
+  it should "parse an error with expands to & notes" in {
+    val e =
+      """
+        |type mismatch;
+        | found   : org.softwaremill.clippy.ImplicitResolutionDiamond.C
+        | required: Array[String]
+        |   (which expands to)  japgolly.scalajs.react.CompState.ReadDirectWriteCallbackOps[?]
+        |Note that implicit conversions are not applicable because they are ambiguous:
+        | both method toMessage in object B of type (b: org.softwaremill.clippy.ImplicitResolutionDiamond.B)Array[String]
+        | and method toMessage in object A of type (a: org.softwaremill.clippy.ImplicitResolutionDiamond.A)Array[String]
+        | are possible conversion functions from org.softwaremill.clippy.ImplicitResolutionDiamond.C to Array[String]
+      """.stripMargin
+
+    CompilationErrorParser.parse(e) should be (Some(TypeMismatchError(
+      ExactT("org.softwaremill.clippy.ImplicitResolutionDiamond.C"),
+      None,
+      ExactT("Array[String]"),
+      Some(ExactT("japgolly.scalajs.react.CompState.ReadDirectWriteCallbackOps[?]")),
+      Some("""Note that implicit conversions are not applicable because they are ambiguous:
+             | both method toMessage in object B of type (b: org.softwaremill.clippy.ImplicitResolutionDiamond.B)Array[String]
+             | and method toMessage in object A of type (a: org.softwaremill.clippy.ImplicitResolutionDiamond.A)Array[String]
+             | are possible conversion functions from org.softwaremill.clippy.ImplicitResolutionDiamond.C to Array[String]""".stripMargin)
+    )))
   }
 }

@@ -13,11 +13,13 @@ sealed trait CompilationError[T <: Template] {
 }
 
 case class TypeMismatchError[T <: Template](found: T, foundExpandsTo: Option[T],
-  required: T, requiredExpandsTo: Option[T]) extends CompilationError[T] {
+  required: T, requiredExpandsTo: Option[T], notes: Option[String]) extends CompilationError[T] {
+
+  def notesAfterNewline = notes.fold("")(n => "\n"+n)
 
   override def toString = {
     def expandsTo(et: Option[T]): String = et.fold("")(e => s" (expands to: $e)")
-    s"Type mismatch error.\nFound: $found${expandsTo(foundExpandsTo)},\nrequired: $required${expandsTo(requiredExpandsTo)}"
+    s"Type mismatch error.\nFound: $found${expandsTo(foundExpandsTo)},\nrequired: $required${expandsTo(requiredExpandsTo)}$notesAfterNewline"
   }
 
   override def toJson =
@@ -31,7 +33,7 @@ case class TypeMismatchError[T <: Template](found: T, foundExpandsTo: Option[T],
     )
 
   override def matches(other: CompilationError[ExactT])(implicit ev: T =:= RegexT) = other match {
-    case TypeMismatchError(f, fe, r, re) =>
+    case TypeMismatchError(f, fe, r, re, _) =>
       def optMatches(t: Option[T], v: Option[ExactT]) = (for {
         tt <- t
         vv <- v
@@ -47,7 +49,8 @@ case class TypeMismatchError[T <: Template](found: T, foundExpandsTo: Option[T],
 
   override def asRegex(implicit ev: T =:= ExactT) = TypeMismatchError(
     RegexT.fromPattern(found.v), foundExpandsTo.map(fe => RegexT.fromPattern(fe.v)),
-    RegexT.fromPattern(required.v), requiredExpandsTo.map(re => RegexT.fromPattern(re.v)))
+    RegexT.fromPattern(required.v), requiredExpandsTo.map(re => RegexT.fromPattern(re.v)),
+    notes)
 }
 
 case class NotFoundError[T <: Template](what: T) extends CompilationError[T] {
@@ -192,7 +195,7 @@ object CompilationError {
           foundExpandsTo = regexTFromJson(fields, "foundExpandsTo")
           required <- regexTFromJson(fields, "required")
           requiredExpandsTo = regexTFromJson(fields, "requiredExpandsTo")
-        } yield TypeMismatchError(found, foundExpandsTo, required, requiredExpandsTo)
+        } yield TypeMismatchError(found, foundExpandsTo, required, requiredExpandsTo, None)
 
       case "notFound" =>
         for {

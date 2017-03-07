@@ -25,8 +25,16 @@ object CompilationErrorParser {
             foundExpandsTo = WhichExpandsToRegexp.findFirstMatchIn(beforeReq)
             required <- AfterRequiredRegexp.findFirstMatchIn(error)
             requiredExpandsTo = WhichExpandsToRegexp.findFirstMatchIn(afterReq)
-          } yield TypeMismatchError[ExactT](ExactT(found.group(1)), foundExpandsTo.map(m => ExactT(m.group(1))),
-            ExactT(required.group(1)), requiredExpandsTo.map(m => ExactT(m.group(1))))
+          } yield {
+            val notes = requiredExpandsTo match {
+              case Some(et) => getNotesFromIndex(afterReq, et.end)
+              case None => getNotesFromIndex(error, required.end)
+            }
+
+            TypeMismatchError[ExactT](ExactT(found.group(1)), foundExpandsTo.map(m => ExactT(m.group(1))),
+              ExactT(required.group(1)), requiredExpandsTo.map(m => ExactT(m.group(1))),
+              notes)
+          }
 
         case _ =>
           None
@@ -66,5 +74,13 @@ object CompilationErrorParser {
       } yield TypeclassNotFoundError(ExactT(inf.group(1)), ExactT(if (group2.endsWith(".")) group2.substring(0, group2.length-1) else group2))
     }
     else None
+  }
+
+  private def getNotesFromIndex(msg: String, afterIdx: Int): Option[String] = {
+    val fromIdx = afterIdx+1
+    if (msg.length >= fromIdx+1) {
+      val notes = msg.substring(fromIdx).trim
+      if (notes == "") None else Some(notes)
+    } else None
   }
 }

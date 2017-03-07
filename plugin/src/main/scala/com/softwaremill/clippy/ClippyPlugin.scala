@@ -31,7 +31,7 @@ class ClippyPlugin(val global: Global) extends Plugin {
     matches.size match {
       case 0 =>
         (parsedMsg, colorsConfig) match {
-          case (Some(tme: TypeMismatchError[ExactT]), cc: ColorsConfig.Enabled) => prettyPrintTypeMismatchError(tme, msg, cc)
+          case (Some(tme: TypeMismatchError[ExactT]), cc: ColorsConfig.Enabled) => prettyPrintTypeMismatchError(tme, cc)
           case _ => msg
         }
       case 1 =>
@@ -63,7 +63,7 @@ class ClippyPlugin(val global: Global) extends Plugin {
     }
   )
 
-  private def prettyPrintTypeMismatchError(tme: TypeMismatchError[ExactT], msg: String, colors: ColorsConfig.Enabled): String = {
+  private def prettyPrintTypeMismatchError(tme: TypeMismatchError[ExactT], colors: ColorsConfig.Enabled): String = {
     val colorDiff = (s: String) => colors.diff(s).toString
     val plain = new StringDiff(tme.found.toString, tme.required.toString, colorDiff)
 
@@ -78,7 +78,7 @@ class ClippyPlugin(val global: Global) extends Plugin {
 
     s""" type mismatch;
          | Clippy advises, pay attention to the marked parts:
-         | ${plain.diff("found   : %s\n required: %s")}$expandsMsg""".stripMargin
+         | ${plain.diff("found   : %s\n required: %s")}$expandsMsg${tme.notesAfterNewline}""".stripMargin
   }
 
   private def urlFromOptions(options: List[String]): String =

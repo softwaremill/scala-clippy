@@ -26,12 +26,12 @@ class CompileTests extends FlatSpec with Matchers with BeforeAndAfterAll {
 
     val advices = List(
       Advice(
-        TypeMismatchError(ExactT("slick.dbio.DBIOAction[*]"), None, ExactT("slick.lifted.Rep[Option[*]]"), None).asRegex,
+        TypeMismatchError(ExactT("slick.dbio.DBIOAction[*]"), None, ExactT("slick.lifted.Rep[Option[*]]"), None, None).asRegex,
         "Perhaps you forgot to call .result on your Rep[]? This will give you a DBIOAction that you can compose with other DBIOActions.",
         Library("com.typesafe.slick", "slick", "3.1.0")
       ),
       Advice(
-        TypeMismatchError(ExactT("akka.http.scaladsl.server.StandardRoute"), None, ExactT("akka.stream.scaladsl.Flow[akka.http.scaladsl.model.HttpRequest,akka.http.scaladsl.model.HttpResponse,Any]"), None).asRegex,
+        TypeMismatchError(ExactT("akka.http.scaladsl.server.StandardRoute"), None, ExactT("akka.stream.scaladsl.Flow[akka.http.scaladsl.model.HttpRequest,akka.http.scaladsl.model.HttpResponse,Any]"), None, None).asRegex,
         "did you forget to define an implicit akka.stream.ActorMaterializer? It allows routes to be converted into a flow. You can read more at http://doc.akka.io/docs/akka-stream-and-http-experimental/2.0/scala/http/routing-dsl/index.html",
         Library("com.typesafe.akka", "akka-http-experimental", "2.0.0")
       ),
