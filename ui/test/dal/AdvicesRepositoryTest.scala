@@ -3,8 +3,10 @@ package dal
 import com.softwaremill.clippy._
 import com.softwaremill.id.DefaultIdGenerator
 import util.BaseSqlSpec
+import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.concurrent.IntegrationPatience
 
-class AdvicesRepositoryTest extends BaseSqlSpec {
+class AdvicesRepositoryTest extends BaseSqlSpec with ScalaFutures with IntegrationPatience {
   it should "store & read an advice" in {
     // given
     val ar = new AdvicesRepository(database, new DefaultIdGenerator())
