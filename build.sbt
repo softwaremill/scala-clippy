@@ -207,8 +207,8 @@ lazy val uiClient: Project = (project in file("ui-client"))
   .settings(commonSettings)
   .settings(name := "uiClient")
   .settings(
-    persistLauncher := true,
-    persistLauncher in Test := false,
+    scalaJSUseMainModuleInitializer := true,
+    scalaJSUseMainModuleInitializer in Test := false,
     addCompilerPlugin(compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)), // for @Lenses
     libraryDependencies ++= Seq(
       "org.scala-js" %%% "scalajs-dom" % "0.9.1",
