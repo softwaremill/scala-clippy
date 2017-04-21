@@ -48,6 +48,9 @@ Clippy can highlight:
 signatures
 * syntax when displaying code fragments with errors
 
+Example:
+![colors example](docs/img/clippy-syntax-highlight.png "")
+
 If you'd like to enable this feature in sbt globally, add the following to `~/.sbt/0.13/build.sbt`: (see also notes
 above)
  
