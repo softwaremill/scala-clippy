@@ -64,7 +64,12 @@ lazy val commonSettingsNoScalaVersion = scalariformSettings ++ Seq(
 )
 
 lazy val commonSettings = commonSettingsNoScalaVersion ++ Seq(
-  scalaVersion := "2.11.8"
+  scalaVersion := "2.11.11"
+)
+
+lazy val sbt10CompatSettings = Seq(
+  sbtVersion in Global := (if (scalaVersion.value startsWith "2.12.") "1.0.0-M5" else "0.13.15"),
+  scalaCompilerBridgeSource := ("org.scala-sbt" % "compiler-interface" % "0.13.15" % "component").sources
 )
 
 lazy val clippy = (project in file("."))
@@ -120,6 +125,7 @@ lazy val plugin = (project in file("plugin"))
     // including the model classes for re-compilation, as for some reason depending on modelJvm doesn't work
     unmanagedSourceDirectories in Compile ++= (sourceDirectories in (modelJvm, Compile)).value
   )
+  .settings(sbt10CompatSettings)
   .settings(addArtifact(artifact in (Compile, assembly), assembly))
 
 lazy val pluginJar = AssemblyKeys.`assembly` in (plugin, Compile)
@@ -132,8 +138,10 @@ lazy val pluginSbt = (project in file("plugin-sbt"))
     name := "plugin-sbt",
     buildInfoPackage := "com.softwaremill.clippy",
     buildInfoObject := "ClippyBuildInfo",
-    scalaVersion := "2.10.6"
+    scalaVersion := "2.10.6",
+    crossScalaVersions := Seq(scalaVersion.value, "2.12.2")
   )
+  .settings(sbt10CompatSettings)
 
 lazy val tests = (project in file("tests"))
   .settings(commonSettings)
