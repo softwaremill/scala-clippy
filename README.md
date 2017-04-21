@@ -7,23 +7,15 @@
 
 Did you ever see a Scala compiler error such as:
 
-````scala
-[error] TheNextFacebook.scala:16: type mismatch;
-[error]  found   : akka.http.scaladsl.server.StandardRoute
-[error]  required: akka.stream.scaladsl.Flow[akka.http.scaladsl.model.HttpRequest,akka.http.scaladsl.model.HttpResponse,Any]
-[error]   Http().bindAndHandle(r, "localhost", 8080)
-````
+![error example](docs/img/clippy-akka-err.png "")
+
 
 and had no idea what to do next? Well in this case, you need to provide an implicit instance of an `ActorMaterializer`,
 but the compiler isn't smart enough to be able to tell you that. Luckily, **ScalaClippy is here to help**!
 
-Just add the compiler plugin, and you'll see this additional helpful message:
+Just add the compiler plugin, and you'll see this additional helpful message, with optional additional colors:
 
-````scala
-[error]  Clippy advises: did you forget to define an implicit akka.stream.ActorMaterializer?
-[error]  It allows routes to be converted into a flow.
-[error]  You can read more at http://doc.akka.io/docs/akka-stream-and-http-experimental/2.0/scala/http/routing-dsl/index.html
-````
+![enriched error example](docs/img/clippy-akka-err-rich.png "")
 
 # Adding the plugin
 
