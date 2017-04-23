@@ -1,6 +1,7 @@
 package com.softwaremill.clippy
 
 import java.io._
+import java.io.File
 import java.net.{HttpURLConnection, URL}
 import java.util.zip.GZIPInputStream
 
@@ -10,20 +11,34 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.io.Source
 import scala.tools.nsc.Global
 import scala.util.{Failure, Success, Try}
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 class AdviceLoader(global: Global, url: String, localStoreDir: File, projectAdviceFile: Option[File])(implicit ec: ExecutionContext) {
   private val OneDayMillis = 1000L * 60 * 60 * 24
 
   private val localStore = new File(localStoreDir, "clippy.json.gz")
 
+  private def listFilesForFolder(folder: File): List[File] = {
+    folder.listFiles.flatMap { fileEntry =>
+      if (fileEntry.isDirectory)
+        listFilesForFolder(fileEntry)
+      else List(fileEntry)
+    }.toList
+  }
+
   private val resourcesAdvice: List[Advice] =
     getClass.getClassLoader
-      .getResources("clippy.json")
+      .getResources("")
+      .asScala
       .toList
-      .flatMap(loadAdviceFromUrL)
+      .flatMap { entry =>
+        val file = new File(entry.getFile)
+        listFilesForFolder(file)
+      }
+      .filter(_.toString.endsWith("clippy.json"))
+      .flatMap(file => loadAdviceFromUrl(file.toURI.toURL))
 
-  private def loadAdviceFromUrL(url: URL): List[Advice] =
+  private def loadAdviceFromUrl(url: URL): List[Advice] =
     TryWith(url.openStream())(inputStreamToClippy(_).advices) match {
       case Success(advices) => advices
       case Failure(_) =>
@@ -33,7 +48,7 @@ class AdviceLoader(global: Global, url: String, localStoreDir: File, projectAdvi
 
   private val projectAdvice: List[Advice] =
     projectAdviceFile.map(file =>
-      loadAdviceFromUrL(file.toURI.toURL)).getOrElse(Nil)
+      loadAdviceFromUrl(file.toURI.toURL)).getOrElse(Nil)
 
   def load(): Future[Clippy] = {
     val localClippy = if (!localStore.exists()) {
