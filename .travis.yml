@@ -9,7 +9,6 @@ install:
 - nvm install stable
 - nvm use stable
 - npm install
-- npm install jsdom
 script:
 - sbt test
 - '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && sbt updateImpactSubmit || true'
