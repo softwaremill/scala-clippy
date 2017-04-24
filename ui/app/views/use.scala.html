@@ -10,28 +10,16 @@
 <p>
     Did you ever see a Scala compiler error such as:
 </p>
-
-<pre>
-[error] TheNextFacebook.scala:16: type mismatch;
-[error]  found   : akka.http.scaladsl.server.StandardRoute
-[error]  required: akka.stream.scaladsl.Flow[akka.http.scaladsl.model.HttpRequest,akka.http.scaladsl.model.HttpResponse,Any]
-[error]   Http().bindAndHandle(r, "localhost", 8080)
-</pre>
-
+<img class="cout" src="assets/img/clippy-akka-err.png">
 <p>
     and had no idea what to do next? Well in this case, you need to provide an implicit instance of an <code>ActorMaterializer</code>,
     but the compiler isn't smart enough to be able to tell you that. Luckily, <strong>Scala Clippy is here to help</strong>!
 </p>
 
 <p>
-    Just add the Scala Clippy compiler plugin, and you'll see this additional helpful message:
+    Just add the Scala Clippy compiler plugin, and you'll see this additional helpful message, with optional additional colors:
 </p>
-
-<pre>
-[error]  Clippy advises: did you forget to define an implicit akka.stream.ActorMaterializer?
-[error]  It allows routes to be converted into a flow.
-[error]  You can read more at http://doc.akka.io/docs/akka-stream-and-http-experimental/2.0/scala/http/routing-dsl/index.html
-</pre>
+<img class="cout" src="assets/img/clippy-akka-err-rich.png">
 
 <h2>Adding the plugin</h2>
 
@@ -76,7 +64,8 @@ addSbtPlugin("com.softwaremill.clippy" % "plugin-sbt" % "0.5.2")
         signatures
     </li>
     <li>
-        syntax when displaying code fragments with errors
+        syntax when displaying code fragments with errors. Example:
+        <img class="cout" src="assets/img/clippy-syntax-highlight.png">
     </li>
 </ul>
 
@@ -99,7 +88,8 @@ clippyColorsEnabled := true
 <p>
     You can of course add clippy on a per-project basis as well.
 </p>
-
+<h3>Windows users</h3>
+<p>If you notice that colors don't get correctly reset, that's probably caused by problems with interpreting the standard ANSI Reset code. You can set `clippyColorReset` to a custom value like `LightGray` to solve this issue.</p>
 <h2>Contributing advice</h2>
 
 <p>
@@ -119,10 +109,39 @@ clippyColorsEnabled := true
 
 <h2>Project-specific advices</h2>
 
-<p>
-    If you have advice that you feel is too specific to be worth sharing on global database, you can add it to
-    your project specific advice file. Just create a file named .clippy.json in the root of your project directory.
-    See clippy <a href="https://github.com/softwaremill/scala-clippy#project-specific-advice">README</a> for an example.</p>
+<p>If you have advice that you feel is too specific to be worth sharing publicly,  you can add
+  it to your project specific advice file. First set your project root:
+</p>
+<pre>
+clippyProjectRoot := Some((baseDirectory in ThisBuild).value) 
+</pre>
+
+Then create a file named .clippy.json in the root of your project directory and add the advice json in the format illustrated below:
+
+<pre>
+{
+  "advices": [
+    {
+      "error": {
+        "type": "typeMismatch",
+        "found": "scala\\.concurrent\\.Future\\[Int\\]",
+        "required": "Int"
+      },
+      "text": "Maybe you used map where you should have used flatMap?",
+      "library": {
+        "groupId": "scala.lang",
+        "artifactId": "Future",
+        "version": "1.0"
+      }
+    }
+  ]
+}
+</pre>
+<h2>Library-specific advice</h2>
+If you have advice that is specific to a library or library version you can also bundle the advice with your library.
+If your users have Scala-Clippy installed they will see your advice if your library is inclued in their project.
+This can be helpful in the common case where users of your library need specific imports to be able to use your functionality.
+To bundle clippy advice with your library just put it in a file named clippy.json in your resources directory.
 
 <h2>Alternative ways to use Clippy</h2>
 
