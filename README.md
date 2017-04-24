@@ -7,11 +7,11 @@
 
 Enrich your Scala compiler error output with additional advices and colors!
 
--![enriched error example](ui/app/assets/img/clippy-akka-err-rich.png "")
+![enriched error example](ui/app/assets/img/clippy-akka-err-rich.png "")
 
 # Documentation
 
-Read the detailed [documentation](https://scala-clippy.org)
+Read the detailed [documentation](https://scala-clippy.org).
 
 # Contributing to the project
 
