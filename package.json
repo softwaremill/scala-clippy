@@ -1,0 +1,7 @@
+{
+  "name": "scala-clippy-site",
+    "dependencies": {
+      "jsdom": "9.12.0"
+    }
+
+}
