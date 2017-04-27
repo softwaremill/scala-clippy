@@ -9,13 +9,19 @@ class CompilationErrorParserTest extends FlatSpec with Matchers {
         | found   : akka.http.scaladsl.server.StandardRoute
         | required: akka.stream.scaladsl.Flow[akka.http.scaladsl.model.HttpRequest,akka.http.scaladsl.model.HttpResponse,Any]""".stripMargin
 
-    CompilationErrorParser.parse(e) should be (Some(TypeMismatchError(
-      ExactT("akka.http.scaladsl.server.StandardRoute"),
-      None,
-      ExactT("akka.stream.scaladsl.Flow[akka.http.scaladsl.model.HttpRequest,akka.http.scaladsl.model.HttpResponse,Any]"),
-      None,
-      None
-    )))
+    CompilationErrorParser.parse(e) should be(
+      Some(
+        TypeMismatchError(
+          ExactT("akka.http.scaladsl.server.StandardRoute"),
+          None,
+          ExactT(
+            "akka.stream.scaladsl.Flow[akka.http.scaladsl.model.HttpRequest,akka.http.scaladsl.model.HttpResponse,Any]"
+          ),
+          None,
+          None
+        )
+      )
+    )
   }
 
   it should "parse an error message with [error] prefix" in {
@@ -24,13 +30,19 @@ class CompilationErrorParserTest extends FlatSpec with Matchers {
         |[error]  found   : akka.http.scaladsl.server.StandardRoute
         |[error]  required: akka.stream.scaladsl.Flow[akka.http.scaladsl.model.HttpRequest,akka.http.scaladsl.model.HttpResponse,Any]""".stripMargin
 
-    CompilationErrorParser.parse(e) should be (Some(TypeMismatchError(
-      ExactT("akka.http.scaladsl.server.StandardRoute"),
-      None,
-      ExactT("akka.stream.scaladsl.Flow[akka.http.scaladsl.model.HttpRequest,akka.http.scaladsl.model.HttpResponse,Any]"),
-      None,
-      None
-    )))
+    CompilationErrorParser.parse(e) should be(
+      Some(
+        TypeMismatchError(
+          ExactT("akka.http.scaladsl.server.StandardRoute"),
+          None,
+          ExactT(
+            "akka.stream.scaladsl.Flow[akka.http.scaladsl.model.HttpRequest,akka.http.scaladsl.model.HttpResponse,Any]"
+          ),
+          None,
+          None
+        )
+      )
+    )
   }
 
   it should "parse a type mismatch error with a single expands to section" in {
@@ -40,13 +52,19 @@ class CompilationErrorParserTest extends FlatSpec with Matchers {
         |required: japgolly.scalajs.react.CompState.AccessRD[?]
         |   (which expands to)  japgolly.scalajs.react.CompState.ReadDirectWriteCallbackOps[?]""".stripMargin
 
-    CompilationErrorParser.parse(e) should be (Some(TypeMismatchError(
-      ExactT("japgolly.scalajs.react.CompState.ReadCallbackWriteCallbackOps[com.softwaremill.clippy.Contribute.Step2.State]#This[com.softwaremill.clippy.FormField]"),
-      None,
-      ExactT("japgolly.scalajs.react.CompState.AccessRD[?]"),
-      Some(ExactT("japgolly.scalajs.react.CompState.ReadDirectWriteCallbackOps[?]")),
-      None
-    )))
+    CompilationErrorParser.parse(e) should be(
+      Some(
+        TypeMismatchError(
+          ExactT(
+            "japgolly.scalajs.react.CompState.ReadCallbackWriteCallbackOps[com.softwaremill.clippy.Contribute.Step2.State]#This[com.softwaremill.clippy.FormField]"
+          ),
+          None,
+          ExactT("japgolly.scalajs.react.CompState.AccessRD[?]"),
+          Some(ExactT("japgolly.scalajs.react.CompState.ReadDirectWriteCallbackOps[?]")),
+          None
+        )
+      )
+    )
   }
 
   it should "parse a type mismatch error with two expands to sections" in {
@@ -57,44 +75,73 @@ class CompilationErrorParserTest extends FlatSpec with Matchers {
         |required: japgolly.scalajs.react.CompState.AccessRD[?]
         |   (which expands to)  japgolly.scalajs.react.CompState.ReadDirectWriteCallbackOps[?]""".stripMargin
 
-    CompilationErrorParser.parse(e) should be (Some(TypeMismatchError(
-      ExactT("japgolly.scalajs.react.CompState.ReadCallbackWriteCallbackOps[com.softwaremill.clippy.Contribute.Step2.State]#This[com.softwaremill.clippy.FormField]"),
-      Some(ExactT("japgolly.scalajs.react.CompState.ReadCallbackWriteCallbackOps[com.softwaremill.clippy.FormField]")),
-      ExactT("japgolly.scalajs.react.CompState.AccessRD[?]"),
-      Some(ExactT("japgolly.scalajs.react.CompState.ReadDirectWriteCallbackOps[?]")),
-      None
-    )))
+    CompilationErrorParser.parse(e) should be(
+      Some(
+        TypeMismatchError(
+          ExactT(
+            "japgolly.scalajs.react.CompState.ReadCallbackWriteCallbackOps[com.softwaremill.clippy.Contribute.Step2.State]#This[com.softwaremill.clippy.FormField]"
+          ),
+          Some(
+            ExactT("japgolly.scalajs.react.CompState.ReadCallbackWriteCallbackOps[com.softwaremill.clippy.FormField]")
+          ),
+          ExactT("japgolly.scalajs.react.CompState.AccessRD[?]"),
+          Some(ExactT("japgolly.scalajs.react.CompState.ReadDirectWriteCallbackOps[?]")),
+          None
+        )
+      )
+    )
   }
 
   it should "parse macwire's wire not found error message" in {
     val e = "not found: value wire"
 
-    CompilationErrorParser.parse(e) should be (Some(NotFoundError(ExactT("value wire"))))
+    CompilationErrorParser.parse(e) should be(Some(NotFoundError(ExactT("value wire"))))
   }
 
   it should "parse not a member of message" in {
     val e = "value call is not a member of scala.concurrent.Future[Unit]"
 
-    CompilationErrorParser.parse(e) should be (Some(NotAMemberError(ExactT("value call"), ExactT("scala.concurrent.Future[Unit]"))))
+    CompilationErrorParser.parse(e) should be(
+      Some(NotAMemberError(ExactT("value call"), ExactT("scala.concurrent.Future[Unit]")))
+    )
   }
 
   it should "parse not a member of message with extra text" in {
-    val e = "[error] /Users/adamw/projects/clippy/ui-client/src/main/scala/com/softwaremill/clippy/Listing.scala:33: value call is not a member of scala.concurrent.Future[Unit]"
+    val e =
+      "[error] /Users/adamw/projects/clippy/ui-client/src/main/scala/com/softwaremill/clippy/Listing.scala:33: value call is not a member of scala.concurrent.Future[Unit]"
 
-    CompilationErrorParser.parse(e) should be (Some(NotAMemberError(ExactT("value call"), ExactT("scala.concurrent.Future[Unit]"))))
+    CompilationErrorParser.parse(e) should be(
+      Some(NotAMemberError(ExactT("value call"), ExactT("scala.concurrent.Future[Unit]")))
+    )
   }
 
   it should "parse an implicit not found" in {
-    val e = "could not find implicit value for parameter marshaller: spray.httpx.marshalling.ToResponseMarshaller[scala.concurrent.Future[String]]"
+    val e =
+      "could not find implicit value for parameter marshaller: spray.httpx.marshalling.ToResponseMarshaller[scala.concurrent.Future[String]]"
 
-    CompilationErrorParser.parse(e) should be (Some(ImplicitNotFoundError(ExactT("marshaller"), ExactT("spray.httpx.marshalling.ToResponseMarshaller[scala.concurrent.Future[String]]"))))
+    CompilationErrorParser.parse(e) should be(
+      Some(
+        ImplicitNotFoundError(
+          ExactT("marshaller"),
+          ExactT("spray.httpx.marshalling.ToResponseMarshaller[scala.concurrent.Future[String]]")
+        )
+      )
+    )
   }
 
   it should "parse a diverging implicit error " in {
-    val e = "diverging implicit expansion for type io.circe.Decoder.Secondary[this.Out] starting with method decodeCaseClass in trait GenericInstances"
+    val e =
+      "diverging implicit expansion for type io.circe.Decoder.Secondary[this.Out] starting with method decodeCaseClass in trait GenericInstances"
 
-    CompilationErrorParser.parse(e) should be (Some(DivergingImplicitExpansionError(
-      ExactT("io.circe.Decoder.Secondary[this.Out]"), ExactT("decodeCaseClass"), ExactT("trait GenericInstances"))))
+    CompilationErrorParser.parse(e) should be(
+      Some(
+        DivergingImplicitExpansionError(
+          ExactT("io.circe.Decoder.Secondary[this.Out]"),
+          ExactT("decodeCaseClass"),
+          ExactT("trait GenericInstances")
+        )
+      )
+    )
   }
 
   it should "parse a diverging implicit error with extra text" in {
@@ -104,8 +151,15 @@ class CompilationErrorParserTest extends FlatSpec with Matchers {
         |[error] starting with method decodeCaseClass in trait GenericInstances
       """.stripMargin
 
-    CompilationErrorParser.parse(e) should be (Some(DivergingImplicitExpansionError(
-      ExactT("io.circe.Decoder.Secondary[this.Out]"), ExactT("decodeCaseClass"), ExactT("trait GenericInstances"))))
+    CompilationErrorParser.parse(e) should be(
+      Some(
+        DivergingImplicitExpansionError(
+          ExactT("io.circe.Decoder.Secondary[this.Out]"),
+          ExactT("decodeCaseClass"),
+          ExactT("trait GenericInstances")
+        )
+      )
+    )
   }
 
   it should "parse a type arguments do not conform to any overloaded bounds error" in {
@@ -116,10 +170,18 @@ class CompilationErrorParserTest extends FlatSpec with Matchers {
         |protected val users = TableQuery[User]
       """.stripMargin
 
-    CompilationErrorParser.parse(e) should be (Some(TypeArgumentsDoNotConformToOverloadedBoundsError(
-      ExactT("org.softwaremill.clippy.User"), ExactT("value apply"), Set(
-        ExactT("[E <: slick.lifted.AbstractTable[_]]=> slick.lifted.TableQuery[E]"),
-        ExactT("[E <: slick.lifted.AbstractTable[_]](cons: slick.lifted.Tag => E)slick.lifted.TableQuery[E]")))))
+    CompilationErrorParser.parse(e) should be(
+      Some(
+        TypeArgumentsDoNotConformToOverloadedBoundsError(
+          ExactT("org.softwaremill.clippy.User"),
+          ExactT("value apply"),
+          Set(
+            ExactT("[E <: slick.lifted.AbstractTable[_]]=> slick.lifted.TableQuery[E]"),
+            ExactT("[E <: slick.lifted.AbstractTable[_]](cons: slick.lifted.Tag => E)slick.lifted.TableQuery[E]")
+          )
+        )
+      )
+    )
   }
 
   it should "parse a no implicit defined for" in {
@@ -129,8 +191,9 @@ class CompilationErrorParserTest extends FlatSpec with Matchers {
         |[error]   Seq(java.time.LocalDate.MIN, java.time.LocalDate.MAX).sorted
       """.stripMargin
 
-    CompilationErrorParser.parse(e) should be (Some(TypeclassNotFoundError(
-      ExactT("Ordering"), ExactT("java.time.LocalDate"))))
+    CompilationErrorParser.parse(e) should be(
+      Some(TypeclassNotFoundError(ExactT("Ordering"), ExactT("java.time.LocalDate")))
+    )
   }
 
   it should "parse an error with notes" in {
@@ -145,16 +208,22 @@ class CompilationErrorParserTest extends FlatSpec with Matchers {
         | are possible conversion functions from org.softwaremill.clippy.ImplicitResolutionDiamond.C to Array[String]
       """.stripMargin
 
-    CompilationErrorParser.parse(e) should be (Some(TypeMismatchError(
-      ExactT("org.softwaremill.clippy.ImplicitResolutionDiamond.C"),
-      None,
-      ExactT("Array[String]"),
-      None,
-      Some("""Note that implicit conversions are not applicable because they are ambiguous:
+    CompilationErrorParser.parse(e) should be(
+      Some(
+        TypeMismatchError(
+          ExactT("org.softwaremill.clippy.ImplicitResolutionDiamond.C"),
+          None,
+          ExactT("Array[String]"),
+          None,
+          Some(
+            """Note that implicit conversions are not applicable because they are ambiguous:
              | both method toMessage in object B of type (b: org.softwaremill.clippy.ImplicitResolutionDiamond.B)Array[String]
              | and method toMessage in object A of type (a: org.softwaremill.clippy.ImplicitResolutionDiamond.A)Array[String]
-             | are possible conversion functions from org.softwaremill.clippy.ImplicitResolutionDiamond.C to Array[String]""".stripMargin)
-    )))
+             | are possible conversion functions from org.softwaremill.clippy.ImplicitResolutionDiamond.C to Array[String]""".stripMargin
+          )
+        )
+      )
+    )
   }
 
   it should "parse an error with expands to & notes" in {
@@ -170,15 +239,21 @@ class CompilationErrorParserTest extends FlatSpec with Matchers {
         | are possible conversion functions from org.softwaremill.clippy.ImplicitResolutionDiamond.C to Array[String]
       """.stripMargin
 
-    CompilationErrorParser.parse(e) should be (Some(TypeMismatchError(
-      ExactT("org.softwaremill.clippy.ImplicitResolutionDiamond.C"),
-      None,
-      ExactT("Array[String]"),
-      Some(ExactT("japgolly.scalajs.react.CompState.ReadDirectWriteCallbackOps[?]")),
-      Some("""Note that implicit conversions are not applicable because they are ambiguous:
+    CompilationErrorParser.parse(e) should be(
+      Some(
+        TypeMismatchError(
+          ExactT("org.softwaremill.clippy.ImplicitResolutionDiamond.C"),
+          None,
+          ExactT("Array[String]"),
+          Some(ExactT("japgolly.scalajs.react.CompState.ReadDirectWriteCallbackOps[?]")),
+          Some(
+            """Note that implicit conversions are not applicable because they are ambiguous:
              | both method toMessage in object B of type (b: org.softwaremill.clippy.ImplicitResolutionDiamond.B)Array[String]
              | and method toMessage in object A of type (a: org.softwaremill.clippy.ImplicitResolutionDiamond.A)Array[String]
-             | are possible conversion functions from org.softwaremill.clippy.ImplicitResolutionDiamond.C to Array[String]""".stripMargin)
-    )))
+             | are possible conversion functions from org.softwaremill.clippy.ImplicitResolutionDiamond.C to Array[String]""".stripMargin
+          )
+        )
+      )
+    )
   }
 }

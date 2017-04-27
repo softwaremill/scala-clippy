@@ -8,9 +8,8 @@ import japgolly.scalajs.react.vdom.prefix_<^._
 object Main extends js.JSApp {
   type HtmlId = String
 
-  def main(): Unit = {
+  def main(): Unit =
     jQuery(setupUI _)
-  }
 
   def setupUI(): Unit = {
     val mountNode = org.scalajs.dom.document.getElementById("reactmain")

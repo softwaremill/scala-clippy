@@ -23,8 +23,6 @@ class DummyEmailService extends EmailService with StrictLogging {
     Future.successful(())
   }
 
-  def wasEmailSent(to: String, subject: String): Boolean = {
+  def wasEmailSent(to: String, subject: String): Boolean =
     sentEmails.exists(email => email._1.contains(to) && email._2 == subject)
-  }
 }
-

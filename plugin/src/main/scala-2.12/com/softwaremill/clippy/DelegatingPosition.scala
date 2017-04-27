@@ -13,11 +13,16 @@ class DelegatingPosition(delegate: Position, colorsConfig: ColorsConfig) extends
 
   def highlight(str: String): String = colorsConfig match {
     case e: ColorsConfig.Enabled =>
-      Highlighter.defaultHighlight(
-        str.toVector,
-        e.comment, e.`type`, e.literal,
-        e.keyword, e.reset
-      ).mkString
+      Highlighter
+        .defaultHighlight(
+          str.toVector,
+          e.comment,
+          e.`type`,
+          e.literal,
+          e.keyword,
+          e.reset
+        )
+        .mkString
     case _ => str
   }
 
@@ -41,7 +46,8 @@ class DelegatingPosition(delegate: Position, colorsConfig: ColorsConfig) extends
 
   override def finalPosition: Pos = DelegatingPosition.wrap(delegate.finalPosition, colorsConfig)
 
-  override def withPos(newPos: Position): Attachments { type Pos = DelegatingPosition.this.Pos } = delegate.withPos(newPos)
+  override def withPos(newPos: Position): Attachments { type Pos = DelegatingPosition.this.Pos } =
+    delegate.withPos(newPos)
 
   @scala.deprecated("use `line`")
   override def safeLine: Int = delegate.safeLine
@@ -57,12 +63,15 @@ class DelegatingPosition(delegate: Position, colorsConfig: ColorsConfig) extends
 
   override def isOpaqueRange: Boolean = delegate.isOpaqueRange
 
-  override def update[T](attachment: T)(implicit evidence$4: ClassManifest[T]): Attachments { type Pos = DelegatingPosition.this.Pos } = delegate.update(attachment)(evidence$4)
+  override def update[T](attachment: T)(
+      implicit evidence$4: ClassManifest[T]
+  ): Attachments { type Pos = DelegatingPosition.this.Pos } = delegate.update(attachment)(evidence$4)
 
   override def pointOrElse(alt: Int): Int = delegate.pointOrElse(alt)
 
   @scala.deprecated("use `finalPosition`")
-  override def inUltimateSource(source: SourceFile): Position = DelegatingPosition.wrap(delegate.inUltimateSource(source), colorsConfig)
+  override def inUltimateSource(source: SourceFile): Position =
+    DelegatingPosition.wrap(delegate.inUltimateSource(source), colorsConfig)
 
   override def isDefined: Boolean = delegate.isDefined
 
@@ -72,7 +81,9 @@ class DelegatingPosition(delegate: Position, colorsConfig: ColorsConfig) extends
 
   override def source: SourceFile = delegate.source
 
-  override def remove[T](implicit evidence$5: ClassManifest[T]): Attachments { type Pos = DelegatingPosition.this.Pos } = delegate.remove(evidence$5)
+  override def remove[T](
+      implicit evidence$5: ClassManifest[T]
+  ): Attachments { type Pos = DelegatingPosition.this.Pos } = delegate.remove(evidence$5)
 
   override def withStart(start: Int): Position = DelegatingPosition.wrap(delegate.withStart(start), colorsConfig)
 
@@ -92,9 +103,11 @@ class DelegatingPosition(delegate: Position, colorsConfig: ColorsConfig) extends
   override def withEnd(end: Int): Position = DelegatingPosition.wrap(delegate.withEnd(end), colorsConfig)
 
   @scala.deprecated("Use `withSource(source)` and `withShift`")
-  override def withSource(source: SourceFile, shift: Int): Position = DelegatingPosition.wrap(delegate.withSource(source, shift), colorsConfig)
+  override def withSource(source: SourceFile, shift: Int): Position =
+    DelegatingPosition.wrap(delegate.withSource(source, shift), colorsConfig)
 
-  override def withSource(source: SourceFile): Position = DelegatingPosition.wrap(delegate.withSource(source), colorsConfig)
+  override def withSource(source: SourceFile): Position =
+    DelegatingPosition.wrap(delegate.withSource(source), colorsConfig)
 
   @scala.deprecated("Use `start` instead")
   override def startOrPoint: Int = delegate.startOrPoint
@@ -110,7 +123,8 @@ class DelegatingPosition(delegate: Position, colorsConfig: ColorsConfig) extends
 
   override def focusEnd: Position = DelegatingPosition.wrap(delegate.focusEnd, colorsConfig)
 
-  override def |(that: Position, poses: Position*): Position = DelegatingPosition.wrap(delegate.|(that, poses: _*), colorsConfig)
+  override def |(that: Position, poses: Position*): Position =
+    DelegatingPosition.wrap(delegate.|(that, poses: _*), colorsConfig)
 
   override def |(that: Position): Position = DelegatingPosition.wrap(delegate.|(that), colorsConfig)
 
@@ -149,11 +163,10 @@ class DelegatingPosition(delegate: Position, colorsConfig: ColorsConfig) extends
 }
 
 object DelegatingPosition {
-  def wrap(pos: Position, colorsConfig: ColorsConfig): Position = {
+  def wrap(pos: Position, colorsConfig: ColorsConfig): Position =
     pos match {
-      case NoPosition => pos
+      case NoPosition                  => pos
       case wrapped: DelegatingPosition => wrapped
-      case _ => new DelegatingPosition(pos, colorsConfig)
+      case _                           => new DelegatingPosition(pos, colorsConfig)
     }
-  }
 }

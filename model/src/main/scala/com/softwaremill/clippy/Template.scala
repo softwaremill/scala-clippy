@@ -14,11 +14,12 @@ case class ExactT(v: String) extends Template {
 }
 
 case class RegexT(v: String) extends Template {
-  lazy val regex = Try(new Regex(v)).getOrElse(new Regex("^$"))
+  lazy val regex                  = Try(new Regex(v)).getOrElse(new Regex("^$"))
   def matches(e: ExactT): Boolean = regex.pattern.matcher(e.v).matches()
-  override def toString = v
+  override def toString           = v
 }
 object RegexT {
+
   /**
     * Patterns can include wildcards (`*`)
     */
@@ -34,13 +35,14 @@ object RegexT {
     RegexT.fromRegex(regexp)
   }
 
-  def fromRegex(v: String): RegexT = {
+  def fromRegex(v: String): RegexT =
     new RegexT(v)
-  }
 
-  def setMatches(rr: Set[RegexT], ee: Set[ExactT]): Boolean = {
-    if (rr.size != ee.size) false else {
-      rr.toList.forall { r => ee.exists(r.matches) }
+  def setMatches(rr: Set[RegexT], ee: Set[ExactT]): Boolean =
+    if (rr.size != ee.size) false
+    else {
+      rr.toList.forall { r =>
+        ee.exists(r.matches)
+      }
     }
-  }
 }

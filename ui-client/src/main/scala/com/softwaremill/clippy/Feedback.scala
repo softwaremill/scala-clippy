@@ -9,8 +9,7 @@ import monocle.macros.Lenses
 import scala.concurrent.ExecutionContext.Implicits.global
 
 object Feedback {
-  case class Props(showError: String => Callback, clearMsgs: Callback,
-    handleFuture: HandleFuture)
+  case class Props(showError: String => Callback, clearMsgs: Callback, handleFuture: HandleFuture)
 
   @Lenses
   case class State(contact: FormField, feedback: FormField)
@@ -22,31 +21,36 @@ object Feedback {
     override def fields(s: State) = List(s.contact, s.feedback)
   }
 
-  class Backend($: BackendScope[Props, State]) {
+  class Backend($ : BackendScope[Props, State]) {
     def render(s: State, p: Props) = {
       def sendFeedbackCallback() =
         p.handleFuture(
           AutowireClient[UiApi].feedback(s.feedback.v, s.contact.v).call(),
           Some("Feedback sent, thank you!"),
-          Some((_: Unit) => $.modState(s => s.copy(contact = s.contact.copy(v = ""), feedback = s.feedback.copy(v = ""))))
+          Some(
+            (_: Unit) => $.modState(s => s.copy(contact = s.contact.copy(v = ""), feedback = s.feedback.copy(v = "")))
+          )
         )
 
       <.form(
         ^.onSubmit ==> FormField.submitValidated($, p.showError)(s => sendFeedbackCallback()),
-        bsFormEl(externalVar($, s, State.contact))(mods =>
-          <.input(^.`type` := "email", ^.cls := "form-control", ^.placeholder := "scalacoder@company.com")(mods)),
-        bsFormEl(externalVar($, s, State.feedback))(mods =>
-          <.textarea(^.cls := "form-control", ^.rows := "3")(mods)),
+        bsFormEl(externalVar($, s, State.contact))(
+          mods =>
+            <.input(^.`type` := "email", ^.cls := "form-control", ^.placeholder := "scalacoder@company.com")(mods)
+        ),
+        bsFormEl(externalVar($, s, State.feedback))(mods => <.textarea(^.cls := "form-control", ^.rows := "3")(mods)),
         <.button(^.`type` := "send", ^.cls := "btn btn-primary")("Send")
       )
     }
   }
 
   val component = ReactComponentB[Props]("Use")
-    .initialState(State(
-      FormField("Contact email", required = true),
-      FormField("Feedback", required = true)
-    ))
+    .initialState(
+      State(
+        FormField("Contact email", required = true),
+        FormField("Feedback", required = true)
+      )
+    )
     .renderBackend[Backend]
     .build
 }
