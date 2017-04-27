@@ -2,7 +2,6 @@ import sbt._
 import Keys._
 import sbtassembly.AssemblyKeys
 
-import scalariform.formatter.preferences._
 import scala.xml.transform.RuleTransformer
 import scala.xml.transform.RewriteRule
 import scala.xml.{Node => XNode}
@@ -20,19 +19,13 @@ val scalacheck = "org.scalacheck" %% "scalacheck" % "1.13.4" % "test"
 name := "clippy"
 
 // factor out common settings into a sequence
-lazy val commonSettingsNoScalaVersion = scalariformSettings ++ Seq(
+lazy val commonSettingsNoScalaVersion =  Seq(
   organization := "com.softwaremill.clippy",
   version := "0.5.3",
 
   scalacOptions ++= Seq("-unchecked", "-deprecation"),
 
   parallelExecution := false,
-
-  ScalariformKeys.preferences := ScalariformKeys.preferences.value
-    .setPreference(DoubleIndentClassDeclaration, true)
-    .setPreference(PreserveSpaceBeforeArguments, true)
-    .setPreference(CompactControlReadability, true)
-    .setPreference(SpacesAroundMultiImports, false),
 
   // Sonatype OSS deployment
   publishTo := {
