@@ -1,13 +1,18 @@
 package com.softwaremill.clippy
 
 import java.io.File
+import java.net.URL
 import java.util.concurrent.TimeoutException
 
+import scala.collection.JavaConverters._
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.reflect.internal.util.Position
+import scala.reflect.internal.util.ScalaClassLoader
 import scala.tools.nsc.Global
-import scala.tools.nsc.plugins.{Plugin, PluginComponent}
+import scala.tools.nsc.plugins.Plugin
+import scala.tools.nsc.plugins.PluginComponent
+import scala.tools.util.PathResolver
 
 class ClippyPlugin(val global: Global) extends Plugin {
 
@@ -22,11 +27,17 @@ class ClippyPlugin(val global: Global) extends Plugin {
   var localStoreDir = DefaultStoreDir
   var projectRoot: Option[File] = None
 
+  lazy val localAdviceFiles = {
+    val classPathURLs = new PathResolver(global.settings).resultAsURLs
+    val classLoader = ScalaClassLoader.fromURLs(classPathURLs, getClass.getClassLoader)
+    classLoader.getResources("clippy.json").asScala.toList
+  }
+
   def handleError(pos: Position, msg: String): String = {
-    val advices = loadAdvices(url, localStoreDir, projectRoot)
+    val advices = loadAdvices(url, localStoreDir, projectRoot, localAdviceFiles)
     val parsedMsg = CompilationErrorParser.parse(msg)
     val matchers = advices.map(_.errMatching.lift)
-    val matches = matchers.flatMap(pf => parsedMsg.flatMap(pf))
+    val matches = matchers.flatMap(pf => parsedMsg.flatMap(pf)).distinct
 
     matches.size match {
       case 0 =>
@@ -146,13 +157,13 @@ class ClippyPlugin(val global: Global) extends Plugin {
   private def localStoreDirFromOptions(options: List[String]): File =
     options.find(_.startsWith("store=")).map(_.substring(6)).map(new File(_)).getOrElse(DefaultStoreDir)
 
-  private def loadAdvices(url: String, localStoreDir: File, projectAdviceFile: Option[File]): List[Advice] = {
+  private def loadAdvices(url: String, localStoreDir: File, projectAdviceFile: Option[File], localAdviceFiles: List[URL]): List[Advice] = {
     implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
     try {
       Await
         .result(
-          new AdviceLoader(global, url, localStoreDir, projectAdviceFile).load(),
+          new AdviceLoader(global, url, localStoreDir, projectAdviceFile, localAdviceFiles).load(),
           10.seconds
         )
         .advices

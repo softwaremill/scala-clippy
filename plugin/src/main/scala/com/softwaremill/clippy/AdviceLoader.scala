@@ -10,18 +10,21 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.io.Source
 import scala.tools.nsc.Global
 import scala.util.{Failure, Success, Try}
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
-class AdviceLoader(global: Global, url: String, localStoreDir: File, projectAdviceFile: Option[File])(implicit ec: ExecutionContext) {
+class AdviceLoader(
+    global: Global,
+    url: String,
+    localStoreDir: File,
+    projectAdviceFile: Option[File],
+    localAdviceFiles: List[URL]
+)(implicit ec: ExecutionContext) {
   private val OneDayMillis = 1000L * 60 * 60 * 24
 
   private val localStore = new File(localStoreDir, "clippy.json.gz")
 
   private val resourcesAdvice: List[Advice] =
-    getClass.getClassLoader
-      .getResources("clippy.json")
-      .toList
-      .flatMap(loadAdviceFromUrL)
+    localAdviceFiles.flatMap(loadAdviceFromUrL)
 
   private def loadAdviceFromUrL(url: URL): List[Advice] =
     TryWith(url.openStream())(inputStreamToClippy(_).advices) match {
