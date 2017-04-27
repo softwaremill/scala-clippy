@@ -6,12 +6,12 @@ object ColorsConfig {
   case object Disabled extends ColorsConfig
 
   case class Enabled(
-    diff: fansi.Attrs,
-    comment: fansi.Attrs,
-    `type`: fansi.Attrs,
-    literal: fansi.Attrs,
-    keyword: fansi.Attrs,
-    reset: fansi.Attrs
+      diff: fansi.Attrs,
+      comment: fansi.Attrs,
+      `type`: fansi.Attrs,
+      literal: fansi.Attrs,
+      keyword: fansi.Attrs,
+      reset: fansi.Attrs
   ) extends ColorsConfig
 
   val defaultEnabled = Enabled(

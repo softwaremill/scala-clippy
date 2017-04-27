@@ -35,21 +35,18 @@ class AdviceLoader(
     }
 
   private val projectAdvice: List[Advice] =
-    projectAdviceFile.map(file =>
-      loadAdviceFromUrL(file.toURI.toURL)).getOrElse(Nil)
+    projectAdviceFile.map(file => loadAdviceFromUrL(file.toURI.toURL)).getOrElse(Nil)
 
   def load(): Future[Clippy] = {
     val localClippy = if (!localStore.exists()) {
       fetchStoreParse()
-    }
-    else {
+    } else {
       val needsUpdate = System.currentTimeMillis() - localStore.lastModified() > OneDayMillis
 
       // fetching in the background
       val runningFetch = if (needsUpdate) {
         Some(fetchStoreParseInBackground())
-      }
-      else None
+      } else None
 
       val localLoad = Try(loadLocally()) match {
         case Success(v) => Future.successful(v)
@@ -64,8 +61,7 @@ class AdviceLoader(
     }
 
     // Add in advice found in resources and project root
-    localClippy.map(clippy =>
-      clippy.copy(advices = (projectAdvice ++ resourcesAdvice ++ clippy.advices).distinct))
+    localClippy.map(clippy => clippy.copy(advices = (projectAdvice ++ resourcesAdvice ++ clippy.advices).distinct))
   }
 
   private def fetchStoreParse(): Future[Clippy] =
@@ -75,7 +71,7 @@ class AdviceLoader(
         bytes
       }
       .map(bytes => inputStreamToClippy(decodeZippedBytes(bytes)))
-      .recover{
+      .recover {
         case e: Exception =>
           global.inform(s"Unable to load/store local Clippy advice due to: ${e.getMessage}")
           Clippy(ClippyBuildInfo.version, Nil)
@@ -91,14 +87,13 @@ class AdviceLoader(
   }
 
   private def fetchCompressedJson(): Future[Array[Byte]] = Future {
-    val u = new URL(url)
+    val u    = new URL(url)
     val conn = u.openConnection().asInstanceOf[HttpURLConnection]
 
     try {
       conn.setRequestMethod("GET")
       inputStreamToBytes(conn.getInputStream)
-    }
-    finally conn.disconnect()
+    } finally conn.disconnect()
   }
 
   private def decodeZippedBytes(bytes: Array[Byte]): GZIPInputStream = new GZIPInputStream(decodeUtf8Bytes(bytes))
@@ -108,7 +103,8 @@ class AdviceLoader(
   private def inputStreamToClippy(byteStream: InputStream): Clippy = {
     import org.json4s.native.JsonMethods._
     val data = Source.fromInputStream(byteStream, "UTF-8").getLines().mkString("\n")
-    Clippy.fromJson(parse(data))
+    Clippy
+      .fromJson(parse(data))
       .getOrElse(throw new IllegalArgumentException("Cannot deserialize Clippy data"))
   }
 
@@ -119,7 +115,7 @@ class AdviceLoader(
     TryWith(new FileOutputStream(localStore))(_.write(bytes)).get
   }
 
-  private def storeLocallyInBackground(bytes: Array[Byte]): Unit = {
+  private def storeLocallyInBackground(bytes: Array[Byte]): Unit =
     Future {
       runNonDaemon {
         storeLocally(bytes)
@@ -127,7 +123,6 @@ class AdviceLoader(
     }.onFailure {
       case e: Exception => global.inform(s"Cannot store data at $localStore due to: $e")
     }
-  }
 
   private def loadLocally(source: File = localStore): Array[Byte] = inputStreamToBytes(new FileInputStream(source))
 }

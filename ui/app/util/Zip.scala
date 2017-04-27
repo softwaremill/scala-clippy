@@ -7,7 +7,7 @@ object Zip {
   private val BufferSize = 512
 
   def compress(string: String): Array[Byte] = {
-    val os = new ByteArrayOutputStream(string.length() / 5)
+    val os  = new ByteArrayOutputStream(string.length() / 5)
     val gos = new GZIPOutputStream(os)
     gos.write(string.getBytes("UTF-8"))
     gos.close()
@@ -16,10 +16,10 @@ object Zip {
   }
 
   def decompress(compressed: Array[Byte]): String = {
-    val is = new ByteArrayInputStream(compressed)
-    val gis = new GZIPInputStream(is, BufferSize)
-    val string = new StringBuilder()
-    val data = new Array[Byte](BufferSize)
+    val is        = new ByteArrayInputStream(compressed)
+    val gis       = new GZIPInputStream(is, BufferSize)
+    val string    = new StringBuilder()
+    val data      = new Array[Byte](BufferSize)
     var bytesRead = gis.read(data)
     while (bytesRead != -1) {
       string.append(new String(data, 0, bytesRead, "UTF-8"))
@@ -30,4 +30,3 @@ object Zip {
     string.toString()
   }
 }
-

@@ -8,21 +8,20 @@ case class Advice(compilationError: CompilationError[RegexT], advice: String, li
   }
 
   def toJson: JValue = JObject(
-      "error" -> compilationError.toJson,
-      "text" -> JString(advice),
-      "library" -> library.toJson
-    )
+    "error"   -> compilationError.toJson,
+    "text"    -> JString(advice),
+    "library" -> library.toJson
+  )
 }
 
 object Advice {
-  def fromJson(jvalue: JValue): Option[Advice] = {
+  def fromJson(jvalue: JValue): Option[Advice] =
     (for {
-      JObject(fields) <- jvalue
-      JField("error", errorJV) <- fields
-      error <- CompilationError.fromJson(errorJV).toList
+      JObject(fields)               <- jvalue
+      JField("error", errorJV)      <- fields
+      error                         <- CompilationError.fromJson(errorJV).toList
       JField("text", JString(text)) <- fields
-      JField("library", libraryJV) <- fields
-      library <- Library.fromJson(libraryJV).toList
+      JField("library", libraryJV)  <- fields
+      library                       <- Library.fromJson(libraryJV).toList
     } yield Advice(error, text, library)).headOption
-  }
 }

@@ -9,12 +9,15 @@ import monocle.macros.Lenses
 import scala.concurrent.ExecutionContext.Implicits.global
 
 object Listing {
-  case class Props(showError: String => Callback, clearMsgs: Callback,
-    handleFuture: HandleFuture)
+  case class Props(showError: String => Callback, clearMsgs: Callback, handleFuture: HandleFuture)
 
   @Lenses
-  case class State(advices: Seq[AdviceListing], suggestEditId: Option[Long],
-    suggestContact: FormField, suggestText: FormField)
+  case class State(
+      advices: Seq[AdviceListing],
+      suggestEditId: Option[Long],
+      suggestContact: FormField,
+      suggestText: FormField
+  )
   implicit val stateVal = new Validatable[State] {
     override def validated(s: State) = s.copy(
       suggestContact = s.suggestContact.validated,
@@ -23,10 +26,10 @@ object Listing {
     override def fields(s: State) = List(s.suggestContact, s.suggestText)
   }
 
-  class Backend($: BackendScope[Props, State]) {
+  class Backend($ : BackendScope[Props, State]) {
     def render(s: State, p: Props) = {
-      def suggestEditCallback(a: AdviceListing) = p.clearMsgs >> $.modState(s =>
-        s.copy(suggestEditId = Some(a.id), suggestText = s.suggestText.copy(v = "")))
+      def suggestEditCallback(a: AdviceListing) =
+        p.clearMsgs >> $.modState(s => s.copy(suggestEditId = Some(a.id), suggestText = s.suggestText.copy(v = "")))
       def cancelSuggestEditCallback(a: AdviceListing) = $.modState(_.copy(suggestEditId = None))
       def sendSuggestEditCallback(a: AdviceListing) =
         cancelSuggestEditCallback(a) >> p.handleFuture(
@@ -46,11 +49,16 @@ object Listing {
         <.td(^.colSpan := 4)(
           <.form(
             ^.onSubmit ==> FormField.submitValidated($, p.showError)(s => sendSuggestEditCallback(a)),
-            bsFormEl(externalVar($, s, State.suggestContact))(mods =>
-              <.input(^.`type` := "email", ^.cls := "form-control", ^.placeholder := "scalacoder@company.com")(mods)),
-            bsFormEl(externalVar($, s, State.suggestText))(mods =>
-              <.textarea(^.cls := "form-control", ^.rows := "3")(mods)),
-            <.button(^.`type` := "reset", ^.cls := "btn btn-default", ^.onClick --> cancelSuggestEditCallback(a))("Cancel"),
+            bsFormEl(externalVar($, s, State.suggestContact))(
+              mods =>
+                <.input(^.`type` := "email", ^.cls := "form-control", ^.placeholder := "scalacoder@company.com")(mods)
+            ),
+            bsFormEl(externalVar($, s, State.suggestText))(
+              mods => <.textarea(^.cls := "form-control", ^.rows := "3")(mods)
+            ),
+            <.button(^.`type` := "reset", ^.cls := "btn btn-default", ^.onClick --> cancelSuggestEditCallback(a))(
+              "Cancel"
+            ),
             <.span(" "),
             <.button(^.`type` := "send", ^.cls := "btn btn-primary")("Send")
           )
@@ -67,8 +75,9 @@ object Listing {
           )
         ),
         <.tbody(
-          s.advices.flatMap(a =>
-            List(rowForAdvice(a)) ++ s.suggestEditId.filter(_ == a.id).map(_ => suggestEdit(a)).toList): _*
+          s.advices.flatMap(
+            a => List(rowForAdvice(a)) ++ s.suggestEditId.filter(_ == a.id).map(_ => suggestEdit(a)).toList
+          ): _*
         )
       )
     }
@@ -82,8 +91,14 @@ object Listing {
   }
 
   val component = ReactComponentB[Props]("Use")
-    .initialState(State(Nil, None, FormField("Contact email (optional)", required = false),
-      FormField("Suggestion", required = true)))
+    .initialState(
+      State(
+        Nil,
+        None,
+        FormField("Contact email (optional)", required = false),
+        FormField("Suggestion", required = true)
+      )
+    )
     .renderBackend[Backend]
     .componentDidMount(ctx => ctx.backend.initAdvices(ctx.props))
     .build

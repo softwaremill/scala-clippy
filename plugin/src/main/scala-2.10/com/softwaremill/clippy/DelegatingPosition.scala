@@ -10,11 +10,16 @@ class DelegatingPosition(delegate: Position, colorsConfig: ColorsConfig) extends
 
   def highlight(str: String): String = colorsConfig match {
     case e: ColorsConfig.Enabled =>
-      Highlighter.defaultHighlight(
-        str.toVector,
-        e.comment, e.`type`, e.literal,
-        e.keyword, e.reset
-      ).mkString
+      Highlighter
+        .defaultHighlight(
+          str.toVector,
+          e.comment,
+          e.`type`,
+          e.literal,
+          e.keyword,
+          e.reset
+        )
+        .mkString
     case _ => str
   }
 
@@ -30,7 +35,8 @@ class DelegatingPosition(delegate: Position, colorsConfig: ColorsConfig) extends
 
   override def get[T](implicit evidence$2: ClassManifest[T]): Option[T] = delegate.get(evidence$2)
 
-  override def withPos(newPos: Position): Attachments { type Pos = DelegatingPosition.this.Pos } = delegate.withPos(newPos)
+  override def withPos(newPos: Position): Attachments { type Pos = DelegatingPosition.this.Pos } =
+    delegate.withPos(newPos)
 
   override def safeLine: Int = delegate.safeLine
 
@@ -40,11 +46,14 @@ class DelegatingPosition(delegate: Position, colorsConfig: ColorsConfig) extends
 
   override def isOpaqueRange: Boolean = delegate.isOpaqueRange
 
-  override def update[T](attachment: T)(implicit evidence$4: ClassManifest[T]): Attachments { type Pos = DelegatingPosition.this.Pos } = delegate.update(attachment)(evidence$4)
+  override def update[T](attachment: T)(
+      implicit evidence$4: ClassManifest[T]
+  ): Attachments { type Pos = DelegatingPosition.this.Pos } = delegate.update(attachment)(evidence$4)
 
   override def pointOrElse(alt: Int): Int = delegate.pointOrElse(alt)
 
-  override def inUltimateSource(source: SourceFile): Position = DelegatingPosition.wrap(delegate.inUltimateSource(source), colorsConfig)
+  override def inUltimateSource(source: SourceFile): Position =
+    DelegatingPosition.wrap(delegate.inUltimateSource(source), colorsConfig)
 
   override def isDefined: Boolean = delegate.isDefined
 
@@ -54,7 +63,9 @@ class DelegatingPosition(delegate: Position, colorsConfig: ColorsConfig) extends
 
   override def source: SourceFile = delegate.source
 
-  override def remove[T](implicit evidence$5: ClassManifest[T]): Attachments { type Pos = DelegatingPosition.this.Pos } = delegate.remove(evidence$5)
+  override def remove[T](
+      implicit evidence$5: ClassManifest[T]
+  ): Attachments { type Pos = DelegatingPosition.this.Pos } = delegate.remove(evidence$5)
 
   override def withStart(start: Int): Position = DelegatingPosition.wrap(delegate.withStart(start), colorsConfig)
 
@@ -68,7 +79,8 @@ class DelegatingPosition(delegate: Position, colorsConfig: ColorsConfig) extends
 
   override def withEnd(end: Int): Position = DelegatingPosition.wrap(delegate.withEnd(end), colorsConfig)
 
-  override def withSource(source: SourceFile, shift: Int): Position = DelegatingPosition.wrap(delegate.withSource(source, shift), colorsConfig)
+  override def withSource(source: SourceFile, shift: Int): Position =
+    DelegatingPosition.wrap(delegate.withSource(source, shift), colorsConfig)
 
   override def startOrPoint: Int = delegate.startOrPoint
 
@@ -102,11 +114,10 @@ class DelegatingPosition(delegate: Position, colorsConfig: ColorsConfig) extends
 }
 
 object DelegatingPosition {
-  def wrap(pos: Position, colorsConfig: ColorsConfig): Position = {
+  def wrap(pos: Position, colorsConfig: ColorsConfig): Position =
     pos match {
-      case NoPosition => pos
+      case NoPosition                  => pos
       case wrapped: DelegatingPosition => wrapped
-      case _ => new DelegatingPosition(pos, colorsConfig)
+      case _                           => new DelegatingPosition(pos, colorsConfig)
     }
-  }
 }

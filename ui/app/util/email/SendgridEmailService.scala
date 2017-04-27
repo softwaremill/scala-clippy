@@ -7,7 +7,8 @@ import scala.concurrent.Future
 import scala.util.Properties
 
 class SendgridEmailService(sendgridUsername: String, sendgridPassword: String, emailFrom: String)
-    extends EmailService with StrictLogging {
+    extends EmailService
+    with StrictLogging {
 
   private lazy val sendgrid = new SendGrid(sendgridUsername, sendgridPassword)
 
@@ -21,10 +22,11 @@ class SendgridEmailService(sendgridUsername: String, sendgridPassword: String, e
     val response = sendgrid.send(email)
     if (response.getStatus) {
       logger.info(s"Email to $to sent")
-    }
-    else {
-      logger.error(s"Email to $to, subject: $subject, body: $body, not sent: " +
-        s"${response.getCode}/${response.getMessage}")
+    } else {
+      logger.error(
+        s"Email to $to, subject: $subject, body: $body, not sent: " +
+          s"${response.getCode}/${response.getMessage}"
+      )
     }
 
     Future.successful(())
@@ -32,11 +34,12 @@ class SendgridEmailService(sendgridUsername: String, sendgridPassword: String, e
 }
 
 object SendgridEmailService extends StrictLogging {
-  def createFromEnv(emailFrom: String): Option[SendgridEmailService] = for {
-    u <- Properties.envOrNone("SENDGRID_USERNAME")
-    p <- Properties.envOrNone("SENDGRID_PASSWORD")
-  } yield {
-    logger.info("Using SendGrid email service")
-    new SendgridEmailService(u, p, emailFrom)
-  }
+  def createFromEnv(emailFrom: String): Option[SendgridEmailService] =
+    for {
+      u <- Properties.envOrNone("SENDGRID_USERNAME")
+      p <- Properties.envOrNone("SENDGRID_PASSWORD")
+    } yield {
+      logger.info("Using SendGrid email service")
+      new SendgridEmailService(u, p, emailFrom)
+    }
 }

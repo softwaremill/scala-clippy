@@ -3,13 +3,17 @@ package util
 import java.net.URI
 
 import com.typesafe.config.ConfigValueFactory._
-import com.typesafe.config.{ConfigFactory, Config}
+import com.typesafe.config.{Config, ConfigFactory}
 import com.typesafe.scalalogging.StrictLogging
 import org.flywaydb.core.Flyway
 import slick.driver.JdbcProfile
 import slick.jdbc.JdbcBackend._
 
-case class SqlDatabase(db: slick.jdbc.JdbcBackend#Database, driver: JdbcProfile, connectionString: JdbcConnectionString) {
+case class SqlDatabase(
+    db: slick.jdbc.JdbcBackend#Database,
+    driver: JdbcProfile,
+    connectionString: JdbcConnectionString
+) {
   def updateSchema() {
     val flyway = new Flyway()
     flyway.setDataSource(connectionString.url, connectionString.username, connectionString.password)
@@ -47,19 +51,21 @@ object SqlDatabase extends StrictLogging {
       The DATABASE_URL is set by Heroku (if deploying there) and must be converted to a proper object
       of type Config (for Slick). Expected format:
       postgres://<username>:<password>@<host>:<port>/<dbname>
-    */
-    val dbUri = new URI(envDatabaseUrl)
+     */
+    val dbUri    = new URI(envDatabaseUrl)
     val username = dbUri.getUserInfo.split(":")(0)
     val password = dbUri.getUserInfo.split(":")(1)
     val intermediaryConfig = new DatabaseConfig {
-      override def rootConfig: Config = ConfigFactory.empty()
-        .withValue(PostgresDSClass, fromAnyRef("org.postgresql.ds.PGSimpleDataSource"))
-        .withValue(PostgresServerNameKey, fromAnyRef(dbUri.getHost))
-        .withValue(PostgresPortKey, fromAnyRef(dbUri.getPort))
-        .withValue(PostgresDbNameKey, fromAnyRef(dbUri.getPath.tail))
-        .withValue(PostgresUsernameKey, fromAnyRef(username))
-        .withValue(PostgresPasswordKey, fromAnyRef(password))
-        .withFallback(ConfigFactory.load())
+      override def rootConfig: Config =
+        ConfigFactory
+          .empty()
+          .withValue(PostgresDSClass, fromAnyRef("org.postgresql.ds.PGSimpleDataSource"))
+          .withValue(PostgresServerNameKey, fromAnyRef(dbUri.getHost))
+          .withValue(PostgresPortKey, fromAnyRef(dbUri.getPort))
+          .withValue(PostgresDbNameKey, fromAnyRef(dbUri.getPath.tail))
+          .withValue(PostgresUsernameKey, fromAnyRef(username))
+          .withValue(PostgresPasswordKey, fromAnyRef(password))
+          .withFallback(ConfigFactory.load())
     }
     createPostgresFromConfig(intermediaryConfig)
   }
@@ -68,9 +74,9 @@ object SqlDatabase extends StrictLogging {
     s"jdbc:postgresql://$host:$port/$dbName"
 
   private def postgresConnectionString(config: DatabaseConfig) = {
-    val host = config.dbPostgresServerName
-    val port = config.dbPostgresPort
-    val dbName = config.dbPostgresDbName
+    val host     = config.dbPostgresServerName
+    val port     = config.dbPostgresPort
+    val dbName   = config.dbPostgresDbName
     val username = config.dbPostgresUsername
     val password = config.dbPostgresPassword
     JdbcConnectionString(postgresUrl(host, port, dbName), username, password)
@@ -87,7 +93,7 @@ object SqlDatabase extends StrictLogging {
   }
 
   private def embeddedConnectionStringFromConfig(config: DatabaseConfig): String = {
-    val url = config.dbH2Url
+    val url      = config.dbH2Url
     val fullPath = url.split(":")(3)
     logger.info(s"Using an embedded database, with data files located at: $fullPath")
     url

@@ -11,6 +11,6 @@ object Utils {
 
   // ExternalVar companion has only methods for creating a var from AccessRD (read direct), here we are reading
   // through callbacks, so we need that extra method
-  def externalVar[S, A]($: BackendScope[_, S], s: S, l: Lens[S, A]): ExternalVar[A] =
+  def externalVar[S, A]($ : BackendScope[_, S], s: S, l: Lens[S, A]): ExternalVar[A] =
     ExternalVar(l.get(s))(a => $.modState(l.set(a)))
 }

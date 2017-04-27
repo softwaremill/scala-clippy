@@ -35,8 +35,7 @@ trait BaseSqlSpec extends FlatSpec with Matchers with BeforeAndAfterAll with Bef
     try {
       dropAll()
       createAll()
-    }
-    catch {
+    } catch {
       case e: Exception => e.printStackTrace()
     }
 

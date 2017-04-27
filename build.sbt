@@ -13,32 +13,31 @@ val slickVersion = "3.1.1"
 val json4s = "org.json4s" %% "json4s-native" % "3.5.0"
 
 // testing
-val scalatest = "org.scalatest" %% "scalatest" % "3.0.1" % "test"
+val scalatest  = "org.scalatest"  %% "scalatest"  % "3.0.1"  % "test"
 val scalacheck = "org.scalacheck" %% "scalacheck" % "1.13.4" % "test"
 
 name := "clippy"
 
 // factor out common settings into a sequence
-lazy val commonSettingsNoScalaVersion =  Seq(
+lazy val commonSettingsNoScalaVersion = Seq(
   organization := "com.softwaremill.clippy",
   version := "0.5.3",
-
   scalacOptions ++= Seq("-unchecked", "-deprecation"),
-
   parallelExecution := false,
-
   // Sonatype OSS deployment
   publishTo := {
     val nexus = "https://oss.sonatype.org/"
     if (version.value.trim.endsWith("SNAPSHOT"))
       Some("snapshots" at nexus + "content/repositories/snapshots")
     else
-      Some("releases"  at nexus + "service/local/staging/deploy/maven2")
+      Some("releases" at nexus + "service/local/staging/deploy/maven2")
   },
-  credentials   += Credentials(Path.userHome / ".ivy2" / ".credentials"),
+  credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
   publishMavenStyle := true,
   publishArtifact in Test := false,
-  pomIncludeRepository := { _ => false },
+  pomIncludeRepository := { _ =>
+    false
+  },
   pomExtra :=
     <scm>
       <url>git@github.com:softwaremill/scala-clippy.git</url>
@@ -51,9 +50,10 @@ lazy val commonSettingsNoScalaVersion =  Seq(
           <url>http://www.warski.org</url>
         </developer>
       </developers>,
-  licenses      := ("Apache2", new java.net.URL("http://www.apache.org/licenses/LICENSE-2.0.txt")) :: Nil,
-  homepage      := Some(new java.net.URL("http://www.softwaremill.com")),
-  com.updateimpact.Plugin.apiKey in ThisBuild := sys.env.getOrElse("UPDATEIMPACT_API_KEY", (com.updateimpact.Plugin.apiKey in ThisBuild).value)
+  licenses := ("Apache2", new java.net.URL("http://www.apache.org/licenses/LICENSE-2.0.txt")) :: Nil,
+  homepage := Some(new java.net.URL("http://www.softwaremill.com")),
+  com.updateimpact.Plugin.apiKey in ThisBuild := sys.env
+    .getOrElse("UPDATEIMPACT_API_KEY", (com.updateimpact.Plugin.apiKey in ThisBuild).value)
 )
 
 lazy val commonSettings = commonSettingsNoScalaVersion ++ Seq(
@@ -82,11 +82,12 @@ lazy val model = (crossProject.crossType(CrossType.Pure) in file("model"))
   )
 
 lazy val modelJvm = model.jvm.settings(name := "modelJvm")
-lazy val modelJs = model.js.settings(name := "modelJs")
+lazy val modelJs  = model.js.settings(name := "modelJs")
 
 def removeDep(groupId: String, artifactId: String) = new RewriteRule {
   override def transform(n: XNode): XNodeSeq = n match {
-    case e: XElem if (e \ "groupId").text == groupId && (e \ "artifactId").text.startsWith(artifactId) => XNodeSeq.Empty
+    case e: XElem if (e \ "groupId").text == groupId && (e \ "artifactId").text.startsWith(artifactId) =>
+      XNodeSeq.Empty
     case _ => n
   }
 }
@@ -98,13 +99,16 @@ lazy val plugin = (project in file("plugin"))
     crossScalaVersions := Seq(scalaVersion.value, "2.12.1", "2.10.6"),
     libraryDependencies ++= Seq(
       "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
-      "com.lihaoyi" %% "scalaparse" % "0.4.2",
-      "com.lihaoyi" %% "fansi" % "0.2.3",
-      scalatest, scalacheck, json4s),
+      "com.lihaoyi"    %% "scalaparse"    % "0.4.2",
+      "com.lihaoyi"    %% "fansi"         % "0.2.3",
+      scalatest,
+      scalacheck,
+      json4s
+    ),
     // this is needed for fastparse to work on 2.10
     libraryDependencies ++= (if (scalaVersion.value startsWith "2.10.")
-      Seq(compilerPlugin("org.scalamacros" % s"paradise" % "2.1.0" cross CrossVersion.full))
-    else Seq()),
+                               Seq(compilerPlugin("org.scalamacros" % s"paradise" % "2.1.0" cross CrossVersion.full))
+                             else Seq()),
     pomPostProcess := { (node: XNode) =>
       new RuleTransformer(removeDep("org.json4s", "json4s-native")).transform(node).head
     },
@@ -141,18 +145,22 @@ lazy val tests = (project in file("tests"))
   .settings(
     publishArtifact := false,
     libraryDependencies ++= Seq(
-      json4s, scalatest,
-      "com.typesafe.akka" %% "akka-http" % "10.0.0",
-      "com.softwaremill.macwire" %% "macros" % "2.2.2" % "provided",
-      "com.typesafe.slick" %% "slick" % slickVersion
+      json4s,
+      scalatest,
+      "com.typesafe.akka"        %% "akka-http" % "10.0.0",
+      "com.softwaremill.macwire" %% "macros"    % "2.2.2" % "provided",
+      "com.typesafe.slick"       %% "slick"     % slickVersion
     ),
     // during tests, read from the local repository, if at all available
-    scalacOptions ++= List(s"-Xplugin:${pluginJar.value.getAbsolutePath}", "-P:clippy:url=http://localhost:9000", "-P:clippy:colors=true"),
+    scalacOptions ++= List(
+      s"-Xplugin:${pluginJar.value.getAbsolutePath}",
+      "-P:clippy:url=http://localhost:9000",
+      "-P:clippy:colors=true"
+    ),
     envVars in Test := (envVars in Test).value + ("CLIPPY_PLUGIN_PATH" -> pluginJar.value.getAbsolutePath),
     fork in Test := true
-  ).dependsOn(modelJvm)
-
-
+  )
+  .dependsOn(modelJvm)
 
 lazy val ui: Project = (project in file("ui"))
   .enablePlugins(BuildInfoPlugin)
@@ -161,16 +169,16 @@ lazy val ui: Project = (project in file("ui"))
     libraryDependencies ++= Seq(
       "com.h2database" % "h2" % "1.4.190", // % "test",
       scalatest,
-      "org.webjars" %% "webjars-play" % "2.4.0-1",
-      "org.webjars" % "bootstrap" % "3.3.6",
-      "org.webjars" % "jquery" % "1.11.3",
-      "com.vmunier" %% "play-scalajs-scripts" % "0.3.0",
-      "com.softwaremill.common" %% "id-generator" % "1.1.0",
-      "com.sendgrid" % "sendgrid-java" % "2.2.2" exclude("commons-logging", "commons-logging"),
-      "org.postgresql" % "postgresql" % "9.4.1207",
-      "com.typesafe.slick" %% "slick" % slickVersion,
-      "com.typesafe.slick" %% "slick-hikaricp" % slickVersion,
-      "org.flywaydb" % "flyway-core" % "3.2.1"
+      "org.webjars"             %% "webjars-play"         % "2.4.0-1",
+      "org.webjars"             % "bootstrap"             % "3.3.6",
+      "org.webjars"             % "jquery"                % "1.11.3",
+      "com.vmunier"             %% "play-scalajs-scripts" % "0.3.0",
+      "com.softwaremill.common" %% "id-generator"         % "1.1.0",
+      "com.sendgrid"            % "sendgrid-java"         % "2.2.2" exclude ("commons-logging", "commons-logging"),
+      "org.postgresql"          % "postgresql"            % "9.4.1207",
+      "com.typesafe.slick"      %% "slick"                % slickVersion,
+      "com.typesafe.slick"      %% "slick-hikaricp"       % slickVersion,
+      "org.flywaydb"            % "flyway-core"           % "3.2.1"
     ),
     scalaJSProjects := Seq(uiClient),
     pipelineStages in Assets := Seq(scalaJSProd),
@@ -183,8 +191,8 @@ lazy val ui: Project = (project in file("ui"))
     buildInfoObject := "ClippyBuildInfo",
     assemblyMergeStrategy in assembly := {
       // anything in public/lib is copied from webjars and causes duplicate resources exceptions
-      case PathList("public", "lib", xs @ _*) => MergeStrategy.discard
-      case "JS_DEPENDENCIES" => MergeStrategy.discard
+      case PathList("public", "lib", xs @ _ *) => MergeStrategy.discard
+      case "JS_DEPENDENCIES"                   => MergeStrategy.discard
       case x =>
         val oldStrategy = (assemblyMergeStrategy in assembly).value
         oldStrategy(x)
@@ -204,16 +212,16 @@ lazy val uiClient: Project = (project in file("ui-client"))
     scalaJSUseMainModuleInitializer in Test := false,
     addCompilerPlugin(compilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)), // for @Lenses
     libraryDependencies ++= Seq(
-      "org.scala-js" %%% "scalajs-dom" % "0.9.1",
-      "be.doeraene" %%% "scalajs-jquery" % "0.9.1",
-      "com.github.japgolly.scalajs-react" %%% "core" % scalaJsReactVersion,
-      "com.github.japgolly.scalajs-react" %%% "ext-monocle" % scalaJsReactVersion,
-      "com.github.japgolly.fork.monocle" %%% "monocle-macro" % "1.2.0"
+      "org.scala-js"                      %%% "scalajs-dom"    % "0.9.1",
+      "be.doeraene"                       %%% "scalajs-jquery" % "0.9.1",
+      "com.github.japgolly.scalajs-react" %%% "core"           % scalaJsReactVersion,
+      "com.github.japgolly.scalajs-react" %%% "ext-monocle"    % scalaJsReactVersion,
+      "com.github.japgolly.fork.monocle"  %%% "monocle-macro"  % "1.2.0"
     ),
     jsDependencies ++= Seq(
-      RuntimeDOM % "test",
+      RuntimeDOM          % "test",
       "org.webjars.bower" % "react" % "15.3.2" / "react-with-addons.js" minified "react-with-addons.min.js" commonJSName "React",
-      "org.webjars.bower" % "react" % "15.3.2" / "react-dom.js" minified  "react-dom.min.js" dependsOn "react-with-addons.js" commonJSName "ReactDOM"
+      "org.webjars.bower" % "react" % "15.3.2" / "react-dom.js" minified "react-dom.min.js" dependsOn "react-with-addons.js" commonJSName "ReactDOM"
     )
   )
   .enablePlugins(ScalaJSPlugin, ScalaJSWeb)
@@ -225,11 +233,11 @@ lazy val uiShared = (crossProject.crossType(CrossType.Pure) in file("ui-shared")
     name := "uiShared",
     libraryDependencies ++= Seq(
       "com.lihaoyi" %%% "autowire" % "0.2.5",
-      "com.lihaoyi" %%% "upickle" % "0.3.6"
+      "com.lihaoyi" %%% "upickle"  % "0.3.6"
     )
   )
   .jsConfigure(_ enablePlugins ScalaJSWeb)
   .dependsOn(model)
 
 lazy val uiSharedJvm = uiShared.jvm.settings(name := "uiSharedJvm")
-lazy val uiSharedJs = uiShared.js.settings(name := "uiSharedJs")
+lazy val uiSharedJs  = uiShared.js.settings(name := "uiSharedJs")
