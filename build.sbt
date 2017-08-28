@@ -136,7 +136,7 @@ lazy val pluginSbt = (project in file("plugin-sbt"))
     buildInfoPackage := "com.softwaremill.clippy",
     buildInfoObject := "ClippyBuildInfo",
     scalaVersion := "2.10.6",
-    crossScalaVersions := Seq(scalaVersion.value, "2.12.2")
+    crossSbtVersions := Vector("0.13.16", "1.0.0")
   )
   .settings(sbt10CompatSettings)
 
