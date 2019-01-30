@@ -7,7 +7,11 @@ import scala.tools.nsc.{Global, Phase}
 /**
   * Responsible for replacing the global reporter with our custom Clippy reporter after the first phase of compilation.
   */
-abstract class InjectReporter(handleError: (Position, String) => String, superGlobal: Global) extends PluginComponent {
+abstract class InjectReporter(
+    handleError: (Position, String) => String,
+    getFatalWarningAdvice: String => Option[Warning],
+    superGlobal: Global
+) extends PluginComponent {
 
   override val global = superGlobal
   def colorsConfig: ColorsConfig
@@ -20,12 +24,16 @@ abstract class InjectReporter(handleError: (Position, String) => String, superGl
 
     override def name = phaseName
 
-    override def description = "Switches the reporter to Clippy's DelegatingReporter"
+    override def description = "Switches the reporter to Clippy's reporter chain"
 
     override def run(): Unit =
       if (isEnabled) {
         val r = global.reporter
-        global.reporter = new DelegatingReporter(r, handleError, colorsConfig)
+        global.reporter = new FailOnWarningsReporter(
+          new DelegatingReporter(r, handleError, colorsConfig),
+          getFatalWarningAdvice,
+          colorsConfig
+        )
       }
   }
 

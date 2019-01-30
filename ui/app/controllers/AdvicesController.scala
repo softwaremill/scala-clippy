@@ -23,6 +23,6 @@ class AdvicesController(advicesRepository: AdvicesRepository)(implicit ec: Execu
 
   private def toJsonString(advices: List[Advice]): String = {
     import org.json4s.native.JsonMethods.{render => r, compact}
-    compact(r(Clippy(ClippyBuildInfo.version, advices).toJson))
+    compact(r(Clippy(ClippyBuildInfo.version, advices, Nil).toJson))
   }
 }

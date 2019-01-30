@@ -2,7 +2,7 @@ package com.softwaremill.clippy
 
 import org.json4s.JsonAST._
 
-case class Advice(compilationError: CompilationError[RegexT], advice: String, library: Library) {
+final case class Advice(compilationError: CompilationError[RegexT], advice: String, library: Library) {
   def errMatching: PartialFunction[CompilationError[ExactT], String] = {
     case ce if compilationError.matches(ce) => advice
   }

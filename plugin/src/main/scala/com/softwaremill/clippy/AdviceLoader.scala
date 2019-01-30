@@ -23,19 +23,19 @@ class AdviceLoader(
 
   private val localStore = new File(localStoreDir, "clippy.json.gz")
 
-  private val resourcesAdvice: List[Advice] =
-    localAdviceFiles.flatMap(loadAdviceFromUrL)
+  private lazy val resourcesAdvice: AdvicesAndWarnings =
+    localAdviceFiles.map(loadAdviceFromUrL).reduceOption(_ ++ _).getOrElse(AdvicesAndWarnings.empty)
 
-  private def loadAdviceFromUrL(url: URL): List[Advice] =
-    TryWith(url.openStream())(inputStreamToClippy(_).advices) match {
-      case Success(advices) => advices
+  private def loadAdviceFromUrL(url: URL): AdvicesAndWarnings =
+    TryWith(url.openStream())(inputStreamToClippy(_)) match {
+      case Success(clippyData) => AdvicesAndWarnings(clippyData.advices, clippyData.fatalWarnings)
       case Failure(_) =>
         global.inform(s"Cannot load advice from ${url.getPath} : Ignoring.")
-        Nil
+        AdvicesAndWarnings.empty
     }
 
-  private val projectAdvice: List[Advice] =
-    projectAdviceFile.map(file => loadAdviceFromUrL(file.toURI.toURL)).getOrElse(Nil)
+  private lazy val projectAdvice: AdvicesAndWarnings =
+    projectAdviceFile.map(file => loadAdviceFromUrL(file.toURI.toURL)).getOrElse(AdvicesAndWarnings.empty)
 
   def load(): Future[Clippy] = {
     val localClippy = if (!localStore.exists()) {
@@ -61,7 +61,14 @@ class AdviceLoader(
     }
 
     // Add in advice found in resources and project root
-    localClippy.map(clippy => clippy.copy(advices = (projectAdvice ++ resourcesAdvice ++ clippy.advices).distinct))
+    localClippy.map(
+      clippy =>
+        clippy.copy(
+          advices = (projectAdvice.advices ++ resourcesAdvice.advices ++ clippy.advices).distinct,
+          fatalWarnings =
+            (projectAdvice.fatalWarnings ++ resourcesAdvice.fatalWarnings ++ clippy.fatalWarnings).distinct
+      )
+    )
   }
 
   private def fetchStoreParse(): Future[Clippy] =
@@ -74,7 +81,7 @@ class AdviceLoader(
       .recover {
         case e: Exception =>
           global.inform(s"Unable to load/store local Clippy advice due to: ${e.getMessage}")
-          Clippy(ClippyBuildInfo.version, Nil)
+          Clippy(ClippyBuildInfo.version, Nil, Nil)
       }
       .andThen { case Success(v) => v.checkPluginVersion(ClippyBuildInfo.version, println) }
 
@@ -125,4 +132,8 @@ class AdviceLoader(
     }
 
   private def loadLocally(source: File = localStore): Array[Byte] = inputStreamToBytes(new FileInputStream(source))
+}
+
+object AdviceLoader {
+  val localFile = "clippy.json.gz"
 }

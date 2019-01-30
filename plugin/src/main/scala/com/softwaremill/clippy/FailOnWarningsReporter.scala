@@ -3,7 +3,7 @@ package com.softwaremill.clippy
 import scala.reflect.internal.util.Position
 import scala.tools.nsc.reporters.Reporter
 
-class DelegatingReporter(r: Reporter, handleError: (Position, String) => String, colorsConfig: ColorsConfig)
+class FailOnWarningsReporter(r: Reporter, warningMatcher: String => Option[Warning], colorsConfig: ColorsConfig)
     extends Reporter {
   override protected def info0(pos: Position, msg: String, severity: Severity, force: Boolean) = {
     val wrapped = DelegatingPosition.wrap(pos, colorsConfig)
@@ -30,10 +30,13 @@ class DelegatingReporter(r: Reporter, handleError: (Position, String) => String,
 
   //
 
-  override def echo(pos: Position, msg: String)    = r.echo(DelegatingPosition.wrap(pos, colorsConfig), msg)
-  override def warning(pos: Position, msg: String) = r.warning(DelegatingPosition.wrap(pos, colorsConfig), msg)
-  override def hasWarnings                         = r.hasWarnings
-  override def flush()                             = r.flush()
+  override def echo(pos: Position, msg: String)     = r.echo(DelegatingPosition.wrap(pos, colorsConfig), msg)
+  override def errorCount                           = r.errorCount
+  override def warningCount                         = r.warningCount
+  override def hasWarnings                          = r.hasWarnings
+  override def flush()                              = r.flush()
+  override def count(severity: Severity): Int       = r.count(conv(severity))
+  override def resetCount(severity: Severity): Unit = r.resetCount(conv(severity))
 
   //
 
@@ -44,9 +47,19 @@ class DelegatingReporter(r: Reporter, handleError: (Position, String) => String,
   }
 
   //
+  override def warning(pos: Position, msg: String) = {
+    val wrapped = DelegatingPosition.wrap(pos, colorsConfig)
+    warningMatcher(msg) match {
+      case Some(Warning(_, adviceOpt)) =>
+        val finalMsg = adviceOpt.map(advice => msg + s"\nClippy advises: $advice").getOrElse(msg)
+        r.error(wrapped, finalMsg)
+      case None =>
+        r.warning(wrapped, msg)
+    }
+  }
 
   override def error(pos: Position, msg: String) = {
     val wrapped = DelegatingPosition.wrap(pos, colorsConfig)
-    r.error(wrapped, handleError(wrapped, msg))
+    r.error(wrapped, msg)
   }
 }

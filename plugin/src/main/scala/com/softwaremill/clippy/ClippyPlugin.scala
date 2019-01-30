@@ -13,6 +13,15 @@ import scala.tools.nsc.plugins.Plugin
 import scala.tools.nsc.plugins.PluginComponent
 import scala.tools.util.PathResolver
 
+final case class AdvicesAndWarnings(advices: List[Advice], fatalWarnings: List[Warning]) {
+  def ++(other: AdvicesAndWarnings): AdvicesAndWarnings =
+    copy(advices = advices ++ other.advices, fatalWarnings = fatalWarnings ++ other.fatalWarnings)
+}
+
+object AdvicesAndWarnings {
+  def empty: AdvicesAndWarnings = AdvicesAndWarnings(Nil, Nil)
+}
+
 class ClippyPlugin(val global: Global) extends Plugin {
 
   override val name: String = "clippy"
@@ -28,14 +37,19 @@ class ClippyPlugin(val global: Global) extends Plugin {
 
   lazy val localAdviceFiles = {
     val classPathURLs = new PathResolver(global.settings).result.asURLs
-    val classLoader = new URLClassLoader(classPathURLs.toArray, getClass.getClassLoader)
+    val classLoader   = new URLClassLoader(classPathURLs.toArray, getClass.getClassLoader)
     classLoader.getResources("clippy.json").asScala.toList
   }
 
+  lazy val advicesAndWarnings =
+    loadAdvicesAndWarnings(url, localStoreDir, projectRoot, localAdviceFiles)
+
+  def getFatalWarningAdvice(warningText: String): Option[Warning] =
+    advicesAndWarnings.fatalWarnings.find(warning => warning.pattern.matches(ExactT(warningText)))
+
   def handleError(pos: Position, msg: String): String = {
-    val advices   = loadAdvices(url, localStoreDir, projectRoot, localAdviceFiles)
     val parsedMsg = CompilationErrorParser.parse(msg)
-    val matchers  = advices.map(_.errMatching.lift)
+    val matchers  = advicesAndWarnings.advices.map(_.errMatching.lift)
     val matches   = matchers.flatMap(pf => parsedMsg.flatMap(pf)).distinct
 
     matches.size match {
@@ -61,19 +75,26 @@ class ClippyPlugin(val global: Global) extends Plugin {
 
     if (testMode) {
       val r = global.reporter
-      global.reporter = new DelegatingReporter(r, handleError, colorsConfig)
+      global.reporter = new FailOnWarningsReporter(
+        new DelegatingReporter(r, handleError, colorsConfig),
+        getFatalWarningAdvice,
+        colorsConfig
+      )
     }
   }
 
-  override val components: List[PluginComponent] = List(
-    new InjectReporter(handleError, global) {
-      override def colorsConfig = ClippyPlugin.this.colorsConfig
-      override def isEnabled    = !testMode
-    },
-    new RestoreReporter(global) {
-      override def isEnabled = !testMode
-    }
-  )
+  override val components: List[PluginComponent] = {
+
+    List(
+      new InjectReporter(handleError, getFatalWarningAdvice, global) {
+        override def colorsConfig = ClippyPlugin.this.colorsConfig
+        override def isEnabled    = !testMode
+      },
+      new RestoreReporter(global) {
+        override def isEnabled = !testMode
+      }
+    )
+  }
 
   private def prettyPrintTypeMismatchError(tme: TypeMismatchError[ExactT], colors: ColorsConfig.Enabled): String = {
     val colorDiff = (s: String) => colors.diff(s).toString
@@ -159,28 +180,28 @@ class ClippyPlugin(val global: Global) extends Plugin {
   private def localStoreDirFromOptions(options: List[String]): File =
     options.find(_.startsWith("store=")).map(_.substring(6)).map(new File(_)).getOrElse(DefaultStoreDir)
 
-  private def loadAdvices(
+  private def loadAdvicesAndWarnings(
       url: String,
       localStoreDir: File,
       projectAdviceFile: Option[File],
       localAdviceFiles: List[URL]
-  ): List[Advice] = {
+  ): AdvicesAndWarnings = {
     implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
     try {
-      Await
+      val clippyData = Await
         .result(
           new AdviceLoader(global, url, localStoreDir, projectAdviceFile, localAdviceFiles).load(),
           10.seconds
         )
-        .advices
+      AdvicesAndWarnings(clippyData.advices, clippyData.fatalWarnings)
     } catch {
       case e: TimeoutException =>
         global.warning(s"Unable to read advices from $url and store to $localStoreDir within 10 seconds.")
-        Nil
+        AdvicesAndWarnings.empty
       case e: Exception =>
         global.warning(s"Exception when reading advices from $url and storing to $localStoreDir: $e")
-        Nil
+        AdvicesAndWarnings.empty
     }
   }
 }
