@@ -21,9 +21,8 @@ name := "clippy"
 // factor out common settings into a sequence
 lazy val commonSettingsNoScalaVersion = Seq(
   organization := "com.softwaremill.clippy",
-  version := "0.5.3",
+  version := "0.6.0",
   scalacOptions ++= Seq("-unchecked", "-deprecation"),
-  version := "0.5.3",
   parallelExecution := false,
   // Sonatype OSS deployment
   publishTo := {
@@ -62,7 +61,7 @@ lazy val commonSettings = commonSettingsNoScalaVersion ++ Seq(
 )
 
 lazy val sbt10CompatSettings = Seq(
-  sbtVersion in Global := (if (scalaVersion.value startsWith "2.12.") "1.0.0-M5" else "0.13.15"),
+  sbtVersion in Global := (if (scalaVersion.value startsWith "2.12.") "1.1.6" else "0.13.15"),
   scalaCompilerBridgeSource := ("org.scala-sbt" % "compiler-interface" % "0.13.15" % "component").sources
 )
 
