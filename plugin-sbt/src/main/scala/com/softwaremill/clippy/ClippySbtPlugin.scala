@@ -43,6 +43,8 @@ object ClippySbtPlugin extends AutoPlugin {
       settingKey[Option[String]]("Directory where cached advice data should be stored, if other than default")
     val clippyProjectRoot =
       settingKey[Option[String]]("Project root in which project-specific advice is stored, if any")
+    val clippyFatalWarnings =
+      settingKey[List[String]]("Regular expressions of warning messages which should fail compilation")
   }
 
   // in ~/.sbt auto import doesn't work, so providing aliases here for convenience
@@ -56,6 +58,7 @@ object ClippySbtPlugin extends AutoPlugin {
   val clippyUrl           = autoImport.clippyUrl
   val clippyLocalStoreDir = autoImport.clippyLocalStoreDir
   val clippyProjectRoot   = autoImport.clippyProjectRoot
+  val clippyFatalWarnings = autoImport.clippyFatalWarnings
 
   override def projectSettings = Seq(
     clippyColorsEnabled := false,
@@ -68,6 +71,7 @@ object ClippySbtPlugin extends AutoPlugin {
     clippyUrl := None,
     clippyLocalStoreDir := None,
     clippyProjectRoot := None,
+    clippyFatalWarnings := Nil,
     addCompilerPlugin("com.softwaremill.clippy" %% "plugin" % ClippyBuildInfo.version classifier "bundle"),
     scalacOptions := {
       val result = ListBuffer(scalacOptions.value: _*)
@@ -81,6 +85,8 @@ object ClippySbtPlugin extends AutoPlugin {
       clippyUrl.value.foreach(c => result += s"-P:clippy:url=$c")
       clippyLocalStoreDir.value.foreach(c => result += s"-P:clippy:store=$c")
       clippyProjectRoot.value.foreach(c => result += s"-P:clippy:projectRoot=$c")
+      if (clippyFatalWarnings.value.nonEmpty)
+        result += s"-P:clippy:fatalWarnings=${clippyFatalWarnings.value.mkString("|")}"
       result.toList
     }
   )

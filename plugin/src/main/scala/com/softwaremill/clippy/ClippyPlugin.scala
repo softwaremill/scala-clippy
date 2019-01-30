@@ -28,12 +28,13 @@ class ClippyPlugin(val global: Global) extends Plugin {
 
   override val description: String = "gives good advice"
 
-  var url: String                = ""
-  var colorsConfig: ColorsConfig = ColorsConfig.Disabled
-  var testMode                   = false
-  val DefaultStoreDir            = new File(System.getProperty("user.home"), ".clippy")
-  var localStoreDir              = DefaultStoreDir
-  var projectRoot: Option[File]  = None
+  var url: String                         = ""
+  var colorsConfig: ColorsConfig          = ColorsConfig.Disabled
+  var testMode                            = false
+  val DefaultStoreDir                     = new File(System.getProperty("user.home"), ".clippy")
+  var localStoreDir                       = DefaultStoreDir
+  var projectRoot: Option[File]           = None
+  var initialFatalWarnings: List[Warning] = Nil
 
   lazy val localAdviceFiles = {
     val classPathURLs = new PathResolver(global.settings).result.asURLs
@@ -72,7 +73,7 @@ class ClippyPlugin(val global: Global) extends Plugin {
     testMode = testModeFromOptions(options)
     localStoreDir = localStoreDirFromOptions(options)
     projectRoot = projectRootFromOptions(options)
-
+    initialFatalWarnings = initialFatalWarningsFromOptions(options)
     if (testMode) {
       val r = global.reporter
       global.reporter = new FailOnWarningsReporter(
@@ -177,6 +178,15 @@ class ClippyPlugin(val global: Global) extends Plugin {
       .map(new File(_, ".clippy.json"))
       .filter(_.exists())
 
+  private def initialFatalWarningsFromOptions(options: List[String]): List[Warning] =
+    options
+      .find(_.startsWith("fatalWarnings="))
+      .map(_.substring(14))
+      .map { str =>
+        str.split('|').toList.map(str => Warning(RegexT(str), text = None))
+      }
+      .getOrElse(Nil)
+
   private def localStoreDirFromOptions(options: List[String]): File =
     options.find(_.startsWith("store=")).map(_.substring(6)).map(new File(_)).getOrElse(DefaultStoreDir)
 
@@ -194,7 +204,7 @@ class ClippyPlugin(val global: Global) extends Plugin {
           new AdviceLoader(global, url, localStoreDir, projectAdviceFile, localAdviceFiles).load(),
           10.seconds
         )
-      AdvicesAndWarnings(clippyData.advices, clippyData.fatalWarnings)
+      AdvicesAndWarnings(clippyData.advices, clippyData.fatalWarnings ++ initialFatalWarnings)
     } catch {
       case e: TimeoutException =>
         global.warning(s"Unable to read advices from $url and store to $localStoreDir within 10 seconds.")
