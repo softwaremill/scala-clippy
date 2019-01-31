@@ -76,7 +76,7 @@ class CompileTests extends FlatSpec with Matchers with BeforeAndAfterAll {
     )
 
     import org.json4s.native.JsonMethods._
-    val data = compact(render(Clippy("0.1", advices).toJson))
+    val data = compact(render(Clippy("0.1", advices, Nil).toJson))
 
     val os = new GZIPOutputStream(new FileOutputStream(localStore))
     try os.write(data.getBytes("UTF-8"))
