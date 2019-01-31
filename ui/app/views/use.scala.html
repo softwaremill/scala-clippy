@@ -29,7 +29,7 @@
 </p>
 
 <pre>
-addSbtPlugin("com.softwaremill.clippy" % "plugin-sbt" % "0.5.3")
+addSbtPlugin("com.softwaremill.clippy" % "plugin-sbt" % "0.6.0")
 </pre>
 
 <p>
@@ -51,6 +51,23 @@ addSbtPlugin("com.softwaremill.clippy" % "plugin-sbt" % "0.5.3")
     <li>the clippy sbt settings are just a convenient syntax for adding compiler options (e.g., enabling colors is same
     as <code>scalacOptions += "-P:clippy:colors=true"</code>)</li>
 </ul>
+
+<h2>(NEW!) Turning selected compilation warnings into errors</h2>
+<p>
+    From version 0.6.0 you can selectively define regexes for warnings which will be treated as fatal compilation errors. To do so with sbt,
+    use the <code>clippyFatalWarnings</code> setting, for example:
+</p>
+<pre>
+    settings(
+      clippyFatalWarnings ++= Seq(
+        "match may not be exhaustive[\\s\\S]*",
+        ".*\\[wartremover:.*\\].*[\\s\\S]*"
+      )
+    )
+</pre>
+<p>
+    You can also define fatal warnings in your .clippy.json file (see further sections for examples).
+</p>
 
 <h2>Enabling syntax and type mismatch diffs highlighting</h2>
 
@@ -107,9 +124,9 @@ clippyColorsEnabled := true
     <a href="https://github.com/softwaremill/scala-clippy">source code</a>.
 </p>
 
-<h2>Project-specific advices</h2>
+<h2>Project-specific advices and fatal warnings</h2>
 
-<p>If you have advice that you feel is too specific to be worth sharing publicly,  you can add
+<p>If you have advice that you feel is too specific to be worth sharing publicly, you can add
   it to your project specific advice file. First set your project root:
 </p>
 <pre>
@@ -120,6 +137,7 @@ Then create a file named .clippy.json in the root of your project directory and 
 
 <pre>
 {
+  "version": "1",
   "advices": [
     {
       "error": {
@@ -133,6 +151,12 @@ Then create a file named .clippy.json in the root of your project directory and 
         "artifactId": "Future",
         "version": "1.0"
       }
+    }
+  ],
+  "fatalWarnings": [
+    {
+      "pattern": "match may not be exhaustive[\\s\\S]*",
+      "text": "Additional optional text to be displayed"
     }
   ]
 }
@@ -151,7 +175,7 @@ To bundle clippy advice with your library just put it in a file named clippy.jso
 </p>
 
 <pre>
-addCompilerPlugin("com.softwaremill.clippy" %% "plugin" % "0.5.3" classifier "bundle")
+addCompilerPlugin("com.softwaremill.clippy" %% "plugin" % "0.6.0" classifier "bundle")
 </pre>
 
 <p>
@@ -159,7 +183,7 @@ addCompilerPlugin("com.softwaremill.clippy" %% "plugin" % "0.5.3" classifier "bu
 </p>
 
 <pre>
--Xplugin:clippy-plugin_2.11-0.5.3-bundle.jar
+-Xplugin:clippy-plugin_2.11-0.6.0-bundle.jar
 </pre>
 
 <p>
