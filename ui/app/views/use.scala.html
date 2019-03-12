@@ -59,7 +59,7 @@ addSbtPlugin("com.softwaremill.clippy" % "plugin-sbt" % "0.6.0")
 </p>
 <pre>
     settings(
-      clippyFatalWarnings ++= Seq(
+      clippyFatalWarnings ++= List(
         "match may not be exhaustive[\\s\\S]*",
         ".*\\[wartremover:.*\\].*[\\s\\S]*"
       )
