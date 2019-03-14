@@ -29,7 +29,7 @@
 </p>
 
 <pre>
-addSbtPlugin("com.softwaremill.clippy" % "plugin-sbt" % "0.6.0")
+addSbtPlugin("com.softwaremill.clippy" % "plugin-sbt" % "0.6.1")
 </pre>
 
 <p>
@@ -58,9 +58,11 @@ addSbtPlugin("com.softwaremill.clippy" % "plugin-sbt" % "0.6.0")
     use the <code>clippyFatalWarnings</code> setting, for example:
 </p>
 <pre>
+    import com.softwaremill.clippy.ClippySbtPlugin.WarningPatterns._
+    // ...
     settings(
       clippyFatalWarnings ++= List(
-        "match may not be exhaustive[\\s\\S]*",
+        NonExhaustiveMatch,
         ".*\\[wartremover:.*\\].*[\\s\\S]*"
       )
     )
@@ -175,7 +177,7 @@ To bundle clippy advice with your library just put it in a file named clippy.jso
 </p>
 
 <pre>
-addCompilerPlugin("com.softwaremill.clippy" %% "plugin" % "0.6.0" classifier "bundle")
+addCompilerPlugin("com.softwaremill.clippy" %% "plugin" % "0.6.1" classifier "bundle")
 </pre>
 
 <p>
@@ -183,7 +185,7 @@ addCompilerPlugin("com.softwaremill.clippy" %% "plugin" % "0.6.0" classifier "bu
 </p>
 
 <pre>
--Xplugin:clippy-plugin_2.11-0.6.0-bundle.jar
+-Xplugin:clippy-plugin_2.11-0.6.1-bundle.jar
 </pre>
 
 <p>

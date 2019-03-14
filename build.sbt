@@ -21,7 +21,7 @@ name := "clippy"
 // factor out common settings into a sequence
 lazy val commonSettingsNoScalaVersion = Seq(
   organization := "com.softwaremill.clippy",
-  version := "0.6.0",
+  version := "0.6.1",
   scalacOptions ++= Seq("-unchecked", "-deprecation"),
   parallelExecution := false,
   // Sonatype OSS deployment

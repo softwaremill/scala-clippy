@@ -26,6 +26,10 @@ object ClippySbtPlugin extends AutoPlugin {
     val None         = Value("none")
   }
 
+  object WarningPatterns {
+    val NonExhaustiveMatch = "match may not be exhaustive[\\s\\S]*"
+  }
+
   object autoImport {
     val clippyColorsEnabled = settingKey[Boolean]("Should Clippy color type mismatch diffs and highlight syntax")
     val clippyColorDiff     = settingKey[Option[ClippyColor.Value]]("The color to use for diffs, if other than default")
@@ -45,6 +49,7 @@ object ClippySbtPlugin extends AutoPlugin {
       settingKey[Option[String]]("Project root in which project-specific advice is stored, if any")
     val clippyFatalWarnings =
       settingKey[List[String]]("Regular expressions of warning messages which should fail compilation")
+    val NonExhaustiveMatch = "match may not be exhaustive[\\s\\S]*"
   }
 
   // in ~/.sbt auto import doesn't work, so providing aliases here for convenience
